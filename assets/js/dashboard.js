@@ -112,3 +112,43 @@ window.saveProduct = async function(event) {
 
 // Initialize dashboard logic when the script loads
 initDashboard();
+
+// Initialize dashboard logic when the script loads
+initDashboard();
+
+// ─── 3. ADD PRODUCT UI LOGIC ───────────────────────────────────────
+
+// Make Image Preview Work Again
+window.previewImage = function(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('imagePreview').src = e.target.result;
+            document.getElementById('imagePreview').style.display = 'block';
+            document.getElementById('removeImgBtn').style.display = 'flex';
+        }
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+// Make Remove Image Work Again
+window.clearImage = function(event) {
+    event.preventDefault();
+    document.getElementById('fileInput').value = '';
+    document.getElementById('imagePreview').src = '';
+    document.getElementById('imagePreview').style.display = 'none';
+    document.getElementById('removeImgBtn').style.display = 'none';
+}
+
+// Make Variant Toggle Work Again
+window.toggleVariants = function() {
+    const isChecked = document.getElementById('variantSwitch').checked;
+    const box = document.getElementById('variantsBox');
+    if(isChecked) {
+        box.classList.remove('hidden');
+    } else {
+        box.classList.add('hidden');
+        document.getElementById('varSizes').value = '';
+        document.getElementById('varColors').value = '';
+    }
+}
