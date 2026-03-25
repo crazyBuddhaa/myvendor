@@ -91,33 +91,95 @@ window.saveProduct = async function(e) {
 window.loadProducts = async function() {
     const list = document.getElementById('productList');
     const { data: prods } = await supabase.from('products').select('*').eq('vendor_id', currentUser.id).order('created_at', {ascending: false});
-    if (!prods || prods.length === 0) { document.getElementById('emptyState').classList.remove('hidden'); list.innerHTML = ''; return; }
+    
+    if (!prods || prods.length === 0) { 
+        document.getElementById('emptyState').classList.remove('hidden'); 
+        list.innerHTML = ''; 
+        return; 
+    }
     
     document.getElementById('emptyState').classList.add('hidden');
     list.innerHTML = prods.map(p => {
-        const checked = p.in_stock ? 'checked' : '';
-        const statusClass = p.in_stock ? 'text-success' : 'text-danger';
+        // 1. Determine the correct badge based on the new status
+        let badgeClass = 'stock-in';
+        let badgeText = 'In Stock';
+        
+        if (p.status === 'pre_order') {
+            badgeClass = 'bg-warning text-dark'; // Yellow badge
+            badgeText = 'Pre-Order';
+        } else if (p.status === 'out_of_stock' || p.in_stock === false) {
+            badgeClass = 'stock-out'; // Red badge
+            badgeText = 'Sold Out';
+        }
+
+        // 2. Build the meta details (Category, Qty, Colors)
+        let metaArr = [];
+        if (p.category) metaArr.push(p.category);
+        if (p.quantity) metaArr.push(`Qty: ${p.quantity}`);
+        if (p.colors) metaArr.push(`Colors: ${p.colors}`);
+        const metaText = metaArr.length > 0 ? metaArr.join(' • ') : 'No extra details';
+
+        const imgHtml = p.image_url ? `<img src="${p.image_url}" alt="${p.title}">` : '📦';
+
+        // 3. Output the card (Toggle removed, Edit button added)
         return `
-        <div class="product-card p-3 bg-white rounded-4 border mb-3">
-            <div class="d-flex gap-3">
-                <div style="width:60px;height:60px;background:#f1f5f9;border-radius:8px;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;">
-                    ${p.image_url ? `<img src="${p.image_url}" style="width:100%;height:100%;object-fit:cover;">` : '📦'}
-                </div>
-                <div class="flex-grow-1 overflow-hidden">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <div class="fw-bold small text-truncate">${p.title}</div>
-                        <div class="form-check form-switch m-0 ms-2"><input class="form-check-input" type="checkbox" ${checked} onchange="toggleStock('${p.id}', this.checked)"></div>
-                    </div>
-                    <div class="text-success fw-bold small mb-1">₦${parseFloat(p.price).toLocaleString()}</div>
-                    <div class="mt-2 d-flex gap-2">
-                        <button class="btn btn-sm btn-light border px-2 py-1" style="font-size:0.75rem; font-weight:600;" onclick="window.location.href='/dashboard/edit-product.html?id=${p.id}'"><i class="bi bi-pencil"></i> Edit</button>
-                        <button class="btn btn-sm btn-light border px-2 py-1" style="font-size:0.75rem; font-weight:600;" onclick="copyProductLink('${p.id}')"><i class="bi bi-link"></i> Link</button>
-                        <button class="btn btn-sm btn-danger px-2 py-1 text-white" style="font-size:0.75rem; font-weight:600; border:none;" onclick="deleteProduct('${p.id}')"><i class="bi bi-trash"></i></button>
-                    </div>
-                </div>
+        <div class="product-card">
+          <div class="prod-img">${imgHtml}</div>
+          <div class="prod-details">
+            <div class="d-flex justify-content-between align-items-start">
+              <div class="prod-title">${p.title}</div>
+              <span class="stock-badge ${badgeClass}" id="badge-${p.id}">${badgeText}</span>
             </div>
+            <div class="prod-price">₦${parseFloat(p.price).toLocaleString()}</div>
+            <div class="prod-meta fw-bold">${metaText}</div>
+            
+            <div class="prod-actions">
+              <button class="btn-action edit" onclick="window.location.href='/dashboard/edit-product.html?id=${p.id}'">
+                <i class="bi bi-pencil"></i> Edit
+              </button>
+              <button class="btn-action copy" onclick="copyProductLink('${p.id}')">
+                <i class="bi bi-link-45deg"></i> Link
+              </button>
+              <button class="btn-action delete" onclick="deleteProduct('${p.id}')">
+                <i class="bi bi-trash"></i> Delete
+              </button>
+            </div>
+          </div>
         </div>`;
     }).join('');
+
+    // Setup Client-Side Search
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.addEventListener('keyup', function(e) {
+            const term = e.target.value.toLowerCase();
+            const cards = document.querySelectorAll('.product-card');
+            let visibleCount = 0;
+            
+            cards.forEach(card => {
+                const title = card.querySelector('.prod-title').innerText.toLowerCase();
+                if(title.includes(term)) {
+                    card.style.display = 'flex';
+                    visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            const emptyState = document.getElementById('emptyState');
+            if(visibleCount === 0 && cards.length > 0) {
+                emptyState.classList.remove('hidden');
+                document.getElementById('emptyTitle').innerText = "No products found";
+                document.getElementById('emptyDesc').innerText = "Try a different search term.";
+                document.getElementById('emptyAddBtn').classList.add('hidden');
+            } else {
+                emptyState.classList.add('hidden');
+                document.getElementById('emptyTitle').innerText = "Your store is empty";
+                document.getElementById('emptyDesc').innerText = "Add your first product to start selling.";
+                document.getElementById('emptyAddBtn').classList.remove('hidden');
+            }
+        });
+    }
 };
 
 window.toggleStock = async function(id, isChecked) { await supabase.from('products').update({ in_stock: isChecked }).eq('id', id); };
