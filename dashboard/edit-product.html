@@ -73,6 +73,28 @@
       <label class="form-label">Price (₦)</label>
       <input type="number" id="editProdPrice" class="form-control-mv" required>
 
+      <div class="p-3 mb-3" style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px;">
+          <h6 class="fw-bold text-success mb-3" style="font-size: 0.85rem;"><i class="bi bi-tags-fill me-1"></i> Product Tags & Inventory</h6>
+          
+          <label class="form-label">Product Status</label>
+          <select id="editProdStatus" class="form-control-mv">
+            <option value="in_stock">In Stock (Available immediately)</option>
+            <option value="pre_order">Pre-Order (Taking advance orders)</option>
+            <option value="out_of_stock">Out of Stock (Currently unavailable)</option>
+          </select>
+
+          <div class="row">
+              <div class="col-6">
+                  <label class="form-label">Quantity Available</label>
+                  <input type="number" id="editProdQty" class="form-control-mv" placeholder="e.g. 50">
+              </div>
+              <div class="col-6">
+                  <label class="form-label">Available Colors</label>
+                  <input type="text" id="editProdColors" class="form-control-mv" placeholder="Red, Black, Blue">
+              </div>
+          </div>
+      </div>
+
       <label class="form-label">Category</label>
       <select id="editProdCategory" class="form-control-mv">
         <option value="Fashion">Fashion & Apparel</option>
@@ -86,17 +108,7 @@
       <label class="form-label">Description (Optional)</label>
       <textarea id="editProdDesc" class="form-control-mv" rows="3"></textarea>
 
-      <div class="d-flex justify-content-between align-items-center mb-4 p-3 border rounded-3 bg-light">
-        <div>
-          <div class="fw-bold" style="font-size: 0.9rem;">In Stock</div>
-          <div class="text-muted" style="font-size: 0.75rem;">Is this item available?</div>
-        </div>
-        <div class="form-check form-switch m-0 fs-4">
-          <input class="form-check-input" type="checkbox" role="switch" id="editStockSwitch">
-        </div>
-      </div>
-
-      <button type="submit" id="btnUpdate" class="btn-save">Update Product</button>
+      <button type="submit" id="btnUpdate" class="btn-save mt-3">Update Product</button>
     </form>
   </main>
 
