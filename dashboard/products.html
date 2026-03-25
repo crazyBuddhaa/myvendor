@@ -107,87 +107,9 @@
       color: var(--text-muted);
     }
 
-    /* ─── PRODUCT LIST ───────────────────────────────────── */
+    /* ─── PRODUCT LIST & EMPTY STATE ─────────────────────── */
     .product-list { display: flex; flex-direction: column; gap: 12px; }
 
-    .product-card {
-      background: var(--card-bg);
-      border: 1px solid var(--border-color);
-      border-radius: 12px;
-      padding: 0.75rem;
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      position: relative;
-    }
-
-    .prod-img {
-      width: 60px;
-      height: 60px;
-      border-radius: 8px;
-      background: #f1f5f9;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.8rem;
-      flex-shrink: 0;
-    }
-
-    .prod-details { flex-grow: 1; overflow: hidden; }
-    .prod-title {
-      font-size: 0.9rem;
-      font-weight: 700;
-      color: var(--text-main);
-      margin-bottom: 0.1rem;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .prod-price {
-      font-size: 0.85rem;
-      font-weight: 800;
-      color: var(--green);
-      margin-bottom: 0.2rem;
-    }
-    .prod-meta { font-size: 0.7rem; color: var(--text-muted); }
-
-    /* Badges */
-    .stock-badge {
-      font-size: 0.65rem;
-      padding: 0.2rem 0.4rem;
-      border-radius: 4px;
-      font-weight: 700;
-      text-transform: uppercase;
-    }
-    .stock-in { background: var(--green-light); color: var(--green-dark); }
-    .stock-out { background: var(--danger-light); color: var(--danger); }
-
-    /* Action Buttons */
-    .prod-actions {
-      display: flex;
-      gap: 0.5rem;
-      margin-top: 0.5rem;
-    }
-    .btn-action {
-      background: var(--bg-color);
-      border: 1px solid var(--border-color);
-      color: var(--text-main);
-      border-radius: 6px;
-      padding: 0.3rem 0.6rem;
-      font-size: 0.75rem;
-      font-weight: 600;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 0.3rem;
-      transition: all 0.2s;
-    }
-    .btn-action:active { transform: scale(0.95); }
-    .btn-action.copy:hover { color: var(--green); border-color: var(--green); }
-    .btn-action.edit:hover { color: #0284c7; border-color: #0284c7; }
-    .btn-action.delete { color: var(--danger); border-color: var(--danger-light); background: var(--danger-light); }
-
-    /* ─── EMPTY STATE ────────────────────────────────────── */
     .empty-state {
       text-align: center;
       padding: 3rem 1rem;
@@ -198,7 +120,7 @@
     .empty-icon { font-size: 2.5rem; color: var(--text-muted); margin-bottom: 0.5rem; }
     .empty-title { font-size: 1.1rem; font-weight: 800; color: var(--green-dark); }
 
-    /* ─── FOOTER ─────────────────────────────────────────── */
+    /* ─── FOOTER & TOAST ─────────────────────────────────── */
     .dashboard-footer {
       margin-top: auto;
       text-align: center;
@@ -210,7 +132,6 @@
     }
     .dashboard-footer a { color: var(--green); text-decoration: none; font-weight: 600; }
 
-    /* Toast Notification */
     .toast-msg {
       position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(100px);
       background: var(--text-main); color: white; padding: 0.6rem 1.2rem;
@@ -251,86 +172,13 @@
     </div>
 
     <div class="product-list" id="productList">
-      
-      <div class="product-card">
-        <div class="prod-img" style="background:#fef9c3;">👗</div>
-        <div class="prod-details">
-          <div class="d-flex justify-content-between align-items-start">
-            <div class="prod-title">Luxury Silk Blouse</div>
-            <span class="stock-badge stock-in">In Stock</span>
-          </div>
-          <div class="prod-price">₦15,000</div>
-          <div class="prod-meta">Category: Fashion · 2 Variants</div>
-          
-          <div class="prod-actions">
-            <button class="btn-action copy" onclick="copyProductLink('silk-blouse')">
-              <i class="bi bi-link-45deg"></i> Link
-            </button>
-            <button class="btn-action edit" onclick="window.location.href='/dashboard/add-product.html?id=silk-blouse'">
-              <i class="bi bi-pencil"></i> Edit
-            </button>
-            <button class="btn-action delete" onclick="deleteProduct(this)">
-              <i class="bi bi-trash"></i>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div class="product-card">
-        <div class="prod-img" style="background:#fce7f3;">👠</div>
-        <div class="prod-details">
-          <div class="d-flex justify-content-between align-items-start">
-            <div class="prod-title">Nude Block Heels</div>
-            <span class="stock-badge stock-out">Out of Stock</span>
-          </div>
-          <div class="prod-price">₦22,500</div>
-          <div class="prod-meta">Category: Shoes · 4 Sizes</div>
-          
-          <div class="prod-actions">
-            <button class="btn-action copy" onclick="copyProductLink('block-heels')">
-              <i class="bi bi-link-45deg"></i> Link
-            </button>
-            <button class="btn-action edit" onclick="window.location.href='/dashboard/add-product.html?id=block-heels'">
-              <i class="bi bi-pencil"></i> Edit
-            </button>
-            <button class="btn-action delete" onclick="deleteProduct(this)">
-              <i class="bi bi-trash"></i>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div class="product-card">
-        <div class="prod-img" style="background:#dcfce7;">👜</div>
-        <div class="prod-details">
-          <div class="d-flex justify-content-between align-items-start">
-            <div class="prod-title">Leather Mini Bag</div>
-            <span class="stock-badge stock-in">In Stock</span>
-          </div>
-          <div class="prod-price">₦18,000</div>
-          <div class="prod-meta">Category: Accessories</div>
-          
-          <div class="prod-actions">
-            <button class="btn-action copy" onclick="copyProductLink('mini-bag')">
-              <i class="bi bi-link-45deg"></i> Link
-            </button>
-            <button class="btn-action edit" onclick="window.location.href='/dashboard/add-product.html?id=mini-bag'">
-              <i class="bi bi-pencil"></i> Edit
-            </button>
-            <button class="btn-action delete" onclick="deleteProduct(this)">
-              <i class="bi bi-trash"></i>
-            </button>
-          </div>
-        </div>
-      </div>
-
     </div>
 
     <div id="emptyState" class="empty-state hidden">
       <div class="empty-icon"><i class="bi bi-box-seam"></i></div>
-      <div class="empty-title">Your store is empty</div>
-      <p class="text-muted" style="font-size: 0.85rem; margin-bottom: 1.5rem;">Add your first product to start selling.</p>
-      <a href="/dashboard/add-product.html" class="btn-add">
+      <div class="empty-title" id="emptyTitle">Your store is empty</div>
+      <p class="text-muted" id="emptyDesc" style="font-size: 0.85rem; margin-bottom: 1.5rem;">Add your first product to start selling.</p>
+      <a href="/dashboard/add-product.html" class="btn-add" id="emptyAddBtn">
         <i class="bi bi-plus-lg"></i> Add Product
       </a>
     </div>
@@ -345,10 +193,38 @@
     </div>
   </footer>
 
-  <div class="toast-msg" id="toastMsg">Link copied!</div>
+  <div class="toast-msg" id="toastMsg">Notification</div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   
+  <script>
+    document.getElementById('searchInput').addEventListener('keyup', function(e) {
+      const term = e.target.value.toLowerCase();
+      const cards = document.querySelectorAll('.product-card');
+      let visibleCount = 0;
+      
+      cards.forEach(card => {
+        const title = card.querySelector('.fw-bold.small.text-truncate').innerText.toLowerCase();
+        if(title.includes(term)) {
+          card.style.display = 'block';
+          visibleCount++;
+        } else {
+          card.style.display = 'none';
+        }
+      });
+
+      const emptyState = document.getElementById('emptyState');
+      if(visibleCount === 0 && cards.length > 0) {
+        emptyState.classList.remove('hidden');
+        document.getElementById('emptyTitle').innerText = "No products found";
+        document.getElementById('emptyDesc').innerText = "Try a different search term.";
+        document.getElementById('emptyAddBtn').classList.add('hidden');
+      } else if (cards.length > 0) {
+        emptyState.classList.add('hidden');
+      }
+    });
+  </script>
+
   <script type="module" src="/assets/js/dashboard.js"></script>
 </body>
 </html>
