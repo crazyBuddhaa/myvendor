@@ -277,57 +277,6 @@
 
   <div class="toast-msg" id="toastMsg">Link copied to clipboard!</div>
 
-  <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
-
-    // Replace with your keys later
-    const SUPABASE_URL = 'https://YOUR_PROJECT.supabase.co'
-    const SUPABASE_ANON_KEY = 'YOUR_ANON_KEY'
-    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
-
-    // ─── AUTH PROTECTION ──────────────────────────────────────
-    // If you uncomment this, it will kick unauthenticated users back to login
-    /*
-    const { data: { session }, error } = await supabase.auth.getSession()
-    if (!session || error) {
-      window.location.href = '/dashboard/index.html'
-    } else {
-      // Fetch user profile data to populate the dashboard
-      const userId = session.user.id;
-      const { data: profile } = await supabase.from('vendor_profiles').select('*').eq('id', userId).single();
-      
-      if(profile) {
-        document.getElementById('welcomeName').innerText = `Welcome, ${profile.business_name} 👋`;
-        
-        const fullLink = `myvendor.ng/${profile.slug}`;
-        document.getElementById('storeLink').innerText = fullLink;
-        
-        // Setup WhatsApp Share Button
-        const waMsg = encodeURIComponent(`Shop my latest collection here: https://${fullLink}`);
-        document.getElementById('waShareBtn').href = `https://wa.me/?text=${waMsg}`;
-      }
-    }
-    */
-
-    window.handleLogout = async () => {
-      await supabase.auth.signOut();
-      window.location.href = '/dashboard/index.html';
-    }
-  </script>
-
-  <script>
-    // Copy link logic
-    function copyLink() {
-      const linkText = document.getElementById('storeLink').innerText;
-      // Basic fallback for mobile clipboards
-      navigator.clipboard.writeText(`https://${linkText}`).then(() => {
-        const toast = document.getElementById('toastMsg');
-        toast.classList.add('show');
-        setTimeout(() => toast.classList.remove('show'), 2500);
-      }).catch(err => {
-        console.error('Failed to copy: ', err);
-      });
-    }
-  </script>
+  <script type="module" src="/assets/js/dashboard.js"></script>
 </body>
 </html>
