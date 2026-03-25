@@ -484,12 +484,21 @@ window.clearImage = function(e) {
     document.getElementById('removeImgBtn').style.display = 'none';
 };
 
+
 // ─── 7. SETTINGS LOGIC ───────────────────────────────────────────
 window.loadSettings = async function(profile) {
-    document.getElementById('setBizName').value = profile.business_name || '';
-    document.getElementById('setSlug').value = profile.slug || '';
-    document.getElementById('setWaNumber').value = profile.whatsapp_number || '';
-    document.getElementById('setBio').value = profile.bio || '';
+    // 1. Hide the loader and show the form
+    const loader = document.getElementById('loadingState');
+    const form = document.getElementById('settingsForm');
+    
+    if (loader) loader.classList.add('hidden');
+    if (form) form.classList.remove('hidden');
+
+    // 2. Populate the fields
+    if (document.getElementById('setBizName')) document.getElementById('setBizName').value = profile.business_name || '';
+    if (document.getElementById('setSlug')) document.getElementById('setSlug').value = profile.slug || '';
+    if (document.getElementById('setWaNumber')) document.getElementById('setWaNumber').value = profile.whatsapp_number || '';
+    if (document.getElementById('setBio')) document.getElementById('setBio').value = profile.bio || '';
 };
 
 window.updateSettings = async function(e) {
