@@ -64,43 +64,30 @@
       display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;
     }
 
-    /* Horizontal scrollable filters for mobile */
     .filter-scroll {
       display: flex;
       overflow-x: auto;
       gap: 0.5rem;
       padding-bottom: 0.5rem;
       margin-bottom: 0.5rem;
-      scrollbar-width: none; /* Firefox */
+      scrollbar-width: none;
     }
-    .filter-scroll::-webkit-scrollbar { display: none; } /* Safari/Chrome */
+    .filter-scroll::-webkit-scrollbar { display: none; }
 
     .filter-pill {
-      white-space: nowrap;
-      padding: 0.4rem 1rem;
-      border-radius: 50px;
-      font-size: 0.85rem;
-      font-weight: 700;
-      background: var(--card-bg);
-      border: 1px solid var(--border-color);
-      color: var(--text-muted);
-      cursor: pointer;
-      transition: all 0.2s;
+      white-space: nowrap; padding: 0.4rem 1rem; border-radius: 50px;
+      font-size: 0.85rem; font-weight: 700; background: var(--card-bg);
+      border: 1px solid var(--border-color); color: var(--text-muted);
+      cursor: pointer; transition: all 0.2s;
     }
-    .filter-pill.active {
-      background: var(--green);
-      color: white;
-      border-color: var(--green);
-    }
+    .filter-pill.active { background: var(--green); color: white; border-color: var(--green); }
 
     /* ─── ORDER CARDS ────────────────────────────────────── */
     .order-list { display: flex; flex-direction: column; gap: 12px; padding-bottom: 1.5rem; }
 
     .order-card {
-      background: var(--card-bg);
-      border: 1px solid var(--border-color);
-      border-radius: 12px;
-      padding: 1.25rem;
+      background: var(--card-bg); border: 1px solid var(--border-color);
+      border-radius: 12px; padding: 1.25rem;
     }
 
     .order-header {
@@ -111,7 +98,6 @@
     .order-date { font-size: 0.75rem; color: var(--text-muted); }
     .order-amount { font-size: 1.1rem; font-weight: 800; color: var(--green); }
 
-    /* Badges */
     .status-badge {
       font-size: 0.7rem; padding: 0.3rem 0.6rem; border-radius: 6px; font-weight: 700; text-transform: uppercase;
     }
@@ -119,32 +105,26 @@
     .status-processing { background: #e0f2fe; color: #0284c7; }
     .status-shipped { background: #e0e7ff; color: #4338ca; }
     .status-delivered { background: var(--green-light); color: var(--green-dark); }
-    .status-cancelled { background: #fee2e2; color: #ef4444; }
 
-    /* Customer Info */
     .customer-info { margin-bottom: 0.75rem; }
     .customer-name { font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 0.4rem; }
     .item-summary { font-size: 0.8rem; color: var(--text-muted); background: var(--bg-color); padding: 0.5rem; border-radius: 8px; margin-top: 0.5rem; }
 
-    /* Action Buttons */
-    .order-actions {
-      display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 1rem;
-    }
+    .order-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 1rem; }
+    
     .btn-action {
       padding: 0.6rem; border-radius: 8px; font-size: 0.8rem; font-weight: 700;
-      text-align: center; cursor: pointer; border: none; transition: all 0.2s;
+      text-align: center; cursor: pointer; transition: all 0.2s;
     }
-    .btn-action.chat { background: var(--wa-green); color: white; }
+    .btn-action.chat { background: var(--wa-green); color: white; border: none; }
     .btn-action.chat:hover { background: #1da851; }
-    
     .btn-action.update { background: var(--bg-color); color: var(--text-main); border: 1px solid var(--border-color); }
-    .btn-action.update:hover { background: var(--border-color); }
-
+    .btn-action.create { background: var(--green); color: white; border: none; display: flex; align-items: center; gap: 0.4rem; padding: 0.5rem 1rem; border-radius: 8px;}
+    
     .btn-track-link {
       width: 100%; margin-top: 8px; background: transparent; color: var(--green); border: 1px dashed var(--green);
       padding: 0.5rem; border-radius: 8px; font-size: 0.8rem; font-weight: 700;
     }
-    .btn-track-link:active { background: var(--green-light); }
 
     /* ─── MODAL STYLES ───────────────────────────────────── */
     .modal-content { border-radius: 16px; border: none; }
@@ -159,23 +139,22 @@
     
     .btn-save-status {
       width: 100%; padding: 0.85rem; background: var(--green); color: white; border: none;
-      border-radius: 10px; font-weight: 700; font-size: 1rem;
+      border-radius: 10px; font-weight: 700; font-size: 1rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem;
     }
 
-    /* ─── FOOTER ─────────────────────────────────────────── */
+    /* ─── FOOTER & TOAST ─────────────────────────────────── */
     .dashboard-footer {
       margin-top: auto; text-align: center; padding: 1.5rem 1rem; font-size: 0.75rem;
       color: var(--text-muted); border-top: 1px solid var(--border-color); background: var(--bg-color);
     }
     .dashboard-footer a { color: var(--green); text-decoration: none; font-weight: 600; }
     
-    /* Toast */
     .toast-msg {
       position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(100px);
       background: var(--text-main); color: white; padding: 0.6rem 1.2rem;
       border-radius: 50px; font-size: 0.85rem; font-weight: 600;
       transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      z-index: 2000; opacity: 0; pointer-events: none;
+      z-index: 2000; opacity: 0; pointer-events: none; text-align: center; width: max-content;
     }
     .toast-msg.show { transform: translateX(-50%) translateY(0); opacity: 1; }
     .hidden { display: none !important; }
@@ -198,6 +177,9 @@
     
     <div class="page-header">
       <h1 style="font-size: 1.4rem; font-weight: 800; color: var(--green-dark); margin: 0;">Orders</h1>
+      <button class="btn-action create" onclick="openCreateOrderModal()">
+        <i class="bi bi-plus-lg"></i> Create Order
+      </button>
     </div>
 
     <div class="filter-scroll" id="orderFilters">
@@ -270,30 +252,6 @@
         </button>
       </div>
 
-      <div class="order-card" data-status="delivered">
-        <div class="order-header">
-          <div>
-            <div class="order-id">MV-250320-045</div>
-            <div class="order-date">Mar 20, 2026</div>
-          </div>
-          <div class="text-end">
-            <div class="order-amount">₦6,500</div>
-            <div class="status-badge status-delivered mt-1">Delivered</div>
-          </div>
-        </div>
-        
-        <div class="customer-info">
-          <div class="customer-name"><i class="bi bi-person-fill text-muted"></i> Funmi A.</div>
-          <div class="item-summary">1x Matte Lip Kit (Ruby Red)</div>
-        </div>
-
-        <div class="order-actions" style="grid-template-columns: 1fr;">
-          <a href="/track/?id=MV-250320-045" target="_blank" class="btn-action update text-decoration-none text-center">
-            <i class="bi bi-eye"></i> View Public Tracking Page
-          </a>
-        </div>
-      </div>
-
     </div>
     
     <div id="emptyState" class="text-center py-5 hidden">
@@ -303,6 +261,43 @@
     </div>
 
   </main>
+
+  <div class="modal fade" id="createOrderModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Create New Order</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
+            Enter the details from your WhatsApp chat to generate a public tracking link for the buyer.
+          </p>
+          <form id="createOrderForm" onsubmit="handleCreateOrder(event)">
+            
+            <div class="mb-3">
+              <label class="form-label text-muted" style="font-size: 0.8rem; font-weight: 700;">Customer Name</label>
+              <input type="text" class="form-select-mv" id="newCustomerName" placeholder="e.g. Sarah O." required>
+            </div>
+            
+            <div class="mb-3">
+              <label class="form-label text-muted" style="font-size: 0.8rem; font-weight: 700;">Items Ordered</label>
+              <textarea class="form-select-mv" id="newOrderItems" placeholder="e.g. 1x Silk Blouse (Red, M)" rows="2" required></textarea>
+            </div>
+            
+            <div class="mb-3">
+              <label class="form-label text-muted" style="font-size: 0.8rem; font-weight: 700;">Total Amount Paid (₦)</label>
+              <input type="number" class="form-select-mv" id="newOrderTotal" placeholder="e.g. 15000" required>
+            </div>
+            
+            <button type="submit" class="btn-save-status">
+              <i class="bi bi-link-45deg"></i> Generate Tracking Link
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <div class="modal fade" id="statusModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
@@ -341,18 +336,16 @@
     </div>
   </footer>
 
-  <div class="toast-msg" id="toastMsg">Tracking link copied!</div>
+  <div class="toast-msg" id="toastMsg">Notification</div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   
   <script>
     // ─── FILTER LOGIC ─────────────────────────────────────────
     function filterOrders(status, pillElement) {
-      // Update UI Pills
       document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
       pillElement.classList.add('active');
 
-      // Filter Cards
       const cards = document.querySelectorAll('.order-card');
       let visibleCount = 0;
 
@@ -365,26 +358,27 @@
         }
       });
 
-      // Handle Empty State
       const emptyState = document.getElementById('emptyState');
-      if (visibleCount === 0) {
-        emptyState.classList.remove('hidden');
-      } else {
-        emptyState.classList.add('hidden');
-      }
+      if (visibleCount === 0) emptyState.classList.remove('hidden');
+      else emptyState.classList.add('hidden');
     }
 
     // ─── COPY TRACKING LINK ───────────────────────────────────
+    function showToast(message) {
+      const toast = document.getElementById('toastMsg');
+      toast.innerText = message;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
     function copyTracking(orderId) {
       const linkText = `myvendor.ng/track/?id=${orderId}`;
       navigator.clipboard.writeText(`https://${linkText}`).then(() => {
-        const toast = document.getElementById('toastMsg');
-        toast.classList.add('show');
-        setTimeout(() => toast.classList.remove('show'), 2500);
+        showToast('Tracking link copied!');
       });
     }
 
-    // ─── MODAL LOGIC ──────────────────────────────────────────
+    // ─── STATUS UPDATE MODAL ──────────────────────────────────
     let currentUpdateOrderId = null;
     const statusModal = new bootstrap.Modal(document.getElementById('statusModal'));
 
@@ -392,40 +386,53 @@
       currentUpdateOrderId = orderId;
       document.getElementById('modalOrderId').innerText = orderId;
       document.getElementById('statusSelect').value = currentStatus;
-      
-      // Show rider inputs if status is shipped
       toggleRiderInputs();
-      
       statusModal.show();
     }
 
-    // Show rider details input if "Shipped" is selected
     document.getElementById('statusSelect').addEventListener('change', toggleRiderInputs);
     
     function toggleRiderInputs() {
       const status = document.getElementById('statusSelect').value;
       const riderGroup = document.getElementById('riderDetailsGroup');
-      if(status === 'shipped') {
-        riderGroup.style.display = 'block';
-      } else {
-        riderGroup.style.display = 'none';
-      }
+      if(status === 'shipped') riderGroup.style.display = 'block';
+      else riderGroup.style.display = 'none';
     }
 
     function saveStatus() {
       const newStatus = document.getElementById('statusSelect').value;
-      // In production: Send this to Supabase `orders` table and insert into `order_status_history`
       console.log(`Updating ${currentUpdateOrderId} to ${newStatus}`);
-      
       statusModal.hide();
+      showToast('Order updated successfully!');
+    }
+
+    // ─── CREATE ORDER MODAL LOGIC ─────────────────────────────
+    const createModal = new bootstrap.Modal(document.getElementById('createOrderModal'));
+
+    function openCreateOrderModal() {
+      document.getElementById('createOrderForm').reset();
+      createModal.show();
+    }
+
+    function handleCreateOrder(event) {
+      event.preventDefault();
       
-      // Show success toast
-      const toast = document.getElementById('toastMsg');
-      toast.innerText = 'Order updated successfully!';
-      toast.classList.add('show');
-      setTimeout(() => toast.classList.remove('show'), 2500);
-      
-      // In production: Reload the orders list here
+      const customer = document.getElementById('newCustomerName').value;
+      const items = document.getElementById('newOrderItems').value;
+      const total = document.getElementById('newOrderTotal').value;
+
+      const dateStr = new Date().toISOString().slice(2, 10).replace(/-/g, '');
+      const randomNum = Math.floor(Math.random() * 900) + 100;
+      const newOrderId = `MV-${dateStr}-${randomNum}`;
+
+      console.log("Saving to DB:", { id: newOrderId, customer, items, total, status: 'new' });
+
+      createModal.hide();
+
+      const linkText = `myvendor.ng/track/?id=${newOrderId}`;
+      navigator.clipboard.writeText(`https://${linkText}`).then(() => {
+        showToast(`Order created! Tracking link copied.`);
+      });
     }
   </script>
 </body>
