@@ -1,1 +1,1030 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>myvendor — Sell Smarter on WhatsApp</title>
+  <meta name="description" content="Beautiful product catalogs and order tracking for Lagos WhatsApp vendors. Free to start." />
+
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet"/>
+  <!-- Google Fonts: Syne (headlines) + DM Sans (body) -->
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+
+  <style>
+    /* ─── TOKENS ─────────────────────────────────────────── */
+    :root {
+      --green:        #16a34a;
+      --green-dark:   #14532d;
+      --green-light:  #dcfce7;
+      --green-mid:    #22c55e;
+      --green-glow:   rgba(34,197,94,.18);
+      --white:        #ffffff;
+      --off-white:    #f8faf8;
+      --text:         #0f1a0f;
+      --text-muted:   #4b6b50;
+      --border:       #d1fae5;
+      --wa-green:     #25D366;
+    }
+
+    /* ─── BASE ───────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--white);
+      color: var(--text);
+      overflow-x: hidden;
+    }
+
+    h1, h2, h3, .font-syne {
+      font-family: 'Syne', sans-serif;
+    }
+
+    /* ─── NOISE TEXTURE OVERLAY ──────────────────────────── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+      opacity: .4;
+    }
+
+    section, nav, footer { position: relative; z-index: 1; }
+
+    /* ─── NAVBAR ─────────────────────────────────────────── */
+    .mv-nav {
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 0;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+
+    .mv-logo {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 1.4rem;
+      color: var(--green-dark);
+      text-decoration: none;
+      letter-spacing: -0.5px;
+    }
+
+    .mv-logo span {
+      color: var(--green);
+    }
+
+    .btn-nav-cta {
+      background: var(--green);
+      color: white;
+      border: none;
+      padding: .5rem 1.2rem;
+      border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 600;
+      font-size: .9rem;
+      text-decoration: none;
+      transition: background .2s, transform .15s;
+    }
+    .btn-nav-cta:hover { background: var(--green-dark); color: white; transform: translateY(-1px); }
+
+    /* ─── HERO ───────────────────────────────────────────── */
+    .hero-section {
+      min-height: 92vh;
+      display: flex;
+      align-items: center;
+      background: linear-gradient(160deg, #f0fdf4 0%, #ffffff 55%, #dcfce7 100%);
+      padding: 5rem 0 4rem;
+      overflow: hidden;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: .4rem;
+      background: var(--green-light);
+      color: var(--green-dark);
+      border: 1px solid #bbf7d0;
+      border-radius: 999px;
+      padding: .3rem .9rem;
+      font-size: .8rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+      animation: fadeSlideDown .6s ease both;
+    }
+
+    .hero-badge .dot {
+      width: 7px; height: 7px;
+      background: var(--green);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    .hero-headline {
+      font-size: clamp(2.4rem, 7vw, 4.2rem);
+      font-weight: 800;
+      line-height: 1.08;
+      letter-spacing: -1.5px;
+      color: var(--green-dark);
+      margin-bottom: 1.25rem;
+      animation: fadeSlideDown .7s ease .1s both;
+    }
+
+    .hero-headline .accent {
+      color: var(--green);
+      position: relative;
+      display: inline-block;
+    }
+
+    .hero-headline .accent::after {
+      content: '';
+      position: absolute;
+      bottom: 2px; left: 0; right: 0;
+      height: 4px;
+      background: var(--green-mid);
+      border-radius: 2px;
+      opacity: .4;
+    }
+
+    .hero-sub {
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      line-height: 1.65;
+      max-width: 500px;
+      margin-bottom: 2.2rem;
+      animation: fadeSlideDown .7s ease .2s both;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: .8rem;
+      flex-wrap: wrap;
+      animation: fadeSlideDown .7s ease .3s both;
+    }
+
+    .btn-primary-mv {
+      background: var(--green);
+      color: white;
+      border: none;
+      padding: .85rem 2rem;
+      border-radius: 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 600;
+      font-size: 1rem;
+      text-decoration: none;
+      transition: all .2s;
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      box-shadow: 0 4px 20px rgba(22,163,74,.3);
+    }
+    .btn-primary-mv:hover { background: var(--green-dark); color: white; transform: translateY(-2px); box-shadow: 0 8px 28px rgba(22,163,74,.35); }
+
+    .btn-outline-mv {
+      background: transparent;
+      color: var(--green-dark);
+      border: 1.5px solid var(--border);
+      padding: .85rem 1.8rem;
+      border-radius: 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 600;
+      font-size: 1rem;
+      text-decoration: none;
+      transition: all .2s;
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+    }
+    .btn-outline-mv:hover { border-color: var(--green); color: var(--green); background: var(--green-light); }
+
+    /* ─── HERO VISUAL (PHONE MOCKUP) ─────────────────────── */
+    .hero-visual {
+      animation: fadeSlideUp .9s ease .2s both;
+    }
+
+    .phone-frame {
+      width: 240px;
+      margin: 0 auto;
+      background: var(--green-dark);
+      border-radius: 36px;
+      padding: 12px;
+      box-shadow:
+        0 40px 80px rgba(20,83,45,.25),
+        0 0 0 1px rgba(255,255,255,.1) inset;
+      position: relative;
+    }
+
+    .phone-screen {
+      background: var(--off-white);
+      border-radius: 26px;
+      overflow: hidden;
+      min-height: 460px;
+    }
+
+    .phone-screen .store-header {
+      background: var(--green);
+      padding: 1rem;
+      text-align: center;
+      color: white;
+    }
+
+    .phone-screen .store-header .store-avatar {
+      width: 52px; height: 52px;
+      background: white;
+      border-radius: 50%;
+      margin: 0 auto .5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--green);
+      font-size: 1.3rem;
+    }
+
+    .phone-screen .store-header h6 {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      margin: 0;
+      font-size: .85rem;
+    }
+
+    .phone-screen .store-header small {
+      opacity: .8;
+      font-size: .72rem;
+    }
+
+    .phone-products {
+      padding: .75rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: .5rem;
+    }
+
+    .phone-product-card {
+      background: white;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 1px 6px rgba(0,0,0,.07);
+    }
+
+    .product-img-placeholder {
+      height: 70px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.6rem;
+    }
+
+    .phone-product-card .card-body-mini {
+      padding: .4rem .5rem .5rem;
+    }
+
+    .phone-product-card .item-name {
+      font-size: .68rem;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.2;
+      margin-bottom: .2rem;
+    }
+
+    .phone-product-card .item-price {
+      font-size: .7rem;
+      color: var(--green);
+      font-weight: 700;
+    }
+
+    .phone-wa-btn {
+      margin: 0 .75rem .75rem;
+      background: var(--wa-green);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      width: calc(100% - 1.5rem);
+      padding: .5rem;
+      font-size: .72rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: .3rem;
+    }
+
+    .phone-notch {
+      position: absolute;
+      top: 18px; left: 50%; transform: translateX(-50%);
+      width: 70px; height: 8px;
+      background: var(--green-dark);
+      border-radius: 4px;
+      z-index: 2;
+    }
+
+    /* Floating badges around phone */
+    .float-badge {
+      position: absolute;
+      background: white;
+      border-radius: 12px;
+      padding: .5rem .75rem;
+      box-shadow: 0 8px 24px rgba(0,0,0,.1);
+      font-size: .75rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: .4rem;
+      white-space: nowrap;
+      border: 1px solid var(--border);
+    }
+
+    .float-badge.badge-orders {
+      top: 15%;
+      right: -10px;
+      animation: floatY 3s ease-in-out infinite;
+    }
+
+    .float-badge.badge-track {
+      bottom: 20%;
+      left: -20px;
+      animation: floatY 3.5s ease-in-out .5s infinite;
+    }
+
+    .float-badge.badge-free {
+      top: 50%;
+      right: -15px;
+      animation: floatY 4s ease-in-out 1s infinite;
+    }
+
+    /* ─── TRUST BAR ──────────────────────────────────────── */
+    .trust-bar {
+      background: var(--green-dark);
+      padding: 1rem 0;
+      overflow: hidden;
+    }
+
+    .trust-scroll {
+      display: flex;
+      gap: 3rem;
+      animation: scrollLeft 20s linear infinite;
+      white-space: nowrap;
+    }
+
+    .trust-item {
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      color: #bbf7d0;
+      font-size: .85rem;
+      font-weight: 500;
+    }
+
+    .trust-item i { color: var(--green-mid); }
+
+    /* ─── HOW IT WORKS ───────────────────────────────────── */
+    .section-label {
+      font-size: .8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--green);
+      margin-bottom: .6rem;
+    }
+
+    .section-title {
+      font-size: clamp(1.8rem, 4vw, 2.6rem);
+      font-weight: 800;
+      letter-spacing: -1px;
+      color: var(--green-dark);
+      margin-bottom: 1rem;
+    }
+
+    .step-card {
+      position: relative;
+      padding: 2rem;
+      border-radius: 16px;
+      border: 1.5px solid var(--border);
+      background: var(--white);
+      transition: all .25s;
+      height: 100%;
+    }
+    .step-card:hover {
+      border-color: var(--green-mid);
+      box-shadow: 0 12px 40px var(--green-glow);
+      transform: translateY(-4px);
+    }
+
+    .step-number {
+      font-family: 'Syne', sans-serif;
+      font-size: 3.5rem;
+      font-weight: 800;
+      color: var(--green-light);
+      line-height: 1;
+      margin-bottom: .5rem;
+    }
+
+    .step-icon {
+      width: 48px; height: 48px;
+      background: var(--green-light);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--green);
+      font-size: 1.3rem;
+      margin-bottom: 1rem;
+    }
+
+    .step-card h5 {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 1.05rem;
+      color: var(--green-dark);
+      margin-bottom: .5rem;
+    }
+
+    .step-card p {
+      color: var(--text-muted);
+      font-size: .9rem;
+      line-height: 1.6;
+      margin: 0;
+    }
+
+    /* ─── FEATURES ───────────────────────────────────────── */
+    .features-section {
+      background: var(--off-white);
+    }
+
+    .feature-row {
+      border-radius: 20px;
+      overflow: hidden;
+      border: 1.5px solid var(--border);
+      background: white;
+      margin-bottom: 1.5rem;
+      transition: box-shadow .25s;
+    }
+    .feature-row:hover { box-shadow: 0 12px 40px var(--green-glow); }
+
+    .feature-icon-box {
+      width: 64px; height: 64px;
+      background: var(--green-light);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--green);
+      font-size: 1.6rem;
+      flex-shrink: 0;
+    }
+
+    .feature-row h5 {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      color: var(--green-dark);
+      margin-bottom: .3rem;
+    }
+
+    .feature-row p {
+      color: var(--text-muted);
+      font-size: .9rem;
+      margin: 0;
+    }
+
+    /* ─── SOCIAL PROOF ───────────────────────────────────── */
+    .review-card {
+      background: white;
+      border: 1.5px solid var(--border);
+      border-radius: 16px;
+      padding: 1.5rem;
+      height: 100%;
+      transition: all .25s;
+    }
+    .review-card:hover { box-shadow: 0 8px 30px var(--green-glow); transform: translateY(-3px); }
+
+    .review-stars { color: #f59e0b; font-size: .85rem; margin-bottom: .75rem; }
+
+    .review-text {
+      font-size: .9rem;
+      color: var(--text);
+      line-height: 1.65;
+      margin-bottom: 1rem;
+    }
+
+    .reviewer-name {
+      font-weight: 600;
+      font-size: .85rem;
+      color: var(--green-dark);
+    }
+
+    .reviewer-location {
+      font-size: .78rem;
+      color: var(--text-muted);
+    }
+
+    /* ─── CTA SECTION ────────────────────────────────────── */
+    .cta-section {
+      background: var(--green-dark);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .cta-section::before {
+      content: '';
+      position: absolute;
+      top: -80px; right: -80px;
+      width: 320px; height: 320px;
+      background: radial-gradient(circle, rgba(34,197,94,.2) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+
+    .cta-section::after {
+      content: '';
+      position: absolute;
+      bottom: -60px; left: -60px;
+      width: 240px; height: 240px;
+      background: radial-gradient(circle, rgba(34,197,94,.15) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+
+    .cta-section h2 {
+      color: white;
+    }
+
+    .cta-section p {
+      color: #bbf7d0;
+    }
+
+    .btn-cta-white {
+      background: white;
+      color: var(--green-dark);
+      border: none;
+      padding: .9rem 2.2rem;
+      border-radius: 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 700;
+      font-size: 1rem;
+      text-decoration: none;
+      transition: all .2s;
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+    }
+    .btn-cta-white:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.2); color: var(--green-dark); }
+
+    /* ─── FOOTER ─────────────────────────────────────────── */
+    .mv-footer {
+      background: #0a120a;
+      color: #6b8f6b;
+      padding: 2.5rem 0;
+    }
+
+    .mv-footer .footer-logo {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 1.2rem;
+      color: white;
+      margin-bottom: .4rem;
+    }
+
+    .mv-footer .footer-logo span { color: var(--green-mid); }
+
+    .mv-footer a {
+      color: #6b8f6b;
+      text-decoration: none;
+      font-size: .85rem;
+      transition: color .2s;
+    }
+    .mv-footer a:hover { color: var(--green-mid); }
+
+    .footer-disclaimer {
+      font-size: .78rem;
+      color: #3d5c3d;
+      border-top: 1px solid #1a2e1a;
+      margin-top: 1.5rem;
+      padding-top: 1.5rem;
+    }
+
+    /* ─── ANIMATIONS ─────────────────────────────────────── */
+    @keyframes fadeSlideDown {
+      from { opacity: 0; transform: translateY(-16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeSlideUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes floatY {
+      0%, 100% { transform: translateY(0); }
+      50%       { transform: translateY(-8px); }
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: .5; transform: scale(.8); }
+    }
+
+    @keyframes scrollLeft {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
+    }
+
+    /* ─── UTILITIES ──────────────────────────────────────── */
+    .bg-green-light { background: var(--green-light); }
+    .text-green     { color: var(--green) !important; }
+    .text-green-dark { color: var(--green-dark) !important; }
+    .section-pad    { padding: 5rem 0; }
+
+    @media (max-width: 768px) {
+      .hero-section { padding: 3rem 0 2rem; min-height: auto; }
+      .phone-frame  { width: 200px; }
+      .float-badge  { display: none; }
+      .section-pad  { padding: 3.5rem 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ─── NAVBAR ──────────────────────────────────────────── -->
+  <nav class="mv-nav">
+    <div class="container d-flex align-items-center justify-content-between">
+      <a href="/" class="mv-logo">my<span>vendor</span></a>
+      <div class="d-flex align-items-center gap-3">
+        <a href="/dashboard/" class="d-none d-sm-inline text-green-dark fw-600 text-decoration-none" style="font-size:.9rem;font-weight:600;">Login</a>
+        <a href="/dashboard/" class="btn-nav-cta">Get Started Free</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ─── HERO ────────────────────────────────────────────── -->
+  <section class="hero-section">
+    <div class="container">
+      <div class="row align-items-center gy-5">
+
+        <!-- Left: Text -->
+        <div class="col-lg-6">
+          <div class="hero-badge">
+            <span class="dot"></span>
+            Built for Lagos vendors
+          </div>
+          <h1 class="hero-headline">
+            Your WhatsApp<br/>
+            shop, now <span class="accent">beautiful</span>
+          </h1>
+          <p class="hero-sub">
+            Create a stunning product catalog, share clean links on WhatsApp, and let customers track their orders — all for free. No tech knowledge needed.
+          </p>
+          <div class="hero-actions">
+            <a href="/dashboard/" class="btn-primary-mv">
+              <i class="bi bi-shop"></i>
+              Create Your Store
+            </a>
+            <a href="#how-it-works" class="btn-outline-mv">
+              <i class="bi bi-play-circle"></i>
+              See How It Works
+            </a>
+          </div>
+          <p class="mt-3 text-muted" style="font-size:.82rem;">
+            <i class="bi bi-check-circle-fill text-green me-1"></i>
+            Free to start &nbsp;·&nbsp;
+            <i class="bi bi-check-circle-fill text-green me-1"></i>
+            No downloads &nbsp;·&nbsp;
+            <i class="bi bi-check-circle-fill text-green me-1"></i>
+            Works on any phone
+          </p>
+        </div>
+
+        <!-- Right: Phone mockup -->
+        <div class="col-lg-6 d-flex justify-content-center hero-visual">
+          <div style="position:relative; width:fit-content;">
+
+            <!-- Floating badges -->
+            <div class="float-badge badge-orders">
+              <i class="bi bi-bag-check-fill text-green"></i>
+              <span>12 orders today</span>
+            </div>
+            <div class="float-badge badge-free">
+              <i class="bi bi-star-fill" style="color:#f59e0b;"></i>
+              <span>4.9 rating</span>
+            </div>
+            <div class="float-badge badge-track">
+              <i class="bi bi-truck text-green"></i>
+              <span>Order tracked</span>
+            </div>
+
+            <!-- Phone -->
+            <div class="phone-frame">
+              <div class="phone-notch"></div>
+              <div class="phone-screen">
+                <!-- Store header -->
+                <div class="store-header">
+                  <div class="store-avatar">
+                    <i class="bi bi-bag-heart-fill"></i>
+                  </div>
+                  <h6>GlamStore NG</h6>
+                  <small>Lekki, Lagos · ⭐ 4.9</small>
+                </div>
+                <!-- Products grid -->
+                <div class="phone-products">
+                  <div class="phone-product-card">
+                    <div class="product-img-placeholder" style="background:#fef9c3;">👗</div>
+                    <div class="card-body-mini">
+                      <div class="item-name">Silk Blouse</div>
+                      <div class="item-price">₦8,500</div>
+                    </div>
+                  </div>
+                  <div class="phone-product-card">
+                    <div class="product-img-placeholder" style="background:#fce7f3;">👠</div>
+                    <div class="card-body-mini">
+                      <div class="item-name">Block Heels</div>
+                      <div class="item-price">₦12,000</div>
+                    </div>
+                  </div>
+                  <div class="phone-product-card">
+                    <div class="product-img-placeholder" style="background:#dcfce7;">👜</div>
+                    <div class="card-body-mini">
+                      <div class="item-name">Mini Bag</div>
+                      <div class="item-price">₦6,200</div>
+                    </div>
+                  </div>
+                  <div class="phone-product-card">
+                    <div class="product-img-placeholder" style="background:#ede9fe;">💄</div>
+                    <div class="card-body-mini">
+                      <div class="item-name">Lip Kit</div>
+                      <div class="item-price">₦3,800</div>
+                    </div>
+                  </div>
+                </div>
+                <!-- WhatsApp button -->
+                <button class="phone-wa-btn">
+                  <i class="bi bi-whatsapp"></i>
+                  Order on WhatsApp
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── TRUST BAR ────────────────────────────────────────── -->
+  <div class="trust-bar">
+    <div style="overflow:hidden;">
+      <div class="trust-scroll">
+        <!-- Duplicated for seamless loop -->
+        <span class="trust-item"><i class="bi bi-shield-check-fill"></i>No buyer accounts required</span>
+        <span class="trust-item"><i class="bi bi-whatsapp"></i>Payments stay on WhatsApp</span>
+        <span class="trust-item"><i class="bi bi-lightning-fill"></i>Live in under 10 minutes</span>
+        <span class="trust-item"><i class="bi bi-phone-fill"></i>Works on any phone</span>
+        <span class="trust-item"><i class="bi bi-wifi-off"></i>Lightweight for low data</span>
+        <span class="trust-item"><i class="bi bi-gift-fill"></i>Free to start</span>
+        <span class="trust-item"><i class="bi bi-shield-check-fill"></i>No buyer accounts required</span>
+        <span class="trust-item"><i class="bi bi-whatsapp"></i>Payments stay on WhatsApp</span>
+        <span class="trust-item"><i class="bi bi-lightning-fill"></i>Live in under 10 minutes</span>
+        <span class="trust-item"><i class="bi bi-phone-fill"></i>Works on any phone</span>
+        <span class="trust-item"><i class="bi bi-wifi-off"></i>Lightweight for low data</span>
+        <span class="trust-item"><i class="bi bi-gift-fill"></i>Free to start</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── HOW IT WORKS ─────────────────────────────────────── -->
+  <section class="section-pad" id="how-it-works">
+    <div class="container">
+      <div class="text-center mb-5">
+        <div class="section-label">Simple Process</div>
+        <h2 class="section-title">Up and running in 3 steps</h2>
+        <p class="text-muted" style="max-width:480px;margin:0 auto;">No tech skills needed. If you can use WhatsApp, you can use myvendor.</p>
+      </div>
+
+      <div class="row g-4">
+        <div class="col-md-4">
+          <div class="step-card">
+            <div class="step-number">01</div>
+            <div class="step-icon"><i class="bi bi-person-plus-fill"></i></div>
+            <h5>Create Your Store</h5>
+            <p>Sign up, pick your store name, and add your WhatsApp number. Your store link is ready instantly — e.g. <strong>myvendor.ng/glamstore</strong></p>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="step-card">
+            <div class="step-number">02</div>
+            <div class="step-icon"><i class="bi bi-box-seam-fill"></i></div>
+            <h5>Add Your Products</h5>
+            <p>Upload photos, set prices, add colors and sizes. Your catalog looks beautiful on any phone, even on slow data connections.</p>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="step-card">
+            <div class="step-number">03</div>
+            <div class="step-icon"><i class="bi bi-share-fill"></i></div>
+            <h5>Share & Sell</h5>
+            <p>Post your store link on WhatsApp Status or broadcast. Customers browse, pick their variants, and tap <strong>Order on WhatsApp</strong> — straight to your chat.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── FEATURES ─────────────────────────────────────────── -->
+  <section class="section-pad features-section">
+    <div class="container">
+      <div class="text-center mb-5">
+        <div class="section-label">Features</div>
+        <h2 class="section-title">Everything your buyers need,<br/>nothing they don't</h2>
+      </div>
+
+      <div class="row g-0">
+        <div class="col-lg-6 p-2">
+          <div class="feature-row p-4 d-flex align-items-start gap-3">
+            <div class="feature-icon-box"><i class="bi bi-whatsapp"></i></div>
+            <div>
+              <h5>Smart WhatsApp Button</h5>
+              <p>When a buyer picks a size, color, and quantity — the Order button auto-fills a WhatsApp message with all the details. No typing mistakes, no confusion.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-6 p-2">
+          <div class="feature-row p-4 d-flex align-items-start gap-3">
+            <div class="feature-icon-box"><i class="bi bi-truck"></i></div>
+            <div>
+              <h5>Public Order Tracking</h5>
+              <p>You create the order from your dashboard. Buyers get a tracking link like <strong>/track/MV-250325-001</strong> — no login, no app, just open and see the status.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-6 p-2">
+          <div class="feature-row p-4 d-flex align-items-start gap-3">
+            <div class="feature-icon-box"><i class="bi bi-images"></i></div>
+            <div>
+              <h5>Beautiful Product Catalogs</h5>
+              <p>Upload multiple photos, show all variants, and let buyers swipe through — like an Instagram shop but faster and with less data usage.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-6 p-2">
+          <div class="feature-row p-4 d-flex align-items-start gap-3">
+            <div class="feature-icon-box"><i class="bi bi-star-fill"></i></div>
+            <div>
+              <h5>Verified Reviews</h5>
+              <p>After delivery, buyers leave a review right from the tracking page. Ratings are tied to real orders, so your 4.9 stars actually mean something.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-6 p-2">
+          <div class="feature-row p-4 d-flex align-items-start gap-3">
+            <div class="feature-icon-box"><i class="bi bi-incognito"></i></div>
+            <div>
+              <h5>Zero Buyer Sign-ups</h5>
+              <p>Your customers never create an account or share their data with us. They just browse, order on WhatsApp, and track. Fast and frictionless.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-6 p-2">
+          <div class="feature-row p-4 d-flex align-items-start gap-3">
+            <div class="feature-icon-box"><i class="bi bi-link-45deg"></i></div>
+            <div>
+              <h5>Shareable Clean Links</h5>
+              <p>Every product has its own link. Post it on WhatsApp Status, in groups, or with your product photos. Links are short, clean, and work offline when loaded.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── REVIEWS ───────────────────────────────────────────── -->
+  <section class="section-pad">
+    <div class="container">
+      <div class="text-center mb-5">
+        <div class="section-label">Vendor Stories</div>
+        <h2 class="section-title">Lagos vendors love it</h2>
+      </div>
+      <div class="row g-4">
+        <div class="col-md-4">
+          <div class="review-card">
+            <div class="review-stars">★★★★★</div>
+            <p class="review-text">"Before myvendor, customers would DM me 'do you have size 42?' and I'd go back and forth 10 times. Now they see everything on the page and just order. So smooth."</p>
+            <div class="reviewer-name">Adaeze O.</div>
+            <div class="reviewer-location">Shoes vendor · Balogun Market</div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="review-card">
+            <div class="review-stars">★★★★★</div>
+            <p class="review-text">"My customers in Abuja used to ask 'where is my package?' every hour. Now I update the tracking once and they just check the link. My DMs are finally quiet."</p>
+            <div class="reviewer-name">Fatimah B.</div>
+            <div class="reviewer-location">Fashion vendor · Oshodi</div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="review-card">
+            <div class="review-stars">★★★★★</div>
+            <p class="review-text">"I posted my store link on my Status and got 8 orders that day. People trust it because it looks professional. Not like those Google Form methods."</p>
+            <div class="reviewer-name">Chiamaka N.</div>
+            <div class="reviewer-location">Beauty vendor · Lekki</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── DISCLAIMER BAR ────────────────────────────────────── -->
+  <div style="background:var(--green-light); border-top:1px solid var(--border); border-bottom:1px solid var(--border); padding:.8rem 0;">
+    <div class="container text-center" style="font-size:.82rem; color:var(--green-dark);">
+      <i class="bi bi-info-circle me-1"></i>
+      <strong>Note:</strong> All transactions, payments, and negotiations happen directly on WhatsApp. myvendor only provides discovery and order tracking.
+    </div>
+  </div>
+
+  <!-- ─── FINAL CTA ─────────────────────────────────────────── -->
+  <section class="cta-section section-pad">
+    <div class="container text-center" style="position:relative;z-index:1;">
+      <div class="section-label" style="color:#86efac;">Start Today</div>
+      <h2 class="section-title" style="font-size:clamp(2rem,5vw,3rem);">Your store is one click away</h2>
+      <p class="mb-4" style="max-width:440px;margin:0 auto 2rem;">Join vendors across Lagos who are selling smarter — with beautiful catalogs, zero buyer friction, and real order tracking.</p>
+      <a href="/dashboard/" class="btn-cta-white">
+        <i class="bi bi-shop-window"></i>
+        Create Your Free Store
+      </a>
+      <p class="mt-3" style="font-size:.8rem; color:#6ee7b7;">No credit card · No downloads · Live in 10 minutes</p>
+    </div>
+  </section>
+
+  <!-- ─── FOOTER ────────────────────────────────────────────── -->
+  <footer class="mv-footer">
+    <div class="container">
+      <div class="row align-items-start gy-4">
+        <div class="col-md-4">
+          <div class="footer-logo">my<span>vendor</span></div>
+          <p style="font-size:.82rem; line-height:1.6; margin-top:.4rem;">
+            Lightweight catalogs and order tracking for WhatsApp vendors in Nigeria.
+          </p>
+        </div>
+        <div class="col-md-4">
+          <p style="font-size:.8rem; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:#3d5c3d; margin-bottom:.75rem;">Links</p>
+          <div class="d-flex flex-column gap-2">
+            <a href="/dashboard/">Vendor Login</a>
+            <a href="/dashboard/">Create Store</a>
+            <a href="#how-it-works">How It Works</a>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <p style="font-size:.8rem; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:#3d5c3d; margin-bottom:.75rem;">theosnnetwork</p>
+          <p style="font-size:.82rem; line-height:1.6;">
+            Built with ❤️ for Nigerian vendors.<br/>
+            <a href="mailto:hello@myvendor.ng" class="text-decoration-none">hello@myvendor.ng</a>
+          </p>
+        </div>
+      </div>
+      <div class="footer-disclaimer text-center">
+        © 2026 myvendor · theosnnetwork · All transactions occur on WhatsApp. myvendor is not responsible for payments between buyers and vendors.
+      </div>
+    </div>
+  </footer>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    // Smooth scroll for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function(e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
+
+    // Scroll-reveal for step cards and feature rows
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.style.opacity = '1';
+          entry.target.style.transform = 'translateY(0)';
+        }
+      });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.step-card, .feature-row, .review-card').forEach(el => {
+      el.style.opacity = '0';
+      el.style.transform = 'translateY(20px)';
+      el.style.transition = 'opacity .5s ease, transform .5s ease';
+      observer.observe(el);
+    });
+  </script>
+</body>
+</html>
 
