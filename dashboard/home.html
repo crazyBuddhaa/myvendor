@@ -1,60 +1,99 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vendor Home - myvendor</title>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home - myvendor</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@700;900&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/assets/css/dashboard.css">
+    <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@700;900&family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --green: #16a34a; --green-dark: #14532d; --bg-light: #f8faf8; }
+        body { font-family: 'Open Sans', sans-serif; background: var(--bg-light); color: #0f1a0f; }
+        .dash-nav { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
+        .mv-logo { font-family: 'Raleway', sans-serif; letter-spacing: -0.5px; }
+        .nav-actions a { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50px; transition: 0.2s; }
+        .nav-actions a.active { background: #dcfce7; color: var(--green-dark) !important; }
+        .stat-card { transition: transform 0.2s; border: 1px solid #f1f5f9; }
+        .stat-card:active { transform: scale(0.98); }
+        .stat-icon-wrapper { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; }
+        .recent-orders-wrapper { background: white; border-radius: 16px; border: 1px solid #f1f5f9; overflow: hidden; }
+        .btn-primary-custom { background: var(--green); border-color: var(--green); box-shadow: 0 4px 12px rgba(22, 163, 74, 0.2); transition: 0.2s; }
+        .btn-primary-custom:hover, .btn-primary-custom:active { background: var(--green-dark); border-color: var(--green-dark); transform: translateY(-1px); }
+    </style>
 </head>
-<body class="bg-light">
-
-    <nav class="dash-nav bg-white border-bottom py-3 sticky-top">
+<body>
+    <nav class="dash-nav border-bottom py-2 sticky-top shadow-sm">
         <div class="container d-flex justify-content-between align-items-center" style="max-width: 600px;">
             <a href="/dashboard/home.html" class="mv-logo fw-bold text-success text-decoration-none fs-4">my<span>vendor</span></a>
-            <div class="nav-actions">
-                <a href="/dashboard/home.html" class="active text-success mx-2 fs-5"><i class="bi bi-house-door-fill"></i></a>
-                <a href="/dashboard/orders.html" class="text-muted mx-2 fs-5"><i class="bi bi-box-seam"></i></a>
-                <a href="/dashboard/products.html" class="text-muted mx-2 fs-5"><i class="bi bi-grid"></i></a>
+            <div class="nav-actions d-flex gap-1">
+                <a href="/dashboard/home.html" class="active text-success fs-5"><i class="bi bi-house-door-fill"></i></a>
+                <a href="/dashboard/orders.html" class="text-muted fs-5"><i class="bi bi-box-seam"></i></a>
+                <a href="/dashboard/products.html" class="text-muted fs-5"><i class="bi bi-grid"></i></a>
             </div>
         </div>
     </nav>
 
     <main class="container py-4" style="max-width: 600px;">
-        <h2 id="welcomeName" class="fw-bold mb-1">Welcome! 👋</h2>
-        <p class="text-muted mb-4" style="font-size: 0.9rem;">Your store link: <span id="storeLink" class="fw-bold text-success">loading...</span></p>
+        <div class="mb-4">
+            <h2 id="welcomeName" class="fw-bold mb-1" style="font-family: 'Raleway', sans-serif;">Welcome! 👋</h2>
+            <div class="d-flex align-items-center bg-white border rounded-pill px-3 py-2 mt-2" style="width: fit-content; cursor: pointer;" onclick="copyMyStoreLink()" title="Copy Link">
+                <span class="text-muted small me-2">Store:</span>
+                <span id="storeLink" class="fw-bold text-success small">...</span>
+                <i class="bi bi-copy text-muted ms-2" style="font-size: 0.85rem;"></i>
+            </div>
+        </div>
 
         <div class="row g-3 mb-4">
             <div class="col-6">
-                <div class="bg-white p-3 rounded-4 border text-center">
-                    <h3 id="statProducts" class="fw-bold m-0">0</h3>
-                    <p class="text-muted small m-0">Live Products</p>
+                <div class="bg-white p-3 rounded-4 stat-card shadow-sm text-center h-100">
+                    <div class="stat-icon-wrapper" style="background: #eff6ff; color: #3b82f6;">
+                        <i class="bi bi-tag-fill"></i>
+                    </div>
+                    <h2 id="statProducts" class="fw-bold m-0" style="font-family: 'Raleway', sans-serif;">0</h2>
+                    <p class="text-muted small m-0 fw-medium">Live Products</p>
                 </div>
             </div>
             <div class="col-6">
-                <div class="bg-white p-3 rounded-4 border text-center">
-                    <h3 id="statOrders" class="fw-bold m-0">0</h3>
-                    <p class="text-muted small m-0">Total Orders</p>
+                <div class="bg-white p-3 rounded-4 stat-card shadow-sm text-center h-100">
+                    <div class="stat-icon-wrapper" style="background: #fefce8; color: #eab308;">
+                        <i class="bi bi-cart-check-fill"></i>
+                    </div>
+                    <h2 id="statOrders" class="fw-bold m-0" style="font-family: 'Raleway', sans-serif;">0</h2>
+                    <p class="text-muted small m-0 fw-medium">Total Orders</p>
                 </div>
             </div>
         </div>
 
-        <div class="d-grid gap-2 mb-4">
-            <a href="/dashboard/add-product.html" class="btn btn-success p-3 rounded-4 fw-bold">
-                <i class="bi bi-plus-lg me-2"></i> Add New Product
+        <div class="d-grid gap-3 mb-5">
+            <a href="/dashboard/add-product.html" class="btn btn-primary-custom text-white p-3 rounded-4 fw-bold d-flex justify-content-center align-items-center gap-2">
+                <i class="bi bi-plus-circle-fill fs-5"></i> Add New Product
             </a>
-            <button id="waShareBtn" class="btn btn-outline-success p-3 rounded-4 fw-bold">
-                <i class="bi bi-whatsapp me-2"></i> Share Store Link
-            </button>
+            <a href="#" id="waShareBtn" class="btn btn-light border p-3 rounded-4 fw-bold text-dark d-flex justify-content-center align-items-center gap-2 shadow-sm" style="background: white;">
+                <i class="bi bi-whatsapp text-success fs-5"></i> Share on WhatsApp
+            </a>
         </div>
 
-        <h5 class="fw-bold mb-3">Recent Orders</h5>
-        <div id="recentOrdersList" class="bg-white rounded-4 border p-3">
-            </div>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h6 class="fw-bold m-0" style="font-family: 'Raleway', sans-serif;">Recent Orders</h6>
+            <a href="/dashboard/orders.html" class="text-success small fw-bold text-decoration-none">View All</a>
+        </div>
+        
+        <div class="recent-orders-wrapper shadow-sm">
+            <div id="recentOrdersList" class="p-2">
+                </div>
+        </div>
     </main>
 
+    <script>
+        function copyMyStoreLink() {
+            const linkText = document.getElementById('storeLink').innerText;
+            if(linkText && linkText !== '...') {
+                navigator.clipboard.writeText(`https://${linkText}`).then(() => {
+                    alert('Store link copied to clipboard!');
+                });
+            }
+        }
+    </script>
     <script type="module" src="/assets/js/dashboard.js"></script>
 </body>
 </html>
