@@ -37,7 +37,7 @@
         .prod-body { background: white; border-radius: 24px 24px 0 0; margin-top: -20px; position: relative; z-index: 5; padding: 2rem 1.5rem; box-shadow: 0 -4px 15px rgba(0,0,0,0.03); }
         .prod-title { font-weight: 800; font-size: 1.5rem; color: var(--text-main); line-height: 1.2; margin-bottom: 0.5rem; }
         .prod-price { font-weight: 900; font-size: 1.8rem; color: var(--green); margin-bottom: 1rem; }
-        .badge-category { background: #f1f5f9; color: #475569; padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; display: inline-block; margin-bottom: 1.5rem; }
+        .badge-category { background: #f1f5f9; color: #475569; padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; display: inline-block; margin-bottom: 10px; }
         
         .section-title { font-weight: 800; font-size: 1rem; margin-bottom: 0.5rem; color: var(--green-dark); }
         .prod-desc { font-size: 0.95rem; color: var(--text-muted); line-height: 1.6; white-space: pre-line; }
@@ -77,7 +77,7 @@
     <div id="errorState" class="container text-center py-5 hidden" style="margin-top: 20vh;">
         <i class="bi bi-bag-x text-muted" style="font-size: 4rem;"></i>
         <h3 class="mt-3 fw-bold">Product Not Found</h3>
-        <p class="text-muted">This product might have been removed by the vendor.</p>
+        <p id="errorText" class="text-muted">This product might have been removed by the vendor.</p>
         <a href="#" id="errorBackBtn" class="btn btn-outline-success mt-3 fw-bold rounded-pill px-4">Go Back to Store</a>
     </div>
 
@@ -93,9 +93,7 @@
             <h1 class="prod-title" id="prodTitle">Product Name</h1>
             <div class="prod-price" id="prodPrice">₦0</div>
             
-            <div class="badge-category" id="prodCategory">Category</div>
-
-            <div class="mt-2">
+            <div id="prodCategory">Category</div> <div class="mt-4">
                 <div class="section-title">Description</div>
                 <div class="prod-desc" id="prodDesc">No description provided.</div>
             </div>
@@ -157,42 +155,55 @@
     <script type="module">
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
-        // ⚠️ IMPORTANT: PASTE YOUR ACTUAL SUPABASE URL AND KEY HERE ⚠️
-        const SUPABASE_URL = 'https://sotdghhayztnpwnrzjzu.supabase.co';
-        const SUPABASE_ANON_KEY = 'sb_publishable_OcOKwSDnoCGm_rt725Bi-g_rV6tjGlK';
-        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-        // We store these globally so the checkout form can use them
+        // ⚠️ CRITICAL: PASTE YOUR ACTUAL SUPABASE URL AND KEY HERE ⚠️
+        const SUPABASE_URL = 'https://YOUR_PROJECT.supabase.co';
+        const SUPABASE_ANON_KEY = 'YOUR_ANON_KEY';
+        
         window.currentProduct = null;
         window.currentVendor = null;
 
         async function initProductPage() {
-            const params = new URLSearchParams(window.location.search);
-            const vendorSlug = params.get('vendor');
-            const productId = params.get('id');
-
-            const storeLink = vendorSlug ? `/${vendorSlug}` : '/';
-            document.getElementById('backBtn').href = storeLink;
-            document.getElementById('errorBackBtn').href = storeLink;
-
-            if (!vendorSlug || !productId) {
-                showError(); return;
-            }
+            const loadingText = document.querySelector('#loadingState h4');
+            const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
             try {
-                // Fetch Product
-                const { data: product, error: pError } = await supabase.from('products').select('*').eq('id', productId).single();
-                if (pError || !product) throw new Error("Product not found");
+                loadingText.innerText = "Reading link details...";
+                
+                const params = new URLSearchParams(window.location.search);
+                const vendorSlug = params.get('vendor');
+                const productId = params.get('id');
 
-                // Fetch Vendor
-                const { data: vendor, error: vError } = await supabase.from('vendor_profiles').select('*').eq('slug', vendorSlug).single();
-                if (vError || !vendor) throw new Error("Vendor not found");
+                const storeLink = vendorSlug ? `/${vendorSlug}` : '/';
+                document.getElementById('backBtn').href = storeLink;
+                document.getElementById('errorBackBtn').href = storeLink;
+
+                if (!vendorSlug || !productId) {
+                    throw new Error("Invalid Link: Missing store or product ID in the URL.");
+                }
+
+                loadingText.innerText = "Finding product...";
+                const { data: product, error: pError } = await supabase
+                    .from('products')
+                    .select('*')
+                    .eq('id', productId)
+                    .single();
+                    
+                if (pError || !product) throw new Error("Product not found in database.");
+
+                loadingText.innerText = "Finding store details...";
+                const { data: vendor, error: vError } = await supabase
+                    .from('vendor_profiles')
+                    .select('*')
+                    .eq('slug', vendorSlug)
+                    .single();
+                    
+                if (vError || !vendor) throw new Error("Vendor not found in database.");
 
                 // Store for the form
                 window.currentProduct = product;
                 window.currentVendor = vendor;
 
-// Populate UI
+                // Populate UI
                 document.getElementById('loadingState').classList.add('hidden');
                 document.getElementById('productContent').classList.remove('hidden');
 
@@ -201,7 +212,7 @@
                 document.getElementById('prodPrice').innerText = `₦${parseFloat(product.price).toLocaleString()}`;
                 document.getElementById('displayTotal').innerText = `₦${parseFloat(product.price).toLocaleString()}`;
 
-                // Inject Category and New Tags (Colors, Quantity)
+                // Inject Category and New Tags
                 let tagsHtml = '';
                 if (product.category) tagsHtml += `<div class="badge-category me-2">${product.category}</div>`;
                 if (product.colors) tagsHtml += `<div class="badge-category me-2 bg-light text-dark border"><i class="bi bi-palette me-1"></i> ${product.colors}</div>`;
@@ -218,7 +229,7 @@
                     imgContainer.innerHTML += `📦`;
                 }
 
-                // Handle Status (In Stock, Pre-Order, Sold Out)
+                // Handle Status
                 const checkoutBtn = document.getElementById('checkoutBtn');
                 const stockBadge = document.getElementById('stockBadge');
                 
@@ -230,56 +241,36 @@
                     checkoutBtn.removeAttribute('data-bs-toggle');
                 } else if (product.status === 'pre_order') {
                     stockBadge.innerText = "Pre-Order Available";
-                    stockBadge.style.background = "#fffbeb"; // Yellow bg
-                    stockBadge.style.color = "#d97706"; // Yellow text
+                    stockBadge.style.background = "#fffbeb"; 
+                    stockBadge.style.color = "#d97706"; 
                     stockBadge.classList.remove('hidden');
                     checkoutBtn.innerHTML = `Proceed to Pre-Order`;
                 }
 
-                // Set initial total in the modal
-                document.getElementById('displayTotal').innerText = `₦${parseFloat(product.price).toLocaleString()}`;
-
-                if (product.category) document.getElementById('prodCategory').innerText = product.category;
-                if (product.description) document.getElementById('prodDesc').innerText = product.description;
-
-                const imgContainer = document.getElementById('imgContainer');
-                if (product.image_url) {
-                    imgContainer.innerHTML += `<img src="${product.image_url}" alt="${product.title}">`;
-                } else {
-                    imgContainer.innerHTML += `📦`;
-                }
-
-                // Handle Sold Out state
-                const checkoutBtn = document.getElementById('checkoutBtn');
-                if (!product.in_stock) {
-                    document.getElementById('stockBadge').classList.remove('hidden');
-                    checkoutBtn.classList.add('btn-disabled');
-                    checkoutBtn.innerHTML = `<i class="bi bi-cart-x fs-5"></i> Currently Sold Out`;
-                    checkoutBtn.removeAttribute('data-bs-toggle'); // Stop modal from opening
-                }
-
             } catch (err) {
-                console.error(err);
-                showError();
+                console.error("PAGE CRASHED:", err);
+                document.getElementById('loadingState').classList.add('hidden');
+                document.getElementById('productContent').classList.add('hidden');
+                document.getElementById('errorState').classList.remove('hidden');
+                
+                // Show the exact error on screen so we can debug it
+                document.getElementById('errorText').innerText = err.message;
             }
         }
 
-        function showError() {
-            document.getElementById('loadingState').classList.add('hidden');
-            document.getElementById('productContent').classList.add('hidden');
-            document.getElementById('errorState').classList.remove('hidden');
+        // Live update the total price in the modal
+        const buyerQty = document.getElementById('buyerQty');
+        if(buyerQty) {
+            buyerQty.addEventListener('input', function(e) {
+                if(window.currentProduct) {
+                    const qty = parseInt(e.target.value) || 1;
+                    const total = parseFloat(window.currentProduct.price) * qty;
+                    document.getElementById('displayTotal').innerText = `₦${total.toLocaleString()}`;
+                }
+            });
         }
 
-        // Live update the total price in the modal when they change quantity
-        document.getElementById('buyerQty').addEventListener('input', function(e) {
-            if(window.currentProduct) {
-                const qty = parseInt(e.target.value) || 1;
-                const total = parseFloat(window.currentProduct.price) * qty;
-                document.getElementById('displayTotal').innerText = `₦${total.toLocaleString()}`;
-            }
-        });
-
-        // Handle sending the formatted message to WhatsApp
+        // Send to WhatsApp
         window.sendToWhatsApp = function(e) {
             e.preventDefault();
 
@@ -287,10 +278,8 @@
             const qty = document.getElementById('buyerQty').value;
             const address = document.getElementById('buyerAddress').value;
             const notes = document.getElementById('buyerNotes').value;
-            
             const total = parseFloat(window.currentProduct.price) * parseInt(qty);
 
-            // Construct the perfectly formatted WhatsApp message
             let msg = `Hello *${window.currentVendor.business_name}*, I would like to place an order!\n\n`;
             msg += `🛒 *Item:* ${window.currentProduct.title}\n`;
             msg += `🔢 *Quantity:* ${qty}\n`;
@@ -298,24 +287,18 @@
             msg += `\n*-- MY DELIVERY DETAILS --*\n`;
             msg += `👤 *Name:* ${name}\n`;
             msg += `📍 *Address:* ${address}\n`;
-            
-            if(notes) {
-                msg += `📝 *Notes/Size:* ${notes}\n`;
-            }
-            
+            if(notes) msg += `📝 *Notes/Size:* ${notes}\n`;
             msg += `\n🔗 *Product Link:* ${window.location.href}`;
 
-            // Redirect to WhatsApp
-            // Note: If you don't have phone numbers in DB yet, you'll need to update your DB schema to include 'phone' in vendor_profiles
             const phone = window.currentVendor.phone || ""; 
             const waUrl = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
-            
             window.open(waUrl, '_blank');
             
-            // Close modal after sending
-            bootstrap.Modal.getInstance(document.getElementById('checkoutModal')).hide();
+            const modalEl = document.getElementById('checkoutModal');
+            if(modalEl) bootstrap.Modal.getInstance(modalEl).hide();
         };
 
+        // Initialize the page
         initProductPage();
     </script>
 </body>
