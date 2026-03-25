@@ -21,7 +21,7 @@
         /* ─── IMAGE HEADER ─── */
         .prod-hero {
             width: 100%; aspect-ratio: 1/1; background: #f1f5f9; position: relative;
-            display: flex; align-items: center; justify-content: center; font-size: 4rem;
+            display: flex; align-items: center; justify-content: center; font-size: 4rem; overflow: hidden;
         }
         .prod-hero img { width: 100%; height: 100%; object-fit: cover; }
         
@@ -48,14 +48,21 @@
             padding: 15px; border-top: 1px solid var(--border-color); z-index: 100;
             display: flex; justify-content: center; box-shadow: 0 -4px 15px rgba(0,0,0,0.05);
         }
-        .btn-whatsapp {
-            background: var(--wa-green); color: white; width: 100%; max-width: 600px;
+        .btn-checkout {
+            background: var(--green); color: white; width: 100%; max-width: 600px;
             padding: 14px; border-radius: 12px; font-weight: 800; font-size: 1.1rem;
             text-decoration: none; display: flex; justify-content: center; align-items: center; gap: 8px;
-            transition: 0.2s;
+            border: none; transition: 0.2s;
         }
-        .btn-whatsapp:hover { background: #1da851; color: white; }
+        .btn-checkout:active { transform: scale(0.98); }
         .btn-disabled { background: #e5e7eb; color: #9ca3af; pointer-events: none; }
+
+        /* ─── MODAL STYLES ─── */
+        .modal-content { border-radius: 20px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        .modal-header { border-bottom: 1px solid var(--border-color); padding: 1.25rem 1.5rem; }
+        .form-control-mv { width: 100%; padding: 0.8rem 1rem; border: 1.5px solid var(--border-color); border-radius: 10px; font-size: 0.95rem; outline: none; background: var(--bg-color); }
+        .form-control-mv:focus { border-color: var(--green); background: white; }
+        .form-label { font-size: 0.8rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.3rem; }
 
         .hidden { display: none !important; }
     </style>
@@ -71,7 +78,7 @@
         <i class="bi bi-bag-x text-muted" style="font-size: 4rem;"></i>
         <h3 class="mt-3 fw-bold">Product Not Found</h3>
         <p class="text-muted">This product might have been removed by the vendor.</p>
-        <a href="#" id="errorBackBtn" class="btn btn-outline-success mt-3 fw-bold rounded-pill px-4">Go Back</a>
+        <a href="#" id="errorBackBtn" class="btn btn-outline-success mt-3 fw-bold rounded-pill px-4">Go Back to Store</a>
     </div>
 
     <div id="productContent" class="hidden" style="max-width: 600px; margin: 0 auto; background: white; min-height: 100vh;">
@@ -95,53 +102,95 @@
         </div>
 
         <div class="action-bar">
-            <a href="#" id="waButton" class="btn-whatsapp" target="_blank">
-                <i class="bi bi-whatsapp fs-5"></i> Order on WhatsApp
-            </a>
+            <button id="checkoutBtn" class="btn-checkout" data-bs-toggle="modal" data-bs-target="#checkoutModal">
+                Proceed to Order
+            </button>
         </div>
     </div>
 
+    <div class="modal fade" id="checkoutModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold" style="color: var(--green-dark);"><i class="bi bi-cart-check"></i> Order Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="orderForm" onsubmit="sendToWhatsApp(event)">
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Your Name <span class="text-danger">*</span></label>
+                            <input type="text" id="buyerName" class="form-control-mv" placeholder="e.g. Sarah Obi" required>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <label class="form-label">Quantity <span class="text-danger">*</span></label>
+                                <input type="number" id="buyerQty" class="form-control-mv" value="1" min="1" required>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label">Total Amount</label>
+                                <div id="displayTotal" class="form-control-mv fw-bold text-success bg-white border-0" style="padding: 0.8rem 0;">₦0</div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Delivery Address <span class="text-danger">*</span></label>
+                            <textarea id="buyerAddress" class="form-control-mv" rows="2" placeholder="Full address for delivery" required></textarea>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label">Size / Color / Notes (Optional)</label>
+                            <input type="text" id="buyerNotes" class="form-control-mv" placeholder="e.g. Size 40, Red color">
+                        </div>
+
+                        <button type="submit" class="btn-checkout w-100" style="background: var(--wa-green);">
+                            <i class="bi bi-whatsapp"></i> Send Order to WhatsApp
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script type="module">
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
         // ⚠️ IMPORTANT: PASTE YOUR ACTUAL SUPABASE URL AND KEY HERE ⚠️
-        const SUPABASE_URL = 'https://sotdghhayztnpwnrzjzu.supabase.co';
-        const SUPABASE_ANON_KEY = 'sb_publishable_OcOKwSDnoCGm_rt725Bi-g_rV6tjGlK';
+        const SUPABASE_URL = 'https://YOUR_PROJECT.supabase.co';
+        const SUPABASE_ANON_KEY = 'YOUR_ANON_KEY';
         const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // We store these globally so the checkout form can use them
+        window.currentProduct = null;
+        window.currentVendor = null;
 
         async function initProductPage() {
             const params = new URLSearchParams(window.location.search);
             const vendorSlug = params.get('vendor');
             const productId = params.get('id');
 
-            // Setup Back Buttons
             const storeLink = vendorSlug ? `/${vendorSlug}` : '/';
             document.getElementById('backBtn').href = storeLink;
             document.getElementById('errorBackBtn').href = storeLink;
 
             if (!vendorSlug || !productId) {
-                showError();
-                return;
+                showError(); return;
             }
 
             try {
                 // Fetch Product
-                const { data: product, error: pError } = await supabase
-                    .from('products')
-                    .select('*')
-                    .eq('id', productId)
-                    .single();
-
+                const { data: product, error: pError } = await supabase.from('products').select('*').eq('id', productId).single();
                 if (pError || !product) throw new Error("Product not found");
 
-                // Fetch Vendor for WhatsApp info
-                const { data: vendor, error: vError } = await supabase
-                    .from('vendor_profiles')
-                    .select('*')
-                    .eq('slug', vendorSlug)
-                    .single();
-
+                // Fetch Vendor
+                const { data: vendor, error: vError } = await supabase.from('vendor_profiles').select('*').eq('slug', vendorSlug).single();
                 if (vError || !vendor) throw new Error("Vendor not found");
+
+                // Store for the form
+                window.currentProduct = product;
+                window.currentVendor = vendor;
 
                 // Populate UI
                 document.getElementById('loadingState').classList.add('hidden');
@@ -151,10 +200,12 @@
                 document.getElementById('prodTitle').innerText = product.title;
                 document.getElementById('prodPrice').innerText = `₦${parseFloat(product.price).toLocaleString()}`;
                 
+                // Set initial total in the modal
+                document.getElementById('displayTotal').innerText = `₦${parseFloat(product.price).toLocaleString()}`;
+
                 if (product.category) document.getElementById('prodCategory').innerText = product.category;
                 if (product.description) document.getElementById('prodDesc').innerText = product.description;
 
-                // Handle Image
                 const imgContainer = document.getElementById('imgContainer');
                 if (product.image_url) {
                     imgContainer.innerHTML += `<img src="${product.image_url}" alt="${product.title}">`;
@@ -162,23 +213,13 @@
                     imgContainer.innerHTML += `📦`;
                 }
 
-                // Handle Stock & WhatsApp Button
-                const waButton = document.getElementById('waButton');
-                
+                // Handle Sold Out state
+                const checkoutBtn = document.getElementById('checkoutBtn');
                 if (!product.in_stock) {
                     document.getElementById('stockBadge').classList.remove('hidden');
-                    waButton.classList.add('btn-disabled');
-                    waButton.innerHTML = `<i class="bi bi-cart-x fs-5"></i> Currently Sold Out`;
-                    waButton.removeAttribute('href');
-                } else {
-                    // Create the WhatsApp Message Link
-                    const currentUrl = window.location.href;
-                    const message = `Hello ${vendor.business_name}, I would like to order this item:\n\n*${product.title}*\nPrice: ₦${parseFloat(product.price).toLocaleString()}\n\nLink: ${currentUrl}`;
-                    
-                    // Note: Ensure your vendor_profiles table has a 'phone' column. 
-                    // If you haven't collected phone numbers yet, replace vendor.phone with a hardcoded test number for now.
-                    const phone = vendor.phone || ""; 
-                    waButton.href = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+                    checkoutBtn.classList.add('btn-disabled');
+                    checkoutBtn.innerHTML = `<i class="bi bi-cart-x fs-5"></i> Currently Sold Out`;
+                    checkoutBtn.removeAttribute('data-bs-toggle'); // Stop modal from opening
                 }
 
             } catch (err) {
@@ -192,6 +233,52 @@
             document.getElementById('productContent').classList.add('hidden');
             document.getElementById('errorState').classList.remove('hidden');
         }
+
+        // Live update the total price in the modal when they change quantity
+        document.getElementById('buyerQty').addEventListener('input', function(e) {
+            if(window.currentProduct) {
+                const qty = parseInt(e.target.value) || 1;
+                const total = parseFloat(window.currentProduct.price) * qty;
+                document.getElementById('displayTotal').innerText = `₦${total.toLocaleString()}`;
+            }
+        });
+
+        // Handle sending the formatted message to WhatsApp
+        window.sendToWhatsApp = function(e) {
+            e.preventDefault();
+
+            const name = document.getElementById('buyerName').value;
+            const qty = document.getElementById('buyerQty').value;
+            const address = document.getElementById('buyerAddress').value;
+            const notes = document.getElementById('buyerNotes').value;
+            
+            const total = parseFloat(window.currentProduct.price) * parseInt(qty);
+
+            // Construct the perfectly formatted WhatsApp message
+            let msg = `Hello *${window.currentVendor.business_name}*, I would like to place an order!\n\n`;
+            msg += `🛒 *Item:* ${window.currentProduct.title}\n`;
+            msg += `🔢 *Quantity:* ${qty}\n`;
+            msg += `💰 *Total Amount:* ₦${total.toLocaleString()}\n`;
+            msg += `\n*-- MY DELIVERY DETAILS --*\n`;
+            msg += `👤 *Name:* ${name}\n`;
+            msg += `📍 *Address:* ${address}\n`;
+            
+            if(notes) {
+                msg += `📝 *Notes/Size:* ${notes}\n`;
+            }
+            
+            msg += `\n🔗 *Product Link:* ${window.location.href}`;
+
+            // Redirect to WhatsApp
+            // Note: If you don't have phone numbers in DB yet, you'll need to update your DB schema to include 'phone' in vendor_profiles
+            const phone = window.currentVendor.phone || ""; 
+            const waUrl = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
+            
+            window.open(waUrl, '_blank');
+            
+            // Close modal after sending
+            bootstrap.Modal.getInstance(document.getElementById('checkoutModal')).hide();
+        };
 
         initProductPage();
     </script>
