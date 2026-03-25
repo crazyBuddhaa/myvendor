@@ -50,7 +50,7 @@
       text-decoration: none;
     }
     .mv-logo span { color: var(--green); }
-    
+
     .btn-logout {
       background: transparent;
       border: none;
@@ -79,7 +79,7 @@
     }
     .share-box h3 { color: white; font-size: 1.1rem; margin-bottom: 0.2rem; }
     .share-box p { color: var(--green-light); font-size: 0.85rem; margin-bottom: 1rem; }
-    
+
     .link-display {
       background: rgba(255, 255, 255, 0.15);
       border: 1px solid rgba(255, 255, 255, 0.3);
@@ -91,7 +91,7 @@
       margin-bottom: 0.75rem;
     }
     .link-text { font-family: monospace; font-size: 0.9rem; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    
+
     .btn-copy { background: white; color: var(--green-dark); border: none; border-radius: 6px; padding: 0.4rem 0.8rem; font-size: 0.8rem; font-weight: 700; cursor: pointer; }
     .btn-copy:active { transform: scale(0.95); }
 
@@ -129,13 +129,13 @@
     /* ─── RECENT ORDERS ──────────────────────────────────── */
     .section-title { font-size: 1rem; font-weight: 800; margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center; }
     .view-all { font-size: 0.8rem; color: var(--green); text-decoration: none; font-weight: 600; font-family: 'Open Sans', sans-serif; }
-    
+
     .order-row { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; border-bottom: 1px solid var(--border-color); }
     .order-row:last-child { border-bottom: none; padding-bottom: 0; }
     .order-id { font-size: 0.85rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.1rem; }
     .order-date { font-size: 0.7rem; color: var(--text-muted); }
     .order-amount { font-size: 0.9rem; font-weight: 800; color: var(--green); text-align: right; }
-    
+
     .badge-status { font-size: 0.65rem; padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 700; text-transform: uppercase; }
     .status-new { background: #fef3c7; color: #b45309; }
     .status-shipped { background: #e0e7ff; color: #4338ca; }
@@ -157,7 +157,7 @@
       text-decoration: none;
       font-weight: 600;
     }
-    
+
     /* Toast Notification */
     .toast-msg {
       position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(100px);
@@ -179,7 +179,7 @@
   </nav>
 
   <main class="container max-w-md mx-auto mt-4 flex-grow-1" style="max-width: 600px;">
-    
+
     <div class="mb-3">
       <h1 style="font-size: 1.4rem; font-weight: 800; color: var(--green-dark);" id="welcomeName">Welcome 👋</h1>
       <p class="text-muted" style="font-size: 0.85rem;">Here is what's happening with your store today.</p>
@@ -188,7 +188,7 @@
     <div class="dash-card share-box">
       <h3>Your Store is Live</h3>
       <p>Share this link on WhatsApp to get orders.</p>
-      
+
       <div class="link-display">
         <span class="link-text" id="storeLink">Loading...</span>
         <button class="btn-copy" onclick="copyLink()">Copy</button>
@@ -211,6 +211,14 @@
       <a href="/dashboard/products.html" class="action-btn">
         <i class="bi bi-grid-fill action-icon"></i>
         <span class="action-label">Inventory</span>
+      </a>
+      <a href="/dashboard/analytics.html" class="action-btn">
+        <i class="bi bi-bar-chart-fill action-icon" style="color: #0284c7;"></i>
+        <span class="action-label">Analytics</span>
+      </a>
+      <a href="/dashboard/settings.html" class="action-btn">
+        <i class="bi bi-gear-fill action-icon" style="color: #4b6b50;"></i>
+        <span class="action-label">Settings</span>
       </a>
     </div>
 
@@ -236,7 +244,7 @@
         Recent Orders
         <a href="/dashboard/orders.html" class="view-all">View All →</a>
       </div>
-      
+
       <div id="recentOrdersList">
         </div>
     </div>
