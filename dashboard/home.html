@@ -139,6 +139,8 @@
     .badge-status { font-size: 0.65rem; padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 700; text-transform: uppercase; }
     .status-new { background: #fef3c7; color: #b45309; }
     .status-shipped { background: #e0e7ff; color: #4338ca; }
+    .status-processing { background: #fce7f3; color: #be185d; }
+    .status-delivered { background: #dcfce7; color: #166534; }
 
     /* ─── FOOTER ─────────────────────────────────────────── */
     .dashboard-footer {
@@ -179,7 +181,7 @@
   <main class="container max-w-md mx-auto mt-4 flex-grow-1" style="max-width: 600px;">
     
     <div class="mb-3">
-      <h1 style="font-size: 1.4rem; font-weight: 800; color: var(--green-dark);" id="welcomeName">Welcome, StoreOwner 👋</h1>
+      <h1 style="font-size: 1.4rem; font-weight: 800; color: var(--green-dark);" id="welcomeName">Welcome 👋</h1>
       <p class="text-muted" style="font-size: 0.85rem;">Here is what's happening with your store today.</p>
     </div>
 
@@ -188,7 +190,7 @@
       <p>Share this link on WhatsApp to get orders.</p>
       
       <div class="link-display">
-        <span class="link-text" id="storeLink">myvendor.ng/storename</span>
+        <span class="link-text" id="storeLink">Loading...</span>
         <button class="btn-copy" onclick="copyLink()">Copy</button>
       </div>
 
@@ -236,33 +238,7 @@
       </div>
       
       <div id="recentOrdersList">
-        <div class="order-row">
-          <div>
-            <div class="order-id">MV-250325-002</div>
-            <div class="order-date">Today, 10:15 AM</div>
-          </div>
-          <div>
-            <div class="order-amount">₦12,500</div>
-            <div class="badge-status status-new text-end mt-1">New</div>
-          </div>
         </div>
-
-        <div class="order-row">
-          <div>
-            <div class="order-id">MV-250324-001</div>
-            <div class="order-date">Yesterday, 4:30 PM</div>
-          </div>
-          <div>
-            <div class="order-amount">₦35,000</div>
-            <div class="badge-status status-shipped text-end mt-1">Shipped</div>
-          </div>
-        </div>
-        
-        <div id="emptyOrders" class="text-center py-4 hidden">
-          <i class="bi bi-inbox text-muted" style="font-size: 2rem;"></i>
-          <p class="text-muted mt-2" style="font-size: 0.85rem;">No orders yet. Share your store link!</p>
-        </div>
-      </div>
     </div>
 
   </main>
@@ -275,59 +251,28 @@
     </div>
   </footer>
 
-  <div class="toast-msg" id="toastMsg">Link copied to clipboard!</div>
+  <div class="toast-msg" id="toastMsg">Link copied!</div>
+
+  <script type="module" src="/assets/js/dashboard.js"></script>
 
   <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+    import { supabase } from '/assets/js/supabase.js';
 
-    // Replace with your keys later
-    const SUPABASE_URL = 'https://YOUR_PROJECT.supabase.co'
-    const SUPABASE_ANON_KEY = 'YOUR_ANON_KEY'
-    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
-
-    // ─── AUTH PROTECTION ──────────────────────────────────────
-    // If you uncomment this, it will kick unauthenticated users back to login
-    /*
-    const { data: { session }, error } = await supabase.auth.getSession()
-    if (!session || error) {
-      window.location.href = '/dashboard/index.html'
-    } else {
-      // Fetch user profile data to populate the dashboard
-      const userId = session.user.id;
-      const { data: profile } = await supabase.from('vendor_profiles').select('*').eq('id', userId).single();
-      
-      if(profile) {
-        document.getElementById('welcomeName').innerText = `Welcome, ${profile.business_name} 👋`;
-        
-        const fullLink = `myvendor.ng/${profile.slug}`;
-        document.getElementById('storeLink').innerText = fullLink;
-        
-        // Setup WhatsApp Share Button
-        const waMsg = encodeURIComponent(`Shop my latest collection here: https://${fullLink}`);
-        document.getElementById('waShareBtn').href = `https://wa.me/?text=${waMsg}`;
+    window.copyLink = function() {
+      const linkText = document.getElementById('storeLink').innerText;
+      if (linkText && linkText !== 'Loading...') {
+        navigator.clipboard.writeText(`https://${linkText}`).then(() => {
+          const toast = document.getElementById('toastMsg');
+          toast.classList.add('show');
+          setTimeout(() => toast.classList.remove('show'), 2500);
+        });
       }
-    }
-    */
+    };
 
-    window.handleLogout = async () => {
+    window.handleLogout = async function() {
       await supabase.auth.signOut();
       window.location.href = '/dashboard/index.html';
-    }
-  </script>
-
-  <script>
-    // Copy link logic
-    function copyLink() {
-      const linkText = document.getElementById('storeLink').innerText;
-      // Basic fallback for mobile clipboards
-      navigator.clipboard.writeText(`https://${linkText}`).then(() => {
-        const toast = document.getElementById('toastMsg');
-        toast.classList.add('show');
-        setTimeout(() => toast.classList.remove('show'), 2500);
-      }).catch(err => {
-        console.error('Failed to copy: ', err);
-      });
-    }
+    };
   </script>
 </body>
 </html>
