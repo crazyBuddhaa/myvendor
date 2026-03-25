@@ -9,11 +9,11 @@ async function initDashboard() {
 
     // A. FETCH PROFILE & SETUP HOME PAGE
     const { data: profile } = await supabase.from('vendor_profiles').select('*').eq('id', currentUser.id).single();
-    
+
     if (profile) {
         window.vendorSlug = profile.slug;
         const fullLink = `myvendor.qzz.io/${profile.slug}`; // Change to .ng when live
-        
+
         // Populate Home UI
         if (document.getElementById('welcomeName')) {
             document.getElementById('welcomeName').innerText = `Welcome, ${profile.business_name} 👋`;
@@ -42,6 +42,16 @@ async function initDashboard() {
     if (document.getElementById('productList')) await window.loadProducts();
     if (document.getElementById('orderList')) await window.loadOrders();
     if (document.getElementById('editProductForm')) await window.loadEditProduct();
+
+    // D. LOAD SETTINGS PAGE
+    if (document.getElementById('settingsForm')) {
+        await window.loadSettings(profile);
+    }
+
+    // E. LOAD ANALYTICS PAGE
+    if (document.getElementById('totalRevenue')) {
+        await window.loadAnalytics();
+    }
 }
 
 // ─── 2. HOME PAGE HELPERS ─────────────────────────────────────────
@@ -50,7 +60,7 @@ async function loadRecentOrders() {
     if (!list) return;
 
     const { data } = await supabase.from('orders').select('*').eq('vendor_id', currentUser.id).limit(3).order('created_at', {ascending: false});
-    
+
     if (!data || data.length === 0) {
         list.innerHTML = `
         <div id="emptyOrders" class="text-center py-4">
@@ -103,7 +113,7 @@ window.saveProduct = async function(event) {
     const btn = document.getElementById('btnSave');
     btn.disabled = true;
     btn.innerText = "Saving...";
-    
+
     try {
         const fileInput = document.getElementById('fileInput');
         let imgUrl = null;
@@ -122,7 +132,9 @@ window.saveProduct = async function(event) {
             category: document.getElementById('prodCategory') ? document.getElementById('prodCategory').value : 'Other',
             description: document.getElementById('prodDesc') ? document.getElementById('prodDesc').value : '',
             in_stock: document.getElementById('stockSwitch') ? document.getElementById('stockSwitch').checked : true,
-            status: 'in_stock', // Default for new products
+            status: document.getElementById('prodStatus') ? document.getElementById('prodStatus').value : 'in_stock',
+            quantity: document.getElementById('prodQty') ? parseInt(document.getElementById('prodQty').value) : null,
+            colors: document.getElementById('prodColors') ? document.getElementById('prodColors').value : null,
             image_url: imgUrl 
         }]);
         window.location.href = '/dashboard/products.html';
@@ -136,19 +148,19 @@ window.saveProduct = async function(event) {
 window.loadProducts = async function() {
     const list = document.getElementById('productList');
     const { data: prods } = await supabase.from('products').select('*').eq('vendor_id', currentUser.id).order('created_at', {ascending: false});
-    
+
     if (!prods || prods.length === 0) { 
         document.getElementById('emptyState').classList.remove('hidden'); 
         list.innerHTML = ''; 
         return; 
     }
-    
+
     document.getElementById('emptyState').classList.add('hidden');
     list.innerHTML = prods.map(p => {
         // Badges setup
         let badgeClass = 'stock-in';
         let badgeText = 'In Stock';
-        
+
         if (p.status === 'pre_order') {
             badgeClass = 'bg-warning text-dark';
             badgeText = 'Pre-Order';
@@ -217,7 +229,7 @@ let currentExistingImageUrl = null;
 window.loadEditProduct = async function() {
     const urlParams = new URLSearchParams(window.location.search);
     currentEditId = urlParams.get('id');
-    
+
     if (!currentEditId) {
         alert("Product ID not found.");
         window.location.href = '/dashboard/products.html';
@@ -225,9 +237,9 @@ window.loadEditProduct = async function() {
     }
 
     const { data: product, error } = await supabase.from('products').select('*').eq('id', currentEditId).single();
-    
+
     document.getElementById('loadingState').classList.add('hidden');
-    
+
     if (error || !product) {
         alert("Failed to load product.");
         window.location.href = '/dashboard/products.html';
@@ -235,13 +247,13 @@ window.loadEditProduct = async function() {
     }
 
     document.getElementById('editProductForm').classList.remove('hidden');
-    
+
     // Fill basic details
     document.getElementById('editProdTitle').value = product.title || '';
     document.getElementById('editProdPrice').value = product.price || '';
     if(document.getElementById('editProdCategory')) document.getElementById('editProdCategory').value = product.category || 'Other';
     if(document.getElementById('editProdDesc')) document.getElementById('editProdDesc').value = product.description || '';
-    
+
     // Fill the new Tags/Inventory details
     if(document.getElementById('editProdStatus')) {
         document.getElementById('editProdStatus').value = product.status || (product.in_stock ? 'in_stock' : 'out_of_stock');
@@ -294,7 +306,7 @@ window.updateProduct = async function(e) {
 
         if (error) throw error;
         window.location.href = '/dashboard/products.html';
-        
+
     } catch (err) {
         alert("Error updating product: " + err.message);
         btn.disabled = false; 
@@ -362,7 +374,7 @@ window.openCreateOrderModal = function() {
 
 window.handleCreateOrder = async function(e) {
     e.preventDefault();
-    
+
     const submitBtn = document.querySelector('#createOrderForm button[type="submit"]');
     const originalText = submitBtn.innerHTML;
     submitBtn.disabled = true;
@@ -370,7 +382,7 @@ window.handleCreateOrder = async function(e) {
 
     try {
         const id = `MV-${new Date().toISOString().slice(2,10).replace(/-/g,'')}-${Math.floor(Math.random()*900)+100}`;
-        
+
         const { error } = await supabase.from('orders').insert([{ 
             id, 
             vendor_id: currentUser.id, 
@@ -387,7 +399,7 @@ window.handleCreateOrder = async function(e) {
         }
         window.loadOrders();
         navigator.clipboard.writeText(`https://myvendor.qzz.io/track/?id=${id}`);
-        
+
         const toast = document.getElementById('toastMsg');
         if (toast) {
             toast.innerText = "Order Created & Link Copied!";
@@ -438,7 +450,7 @@ window.saveStatus = async function() {
     const status = document.getElementById('statusSelect').value;
     const riderName = document.getElementById('riderName') ? document.getElementById('riderName').value : null;
     const riderPhone = document.getElementById('riderPhone') ? document.getElementById('riderPhone').value : null;
-    
+
     await supabase.from('orders').update({ status, rider_name: riderName, rider_phone: riderPhone }).eq('id', currentOrderId);
     bootstrap.Modal.getInstance(document.getElementById('statusModal')).hide();
     window.loadOrders();
@@ -470,6 +482,68 @@ window.clearImage = function(e) {
     document.getElementById('fileInput').value = '';
     document.getElementById('imagePreview').style.display = 'none';
     document.getElementById('removeImgBtn').style.display = 'none';
+};
+
+// ─── 7. SETTINGS LOGIC ───────────────────────────────────────────
+window.loadSettings = async function(profile) {
+    document.getElementById('setBizName').value = profile.business_name || '';
+    document.getElementById('setSlug').value = profile.slug || '';
+    document.getElementById('setWaNumber').value = profile.whatsapp_number || '';
+    document.getElementById('setBio').value = profile.bio || '';
+};
+
+window.updateSettings = async function(e) {
+    e.preventDefault();
+    const btn = document.getElementById('btnSaveSettings');
+    btn.disabled = true;
+    btn.innerText = "Saving...";
+
+    try {
+        const { error } = await supabase.from('vendor_profiles').update({
+            business_name: document.getElementById('setBizName').value,
+            slug: document.getElementById('setSlug').value.toLowerCase().replace(/\s+/g, '-'), // Enforce valid slug format
+            whatsapp_number: document.getElementById('setWaNumber').value,
+            bio: document.getElementById('setBio').value
+        }).eq('id', currentUser.id);
+
+        if (error) throw error;
+        
+        alert("Profile updated successfully!");
+        window.location.href = '/dashboard/home.html';
+    } catch (err) {
+        alert("Error updating profile: " + err.message);
+    } finally {
+        btn.disabled = false;
+        btn.innerText = "Update Profile";
+    }
+};
+
+// ─── 8. ANALYTICS LOGIC ──────────────────────────────────────────
+window.loadAnalytics = async function() {
+    const { data: orders, error } = await supabase
+        .from('orders')
+        .select('total_amount, status')
+        .eq('vendor_id', currentUser.id);
+
+    if (error || !orders) return;
+
+    let revenue = 0;
+    let pendingCount = 0;
+
+    orders.forEach(order => {
+        // Only count 'delivered' orders toward total revenue
+        if (order.status === 'delivered') {
+            revenue += parseFloat(order.total_amount) || 0;
+        }
+        
+        if (order.status === 'new' || order.status === 'processing') {
+            pendingCount++;
+        }
+    });
+
+    document.getElementById('totalRevenue').innerText = `₦${revenue.toLocaleString()}`;
+    document.getElementById('totalOrders').innerText = orders.length;
+    document.getElementById('pendingOrders').innerText = pendingCount;
 };
 
 // ─── RUN THE APP ──────────────────────────────────────────────────
