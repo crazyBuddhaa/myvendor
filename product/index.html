@@ -192,14 +192,50 @@
                 window.currentProduct = product;
                 window.currentVendor = vendor;
 
-                // Populate UI
+// Populate UI
                 document.getElementById('loadingState').classList.add('hidden');
                 document.getElementById('productContent').classList.remove('hidden');
 
                 document.title = `${product.title} - ${vendor.business_name}`;
                 document.getElementById('prodTitle').innerText = product.title;
                 document.getElementById('prodPrice').innerText = `₦${parseFloat(product.price).toLocaleString()}`;
+                document.getElementById('displayTotal').innerText = `₦${parseFloat(product.price).toLocaleString()}`;
+
+                // Inject Category and New Tags (Colors, Quantity)
+                let tagsHtml = '';
+                if (product.category) tagsHtml += `<div class="badge-category me-2">${product.category}</div>`;
+                if (product.colors) tagsHtml += `<div class="badge-category me-2 bg-light text-dark border"><i class="bi bi-palette me-1"></i> ${product.colors}</div>`;
+                if (product.quantity && product.status !== 'pre_order') tagsHtml += `<div class="badge-category bg-light text-danger border"><i class="bi bi-box-seam me-1"></i> Only ${product.quantity} left</div>`;
                 
+                document.getElementById('prodCategory').outerHTML = `<div class="mb-3">${tagsHtml}</div>`;
+                
+                if (product.description) document.getElementById('prodDesc').innerText = product.description;
+
+                const imgContainer = document.getElementById('imgContainer');
+                if (product.image_url) {
+                    imgContainer.innerHTML += `<img src="${product.image_url}" alt="${product.title}">`;
+                } else {
+                    imgContainer.innerHTML += `📦`;
+                }
+
+                // Handle Status (In Stock, Pre-Order, Sold Out)
+                const checkoutBtn = document.getElementById('checkoutBtn');
+                const stockBadge = document.getElementById('stockBadge');
+                
+                if (product.status === 'out_of_stock' || !product.in_stock) {
+                    stockBadge.innerText = "Sold Out";
+                    stockBadge.classList.remove('hidden');
+                    checkoutBtn.classList.add('btn-disabled');
+                    checkoutBtn.innerHTML = `<i class="bi bi-cart-x fs-5"></i> Currently Sold Out`;
+                    checkoutBtn.removeAttribute('data-bs-toggle');
+                } else if (product.status === 'pre_order') {
+                    stockBadge.innerText = "Pre-Order Available";
+                    stockBadge.style.background = "#fffbeb"; // Yellow bg
+                    stockBadge.style.color = "#d97706"; // Yellow text
+                    stockBadge.classList.remove('hidden');
+                    checkoutBtn.innerHTML = `Proceed to Pre-Order`;
+                }
+
                 // Set initial total in the modal
                 document.getElementById('displayTotal').innerText = `₦${parseFloat(product.price).toLocaleString()}`;
 
