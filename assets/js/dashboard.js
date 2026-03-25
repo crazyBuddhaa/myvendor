@@ -229,6 +229,12 @@ window.loadOrders = async function() {
         </div>`).join('');
 };
 
+window.openCreateOrderModal = function() {
+    document.getElementById('createOrderForm').reset();
+    const createModal = new bootstrap.Modal(document.getElementById('createOrderModal'));
+    createModal.show();
+};
+
 window.handleCreateOrder = async function(e) {
     e.preventDefault();
     const id = `MV-${new Date().toISOString().slice(2,10).replace(/-/g,'')}-${Math.floor(Math.random()*900)+100}`;
