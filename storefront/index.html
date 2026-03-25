@@ -3,830 +3,277 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>myvendor — Store</title>
-  <meta name="description" content="Browse products and order on WhatsApp." />
+  <title>Vendor Storefront - myvendor</title>
 
-  <!-- Bootstrap 5 -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
-  <!-- Bootstrap Icons -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet"/>
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@700;800;900&family=Open+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@700;800;900&family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 
   <style>
     :root {
-      --green:        #16a34a;
-      --green-dark:   #14532d;
-      --green-light:  #dcfce7;
-      --green-mid:    #22c55e;
-      --green-glow:   rgba(34,197,94,.13);
-      --white:        #ffffff;
-      --off-white:    #f8faf8;
-      --text:         #0f1a0f;
-      --text-muted:   #4b6b50;
-      --border:       #d1fae5;
-      --wa-green:     #25D366;
-      --card-radius:  14px;
+      --green:       #16a34a;
+      --green-dark:  #14532d;
+      --green-light: #dcfce7;
+      --bg-color:    #f8faf8;
+      --card-bg:     #ffffff;
+      --text-main:   #0f1a0f;
+      --text-muted:  #4b6b50;
+      --border-color:#e5e7eb;
     }
-
-    *, *::before, *::after { box-sizing: border-box; }
 
     body {
       font-family: 'Open Sans', sans-serif;
-      background: var(--off-white);
-      color: var(--text);
-      margin: 0;
-      padding: 0;
-    }
-
-    h1, h2, h3, h4, h5, h6 {
-      font-family: 'Raleway', sans-serif;
-    }
-
-    /* ── TOP NAV BAR ─────────────────────────────────────── */
-    .top-bar {
-      background: var(--white);
-      border-bottom: 1px solid var(--border);
-      padding: .6rem 1rem;
+      background-color: var(--bg-color);
+      color: var(--text-main);
       display: flex;
-      align-items: center;
-      justify-content: space-between;
-      position: sticky;
-      top: 0;
-      z-index: 100;
+      flex-direction: column;
+      min-height: 100vh;
+      padding-bottom: 40px;
     }
 
-    .top-bar .mv-logo {
-      font-family: 'Raleway', sans-serif;
-      font-weight: 900;
-      font-size: 1.1rem;
-      color: var(--green-dark);
-      text-decoration: none;
-    }
-    .top-bar .mv-logo span { color: var(--green); }
+    h1, h2, h3, .store-name { font-family: 'Raleway', sans-serif; }
 
-    .top-bar .search-btn {
-      border: none;
-      background: var(--off-white);
-      border-radius: 8px;
-      padding: .45rem .9rem;
-      font-size: .82rem;
-      color: var(--text-muted);
-      display: flex;
-      align-items: center;
-      gap: .4rem;
-      cursor: pointer;
-      transition: background .2s;
-      font-family: 'Open Sans', sans-serif;
+    /* ─── STORE HEADER ────────────────────────────────────── */
+    .store-cover {
+      background: linear-gradient(135deg, var(--green-dark), var(--green));
+      height: 140px;
+      width: 100%;
+      position: absolute;
+      top: 0; left: 0;
+      z-index: -1;
     }
-    .top-bar .search-btn:hover { background: var(--green-light); }
 
-    /* ── STORE HEADER ────────────────────────────────────── */
-    .store-header {
-      background: linear-gradient(145deg, var(--green-dark) 0%, #166534 100%);
-      padding: 2rem 1.25rem 1.5rem;
+    .store-profile {
+      margin-top: 70px;
+      background: var(--card-bg);
+      border-radius: 16px;
+      padding: 1.5rem 1.25rem;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.04);
+      text-align: center;
       position: relative;
-      overflow: hidden;
-    }
-
-    .store-header::before {
-      content: '';
-      position: absolute;
-      top: -40px; right: -40px;
-      width: 200px; height: 200px;
-      background: radial-gradient(circle, rgba(255,255,255,.08) 0%, transparent 70%);
-      border-radius: 50%;
-    }
-
-    .store-header::after {
-      content: '';
-      position: absolute;
-      bottom: -30px; left: 30%;
-      width: 140px; height: 140px;
-      background: radial-gradient(circle, rgba(34,197,94,.15) 0%, transparent 70%);
-      border-radius: 50%;
+      border: 1px solid var(--border-color);
+      margin-bottom: 1.5rem;
     }
 
     .store-avatar {
-      width: 68px; height: 68px;
+      width: 86px; height: 86px;
+      background: var(--bg-color);
+      border: 4px solid var(--card-bg);
       border-radius: 50%;
-      border: 3px solid rgba(255,255,255,.3);
-      background: rgba(255,255,255,.15);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.8rem;
-      color: white;
-      margin-bottom: .75rem;
-      overflow: hidden;
-      flex-shrink: 0;
-    }
-
-    .store-avatar img {
-      width: 100%; height: 100%;
-      object-fit: cover;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2.2rem; color: var(--green);
+      position: absolute; top: -43px; left: 50%; transform: translateX(-50%);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
     }
 
     .store-name {
-      font-family: 'Raleway', sans-serif;
+      margin-top: 35px;
       font-weight: 800;
-      font-size: 1.35rem;
-      color: white;
-      margin: 0 0 .2rem;
-      line-height: 1.2;
-    }
-
-    .store-location {
-      font-size: .8rem;
-      color: rgba(255,255,255,.7);
-      display: flex;
-      align-items: center;
-      gap: .3rem;
-      margin-bottom: .6rem;
-    }
-
-    .store-rating {
-      display: inline-flex;
-      align-items: center;
-      gap: .3rem;
-      background: rgba(255,255,255,.15);
-      backdrop-filter: blur(4px);
-      border-radius: 999px;
-      padding: .25rem .7rem;
-      font-size: .78rem;
-      color: white;
-      font-weight: 600;
-    }
-
-    .store-rating .star { color: #fbbf24; }
-
-    .store-bio {
-      font-size: .82rem;
-      color: rgba(255,255,255,.75);
-      margin-top: .6rem;
-      line-height: 1.5;
-      max-width: 340px;
-    }
-
-    .store-wa-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: .4rem;
-      background: var(--wa-green);
-      color: white;
-      border: none;
-      border-radius: 8px;
-      padding: .5rem 1.1rem;
-      font-size: .82rem;
-      font-weight: 700;
-      text-decoration: none;
-      margin-top: .9rem;
-      transition: all .2s;
-      font-family: 'Open Sans', sans-serif;
-    }
-    .store-wa-btn:hover { background: #1da851; color: white; transform: translateY(-1px); }
-
-    /* ── STATS ROW ───────────────────────────────────────── */
-    .store-stats {
-      background: var(--white);
-      border-bottom: 1px solid var(--border);
-      display: flex;
-    }
-
-    .stat-item {
-      flex: 1;
-      text-align: center;
-      padding: .85rem .5rem;
-      border-right: 1px solid var(--border);
-    }
-    .stat-item:last-child { border-right: none; }
-
-    .stat-value {
-      font-family: 'Raleway', sans-serif;
-      font-weight: 800;
-      font-size: 1.1rem;
+      font-size: 1.4rem;
       color: var(--green-dark);
-      line-height: 1;
-      margin-bottom: .2rem;
+      margin-bottom: 0.2rem;
+      display: flex; align-items: center; justify-content: center; gap: 0.3rem;
     }
 
-    .stat-label {
-      font-size: .7rem;
-      color: var(--text-muted);
+    .verified-badge { color: #0ea5e9; font-size: 1.1rem; }
+
+    .store-meta { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.8rem; }
+    
+    .store-bio {
+      font-size: 0.9rem; line-height: 1.5; color: var(--text-main); margin: 0;
     }
 
-    /* ── SEARCH BAR ──────────────────────────────────────── */
-    .search-bar-wrap {
-      padding: .9rem 1rem .5rem;
-      background: var(--off-white);
-    }
-
-    .search-input-wrap {
-      position: relative;
-    }
-
-    .search-input-wrap i {
-      position: absolute;
-      left: .85rem;
-      top: 50%;
-      transform: translateY(-50%);
-      color: #9cb89c;
-      font-size: .9rem;
-    }
-
+    /* ─── SEARCH & FILTERS ────────────────────────────────── */
+    .search-container { position: relative; margin-bottom: 1rem; }
     .search-input {
-      width: 100%;
-      padding: .65rem .9rem .65rem 2.4rem;
-      border: 1.5px solid var(--border);
-      border-radius: 10px;
-      background: var(--white);
-      font-family: 'Open Sans', sans-serif;
-      font-size: .88rem;
-      color: var(--text);
-      outline: none;
-      transition: border-color .2s, box-shadow .2s;
+      width: 100%; padding: 0.8rem 1rem 0.8rem 2.8rem;
+      border-radius: 12px; border: 1.5px solid var(--border-color);
+      background: var(--card-bg); font-size: 0.95rem; outline: none; transition: all 0.2s;
     }
-    .search-input:focus {
-      border-color: var(--green);
-      box-shadow: 0 0 0 3px var(--green-glow);
-    }
+    .search-input:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(22,197,94,0.15); }
+    .search-icon { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 1.1rem; }
 
-    /* ── CATEGORY PILLS ──────────────────────────────────── */
     .category-scroll {
-      display: flex;
-      gap: .5rem;
-      overflow-x: auto;
-      padding: .75rem 1rem .5rem;
-      scrollbar-width: none;
-      -ms-overflow-style: none;
+      display: flex; overflow-x: auto; gap: 0.5rem; padding-bottom: 0.5rem; margin-bottom: 1rem; scrollbar-width: none;
     }
     .category-scroll::-webkit-scrollbar { display: none; }
-
+    
     .cat-pill {
-      flex-shrink: 0;
-      padding: .38rem .9rem;
-      border-radius: 999px;
-      border: 1.5px solid var(--border);
-      background: var(--white);
-      font-size: .78rem;
-      font-weight: 600;
-      color: var(--text-muted);
-      cursor: pointer;
-      transition: all .2s;
-      white-space: nowrap;
-      font-family: 'Open Sans', sans-serif;
+      white-space: nowrap; padding: 0.4rem 1.2rem; border-radius: 50px;
+      font-size: 0.85rem; font-weight: 700; background: var(--card-bg);
+      border: 1px solid var(--border-color); color: var(--text-muted);
+      cursor: pointer; transition: all 0.2s;
     }
-    .cat-pill:hover, .cat-pill.active {
-      background: var(--green);
-      border-color: var(--green);
-      color: white;
+    .cat-pill.active { background: var(--green-dark); color: white; border-color: var(--green-dark); }
+
+    /* ─── PRODUCT GRID ────────────────────────────────────── */
+    .product-grid {
+      display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;
     }
 
-    /* ── PRODUCTS GRID ───────────────────────────────────── */
-    .products-section {
-      padding: .75rem 1rem 5rem;
-    }
-
-    .section-heading {
-      font-family: 'Raleway', sans-serif;
-      font-weight: 800;
-      font-size: .95rem;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: .75rem;
-    }
-
-    .products-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: .85rem;
-    }
-
-    @media (min-width: 600px) {
-      .products-grid { grid-template-columns: repeat(3, 1fr); }
-    }
-    @media (min-width: 900px) {
-      .products-grid { grid-template-columns: repeat(4, 1fr); }
-    }
-
-    /* ── PRODUCT CARD ────────────────────────────────────── */
     .product-card {
-      background: var(--white);
-      border-radius: var(--card-radius);
-      overflow: hidden;
-      border: 1.5px solid var(--border);
-      cursor: pointer;
-      transition: transform .2s, box-shadow .2s;
-      text-decoration: none;
-      color: inherit;
-      display: flex;
-      flex-direction: column;
-      animation: fadeUp .4s ease both;
+      background: var(--card-bg); border-radius: 12px; overflow: hidden;
+      border: 1px solid var(--border-color); text-decoration: none; color: inherit;
+      display: flex; flex-direction: column; transition: transform 0.2s, box-shadow 0.2s;
     }
-    .product-card:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 8px 28px var(--green-glow);
-      border-color: #bbf7d0;
-    }
+    .product-card:active { transform: scale(0.97); }
 
     .product-img {
-      width: 100%;
-      aspect-ratio: 1 / 1;
-      object-fit: cover;
-      background: var(--off-white);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 2.5rem;
-      color: #cde8cd;
-      position: relative;
-      overflow: hidden;
+      width: 100%; aspect-ratio: 1 / 1; background: #f1f5f9;
+      display: flex; align-items: center; justify-content: center; font-size: 3rem;
     }
 
-    .product-img img {
-      width: 100%; height: 100%;
-      object-fit: cover;
-      transition: transform .3s;
-    }
-    .product-card:hover .product-img img { transform: scale(1.05); }
-
-    .product-img .out-of-stock-badge {
-      position: absolute;
-      top: 8px; left: 8px;
-      background: rgba(0,0,0,.6);
-      color: white;
-      font-size: .65rem;
-      font-weight: 700;
-      padding: .2rem .5rem;
-      border-radius: 4px;
-    }
-
-    .product-body {
-      padding: .6rem .7rem .75rem;
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-    }
-
+    .product-info { padding: 0.75rem; display: flex; flex-direction: column; flex-grow: 1; }
     .product-title {
-      font-family: 'Raleway', sans-serif;
-      font-weight: 700;
-      font-size: .85rem;
-      color: var(--text);
-      line-height: 1.3;
-      margin-bottom: .3rem;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
+      font-size: 0.85rem; font-weight: 700; line-height: 1.3; margin-bottom: 0.3rem;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
     }
+    .product-price { font-size: 1rem; font-weight: 800; color: var(--green); margin-top: auto; }
 
-    .product-price {
-      font-weight: 700;
-      font-size: .92rem;
-      color: var(--green);
-      margin-top: auto;
-      padding-top: .3rem;
+    /* ─── FOOTER BRANDING ─────────────────────────────────── */
+    .storefront-footer {
+      text-align: center; margin-top: auto; padding-top: 3rem; font-size: 0.8rem; color: var(--text-muted);
     }
-
-    .product-variants {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 3px;
-      margin-bottom: .35rem;
-    }
-
-    .variant-dot {
-      width: 12px; height: 12px;
-      border-radius: 50%;
-      border: 1.5px solid rgba(0,0,0,.1);
-      background: #ccc;
-    }
-
-    .product-card .order-mini-btn {
-      margin: 0 .7rem .7rem;
-      background: var(--green-light);
-      color: var(--green-dark);
-      border: none;
-      border-radius: 8px;
-      padding: .45rem;
-      font-size: .75rem;
-      font-weight: 700;
-      width: calc(100% - 1.4rem);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: .3rem;
-      transition: all .2s;
-      cursor: pointer;
-      font-family: 'Open Sans', sans-serif;
-    }
-    .product-card .order-mini-btn:hover {
-      background: var(--green);
-      color: white;
-    }
-
-    /* ── SKELETON LOADER ─────────────────────────────────── */
-    .skeleton {
-      background: linear-gradient(90deg, #e8f5e9 25%, #d1fae5 50%, #e8f5e9 75%);
-      background-size: 200% 100%;
-      animation: shimmer 1.4s infinite;
-      border-radius: 8px;
-    }
-
-    @keyframes shimmer {
-      0%   { background-position: 200% 0; }
-      100% { background-position: -200% 0; }
-    }
-
-    .skeleton-card {
-      background: var(--white);
-      border-radius: var(--card-radius);
-      overflow: hidden;
-      border: 1.5px solid var(--border);
-    }
-
-    .skeleton-img  { width: 100%; aspect-ratio: 1/1; }
-    .skeleton-line { height: 12px; margin: .5rem .7rem; }
-    .skeleton-line.short { width: 60%; }
-    .skeleton-line.price { width: 40%; height: 14px; margin-top: .3rem; }
-
-    /* ── EMPTY STATE ─────────────────────────────────────── */
-    .empty-state {
-      text-align: center;
-      padding: 3rem 1rem;
-      color: var(--text-muted);
-    }
-    .empty-state i { font-size: 2.5rem; opacity: .3; margin-bottom: .75rem; }
-    .empty-state h5 { font-family: 'Raleway', sans-serif; color: var(--text-muted); }
-
-    /* ── NOT FOUND ───────────────────────────────────────── */
-    .not-found {
-      min-height: 80vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      padding: 2rem;
-      display: none;
-    }
-    .not-found i { font-size: 3rem; color: #cde8cd; margin-bottom: 1rem; }
-    .not-found h3 { font-family: 'Raleway', sans-serif; color: var(--green-dark); }
-
-    /* ── DISCLAIMER ──────────────────────────────────────── */
-    .disclaimer-bar {
-      position: fixed;
-      bottom: 0; left: 0; right: 0;
-      background: var(--green-dark);
-      color: rgba(255,255,255,.75);
-      font-size: .72rem;
-      text-align: center;
-      padding: .45rem 1rem;
-      z-index: 50;
-    }
-
-    /* ── ANIMATIONS ──────────────────────────────────────── */
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(12px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
+    .storefront-footer a { color: var(--green-dark); font-weight: 800; text-decoration: none; font-family: 'Raleway', sans-serif; }
+    
+    .hidden { display: none !important; }
   </style>
 </head>
 <body>
 
-  <!-- Top bar -->
-  <div class="top-bar">
-    <a href="/" class="mv-logo">my<span>vendor</span></a>
-    <button class="search-btn" onclick="focusSearch()">
-      <i class="bi bi-search"></i> Search products
-    </button>
-  </div>
+  <div class="store-cover"></div>
 
-  <!-- ── STORE CONTENT (hidden until loaded) ────────────── -->
-  <div id="store-content" style="display:none;">
+  <main class="container max-w-md mx-auto px-3" style="max-width: 600px;">
+    
+    <div class="store-profile">
+      <div class="store-avatar"><i class="bi bi-bag-heart-fill"></i></div>
+      
+      <h1 class="store-name" id="displayStoreName">
+        GlamStore NG <i class="bi bi-patch-check-fill verified-badge" title="Verified Vendor"></i>
+      </h1>
+      
+      <div class="store-meta">
+        <i class="bi bi-geo-alt-fill text-green me-1"></i> Lagos, Nigeria &nbsp;·&nbsp;
+        <i class="bi bi-star-fill text-warning me-1"></i> 4.9
+      </div>
+      
+      <p class="store-bio">
+        Premium fashion and accessories for the modern woman. Delivery nationwide. 🚀
+      </p>
+    </div>
 
-    <!-- Store Header -->
-    <div class="store-header">
-      <div class="d-flex align-items-flex-start gap-3">
-        <div class="store-avatar" id="store-avatar">
-          <i class="bi bi-shop"></i>
+    <div class="search-container">
+      <i class="bi bi-search search-icon"></i>
+      <input type="text" class="search-input" placeholder="Search products..." id="searchInput">
+    </div>
+
+    <div class="category-scroll" id="categoryFilters">
+      <div class="cat-pill active" onclick="filterCategory('all', this)">All Items</div>
+      <div class="cat-pill" onclick="filterCategory('clothing', this)">Clothing</div>
+      <div class="cat-pill" onclick="filterCategory('shoes', this)">Shoes</div>
+      <div class="cat-pill" onclick="filterCategory('bags', this)">Bags</div>
+      <div class="cat-pill" onclick="filterCategory('beauty', this)">Beauty</div>
+    </div>
+
+    <div class="product-grid" id="productGrid">
+      
+      <a href="/product/?vendor=glamstore&id=silk-blouse" class="product-card" data-category="clothing">
+        <div class="product-img" style="background:#fef9c3;">👗</div>
+        <div class="product-info">
+          <h2 class="product-title">Luxury Silk Blouse - Summer Collection</h2>
+          <p class="product-price">₦15,000</p>
         </div>
-        <div style="flex:1; position:relative; z-index:1;">
-          <h1 class="store-name" id="store-name">Loading...</h1>
-          <div class="store-location" id="store-location">
-            <i class="bi bi-geo-alt-fill"></i>
-            <span>Lagos</span>
-          </div>
-          <div>
-            <span class="store-rating">
-              <span class="star">★</span>
-              <span id="store-rating">—</span>
-              <span id="store-review-count" style="opacity:.7;"></span>
-            </span>
-          </div>
-          <p class="store-bio" id="store-bio"></p>
-          <a href="#" class="store-wa-btn" id="store-wa-btn" target="_blank" rel="noopener">
-            <i class="bi bi-whatsapp"></i>
-            Chat on WhatsApp
-          </a>
+      </a>
+
+      <a href="/product/?vendor=glamstore&id=block-heels" class="product-card" data-category="shoes">
+        <div class="product-img" style="background:#fce7f3;">👠</div>
+        <div class="product-info">
+          <h2 class="product-title">Nude Block Heels (Sizes 38-42)</h2>
+          <p class="product-price">₦22,500</p>
         </div>
-      </div>
+      </a>
+
+      <a href="/product/?vendor=glamstore&id=mini-bag" class="product-card" data-category="bags">
+        <div class="product-img" style="background:#dcfce7;">👜</div>
+        <div class="product-info">
+          <h2 class="product-title">Leather Mini Crossbody Bag</h2>
+          <p class="product-price">₦18,000</p>
+        </div>
+      </a>
+
+      <a href="/product/?vendor=glamstore&id=lip-kit" class="product-card" data-category="beauty">
+        <div class="product-img" style="background:#ede9fe;">💄</div>
+        <div class="product-info">
+          <h2 class="product-title">Matte Lip Kit - Ruby Red</h2>
+          <p class="product-price">₦6,500</p>
+        </div>
+      </a>
+
+    </div>
+    
+    <div id="emptyState" class="text-center py-5 hidden">
+      <i class="bi bi-search text-muted" style="font-size: 2.5rem;"></i>
+      <h3 style="font-size: 1rem; font-weight: 800; color: var(--text-main); margin-top: 1rem;">No products found</h3>
+      <p class="text-muted" style="font-size: 0.85rem;">Try a different search or category.</p>
     </div>
 
-    <!-- Stats Row -->
-    <div class="store-stats">
-      <div class="stat-item">
-        <div class="stat-value" id="stat-products">—</div>
-        <div class="stat-label">Products</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-value" id="stat-rating">—</div>
-        <div class="stat-label">Rating</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-value" id="stat-reviews">—</div>
-        <div class="stat-label">Reviews</div>
-      </div>
-    </div>
+  </main>
 
-    <!-- Search -->
-    <div class="search-bar-wrap">
-      <div class="search-input-wrap">
-        <i class="bi bi-search"></i>
-        <input
-          type="search"
-          class="search-input"
-          id="product-search"
-          placeholder="Search products..."
-          oninput="filterProducts(this.value)"
-        />
-      </div>
-    </div>
+  <footer class="storefront-footer">
+    Powered by <a href="/">myvendor</a>
+  </footer>
 
-    <!-- Category Pills -->
-    <div class="category-scroll" id="category-pills">
-      <button class="cat-pill active" onclick="filterByCategory('all', this)">All</button>
-    </div>
-
-    <!-- Products -->
-    <div class="products-section">
-      <div class="section-heading" id="products-label">Products</div>
-      <div class="products-grid" id="products-grid">
-        <!-- Skeleton loaders -->
-        <div class="skeleton-card"><div class="skeleton skeleton-img"></div><div class="skeleton skeleton-line"></div><div class="skeleton skeleton-line short"></div><div class="skeleton skeleton-line price"></div></div>
-        <div class="skeleton-card"><div class="skeleton skeleton-img"></div><div class="skeleton skeleton-line"></div><div class="skeleton skeleton-line short"></div><div class="skeleton skeleton-line price"></div></div>
-        <div class="skeleton-card"><div class="skeleton skeleton-img"></div><div class="skeleton skeleton-line"></div><div class="skeleton skeleton-line short"></div><div class="skeleton skeleton-line price"></div></div>
-        <div class="skeleton-card"><div class="skeleton skeleton-img"></div><div class="skeleton skeleton-line"></div><div class="skeleton skeleton-line short"></div><div class="skeleton skeleton-line price"></div></div>
-      </div>
-
-      <!-- Empty state -->
-      <div class="empty-state" id="empty-state" style="display:none;">
-        <i class="bi bi-bag-x d-block"></i>
-        <h5>No products found</h5>
-        <p style="font-size:.85rem;">Try a different search or category.</p>
-      </div>
-    </div>
-
-  </div><!-- /store-content -->
-
-  <!-- Not found -->
-  <div class="not-found" id="not-found">
-    <i class="bi bi-shop-window"></i>
-    <h3>Store not found</h3>
-    <p style="color:var(--text-muted); font-size:.9rem;">This store doesn't exist or may have been removed.</p>
-    <a href="/" style="color:var(--green); font-weight:700; text-decoration:none; margin-top:.5rem;">
-      ← Back to myvendor
-    </a>
-  </div>
-
-  <!-- WhatsApp disclaimer -->
-  <div class="disclaimer-bar">
-    <i class="bi bi-info-circle me-1"></i>
-    All payments & transactions happen on WhatsApp — not on myvendor.
-  </div>
-
-  <!-- Bootstrap JS -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
-  <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
-
-    const SUPABASE_URL      = 'https://YOUR_PROJECT.supabase.co'
-    const SUPABASE_ANON_KEY = 'YOUR_ANON_KEY'
-    const supabase          = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
-
-    // ── READ SLUG FROM URL ─────────────────────────────────
-    // URL: myvendor.ng/glamstore → pathname = /glamstore
-    const slug = window.location.pathname.replace(/^\//, '').split('/')[0]
-
-    if (!slug) {
-      window.location.href = '/'
-    }
-
-    // ── LOAD VENDOR ────────────────────────────────────────
-    const { data: vendor, error: vendorError } = await supabase
-      .from('vendor_profiles')
-      .select('*, profiles(full_name, avatar_url)')
-      .eq('slug', slug)
-      .single()
-
-    if (vendorError || !vendor) {
-      document.getElementById('not-found').style.display = 'flex'
-      return
-    }
-
-    // ── POPULATE HEADER ────────────────────────────────────
-    document.title = `${vendor.business_name} — myvendor`
-    document.querySelector('meta[name="description"]').content =
-      `Browse ${vendor.business_name}'s products and order on WhatsApp.`
-
-    document.getElementById('store-name').textContent    = vendor.business_name
-    document.getElementById('store-bio').textContent     = vendor.bio || ''
-    document.getElementById('store-rating').textContent  = vendor.average_rating
-      ? Number(vendor.average_rating).toFixed(1)
-      : 'New'
-    document.getElementById('store-review-count').textContent = vendor.total_reviews
-      ? `(${vendor.total_reviews})`
-      : ''
-
-    if (vendor.lagos_area) {
-      document.getElementById('store-location').innerHTML =
-        `<i class="bi bi-geo-alt-fill"></i> ${vendor.lagos_area}, Lagos`
-    }
-
-    if (vendor.profiles?.avatar_url) {
-      document.getElementById('store-avatar').innerHTML =
-        `<img src="${vendor.profiles.avatar_url}" alt="${vendor.business_name}" />`
-    }
-
-    // WhatsApp chat link
-    const waNumber = vendor.whatsapp_number.replace(/\D/g, '').replace(/^0/, '234')
-    document.getElementById('store-wa-btn').href =
-      `https://wa.me/${waNumber}?text=Hi%20${encodeURIComponent(vendor.business_name)}%2C%20I%20saw%20your%20store%20on%20myvendor%20%F0%9F%91%8B`
-
-    // ── LOAD PRODUCTS ──────────────────────────────────────
-    const { data: products } = await supabase
-      .from('products')
-      .select('*')
-      .eq('vendor_id', vendor.id)
-      .eq('is_active', true)
-      .order('created_at', { ascending: false })
-
-    const allProducts = products || []
-
-    // Stats
-    document.getElementById('stat-products').textContent = allProducts.length
-    document.getElementById('stat-rating').textContent   = vendor.average_rating
-      ? Number(vendor.average_rating).toFixed(1) : 'New'
-    document.getElementById('stat-reviews').textContent  = vendor.total_reviews || 0
-
-    // Category pills
-    const categories = [...new Set(allProducts.map(p => p.category).filter(Boolean))]
-    const pillsWrap  = document.getElementById('category-pills')
-    categories.forEach(cat => {
-      const btn = document.createElement('button')
-      btn.className   = 'cat-pill'
-      btn.textContent = cat
-      btn.onclick = () => filterByCategory(cat, btn)
-      pillsWrap.appendChild(btn)
-    })
-
-    // Render products
-    window._allProducts     = allProducts
-    window._vendorWa        = waNumber
-    window._vendorName      = vendor.business_name
-    window._vendorSlug      = slug
-    window._currentCategory = 'all'
-    window._currentSearch   = ''
-
-    renderProducts(allProducts)
-    document.getElementById('store-content').style.display = 'block'
-
-    // ── RENDER PRODUCTS ────────────────────────────────────
-    function renderProducts(list) {
-      const grid  = document.getElementById('products-grid')
-      const empty = document.getElementById('empty-state')
-      const label = document.getElementById('products-label')
-
-      grid.innerHTML = ''
-
-      if (list.length === 0) {
-        empty.style.display = 'block'
-        label.textContent   = '0 products'
-        return
+  <script>
+    // ─── DYNAMIC STORE NAME FROM URL (For testing) ────────────
+    document.addEventListener("DOMContentLoaded", () => {
+      const params = new URLSearchParams(window.location.search);
+      const vendorSlug = params.get('vendor');
+      
+      if (vendorSlug) {
+        // Capitalize the slug just for a quick visual test
+        const storeName = vendorSlug.charAt(0).toUpperCase() + vendorSlug.slice(1);
+        document.getElementById('displayStoreName').innerHTML = `${storeName} <i class="bi bi-patch-check-fill verified-badge"></i>`;
       }
+    });
 
-      empty.style.display = 'none'
-      label.textContent   = `${list.length} product${list.length !== 1 ? 's' : ''}`
-
-      list.forEach((product, i) => {
-        const card = document.createElement('a')
-        card.className = 'product-card'
-        card.href      = `/${slug}/p/${product.slug}`
-        card.style.animationDelay = `${i * 0.05}s`
-
-        // Image
-        const imgDiv = document.createElement('div')
-        imgDiv.className = 'product-img'
-
-        if (product.images && product.images.length > 0) {
-          imgDiv.innerHTML = `<img src="${product.images[0]}" alt="${product.title}" loading="lazy"/>`
-        } else {
-          imgDiv.innerHTML = `<i class="bi bi-image" style="font-size:2rem;color:#c8e6c9;"></i>`
-        }
-
-        if (product.stock === 0) {
-          imgDiv.innerHTML += `<span class="out-of-stock-badge">Sold Out</span>`
-        }
-
-        card.appendChild(imgDiv)
-
-        // Body
-        const body = document.createElement('div')
-        body.className = 'product-body'
-
-        // Variants colour dots
-        const variants = product.variants || []
-        const colourVariant = variants.find(v =>
-          v.name?.toLowerCase().includes('color') ||
-          v.name?.toLowerCase().includes('colour')
-        )
-        let dotsHtml = ''
-        if (colourVariant && colourVariant.options?.length > 0) {
-          const dots = colourVariant.options.slice(0, 4).map(opt =>
-            `<span class="variant-dot" style="background:${isHex(opt) ? opt : opt.toLowerCase()};" title="${opt}"></span>`
-          ).join('')
-          dotsHtml = `<div class="product-variants">${dots}</div>`
-        }
-
-        body.innerHTML = `
-          ${dotsHtml}
-          <div class="product-title">${product.title}</div>
-          <div class="product-price">₦${Number(product.price).toLocaleString()}</div>
-        `
-        card.appendChild(body)
-
-        // Quick order button
-        const btn = document.createElement('button')
-        btn.className   = 'order-mini-btn'
-        btn.innerHTML   = `<i class="bi bi-whatsapp"></i> Order`
-        btn.onclick = (e) => {
-          e.preventDefault()
-          e.stopPropagation()
-          const msg = `Hi ${window._vendorName}! I'd like to order: *${product.title}* (₦${Number(product.price).toLocaleString()})\n\nProduct link: ${window.location.origin}/${window._vendorSlug}/p/${product.slug}`
-          window.open(`https://wa.me/${window._vendorWa}?text=${encodeURIComponent(msg)}`, '_blank')
-        }
-        card.appendChild(btn)
-
-        grid.appendChild(card)
-      })
+    // ─── SEARCH & FILTER LOGIC ────────────────────────────────
+    let currentCategory = 'all';
+    
+    function filterCategory(category, pillElement) {
+      // Update UI Pills
+      document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('active'));
+      pillElement.classList.add('active');
+      
+      currentCategory = category;
+      applyFilters();
     }
 
-    // ── FILTER LOGIC ───────────────────────────────────────
+    document.getElementById('searchInput').addEventListener('keyup', applyFilters);
+
     function applyFilters() {
-      let list = window._allProducts
+      const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+      const cards = document.querySelectorAll('.product-card');
+      let visibleCount = 0;
 
-      if (window._currentCategory !== 'all') {
-        list = list.filter(p => p.category === window._currentCategory)
-      }
+      cards.forEach(card => {
+        const title = card.querySelector('.product-title').innerText.toLowerCase();
+        const category = card.getAttribute('data-category');
+        
+        const matchesSearch = title.includes(searchTerm);
+        const matchesCategory = currentCategory === 'all' || category === currentCategory;
 
-      if (window._currentSearch) {
-        const q = window._currentSearch.toLowerCase()
-        list = list.filter(p =>
-          p.title.toLowerCase().includes(q) ||
-          (p.description || '').toLowerCase().includes(q) ||
-          (p.category || '').toLowerCase().includes(q)
-        )
-      }
+        if (matchesSearch && matchesCategory) {
+          card.classList.remove('hidden');
+          visibleCount++;
+        } else {
+          card.classList.add('hidden');
+        }
+      });
 
-      renderProducts(list)
-    }
-
-    window.filterByCategory = (cat, btn) => {
-      window._currentCategory = cat
-      document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('active'))
-      btn.classList.add('active')
-      applyFilters()
-    }
-
-    window.filterProducts = (val) => {
-      window._currentSearch = val.trim()
-      applyFilters()
-    }
-
-    window.focusSearch = () => {
-      document.getElementById('product-search').focus()
-      window.scrollTo({ top: 200, behavior: 'smooth' })
-    }
-
-    // ── HELPERS ────────────────────────────────────────────
-    function isHex(str) {
-      return /^#([0-9A-F]{3}){1,2}$/i.test(str)
+      const emptyState = document.getElementById('emptyState');
+      if (visibleCount === 0) emptyState.classList.remove('hidden');
+      else emptyState.classList.add('hidden');
     }
   </script>
-
 </body>
 </html>
-
