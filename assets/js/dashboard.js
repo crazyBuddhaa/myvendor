@@ -110,8 +110,6 @@ window.saveProduct = async function(event) {
     }
 };
 
-// Initialize dashboard logic when the script loads
-initDashboard();
 
 // Initialize dashboard logic when the script loads
 initDashboard();
