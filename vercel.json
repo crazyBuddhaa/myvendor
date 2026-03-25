@@ -1,8 +1,28 @@
 {
   "rewrites": [
-    { "source": "/track/:order", "destination": "/track/index.html" },
-    { "source": "/dashboard/:path*", "destination": "/dashboard/:path*.html" },
-    { "source": "/:vendor", "destination": "/[vendor]/index.html" },
-    { "source": "/:vendor/p/:product", "destination": "/product/index.html" }
+    {
+      "source": "/dashboard/:match*",
+      "destination": "/dashboard/:match*"
+    },
+    {
+      "source": "/assets/:match*",
+      "destination": "/assets/:match*"
+    },
+    {
+      "source": "/track/:match*",
+      "destination": "/track/:match*"
+    },
+    {
+      "source": "/product/:match*",
+      "destination": "/product/:match*"
+    },
+    {
+      "source": "/storefront/:match*",
+      "destination": "/storefront/:match*"
+    },
+    {
+      "source": "/:vendor",
+      "destination": "/storefront/index.html?vendor=:vendor"
+    }
   ]
 }
