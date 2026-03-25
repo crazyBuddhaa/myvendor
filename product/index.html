@@ -1,308 +1,48 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Product Details - myvendor</title>
-
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet"/>
-  <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@700;800;900&family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
-
-  <style>
-    :root {
-      --green:       #16a34a;
-      --green-dark:  #14532d;
-      --green-light: #dcfce7;
-      --bg-color:    #f8faf8;
-      --card-bg:     #ffffff;
-      --text-main:   #0f1a0f;
-      --text-muted:  #4b6b50;
-      --border-color:#e5e7eb;
-      --wa-green:    #25D366;
-    }
-
-    body {
-      font-family: 'Open Sans', sans-serif;
-      background-color: var(--card-bg); /* White background for product page */
-      color: var(--text-main);
-      padding-bottom: 90px; /* Space for the sticky bottom CTA */
-    }
-
-    h1, h2, h3 { font-family: 'Raleway', sans-serif; }
-
-    /* ─── NAVBAR ─────────────────────────────────────────── */
-    .product-nav {
-      background: rgba(255, 255, 255, 0.9);
-      backdrop-filter: blur(10px);
-      border-bottom: 1px solid var(--border-color);
-      padding: 1rem 0;
-      position: fixed;
-      top: 0; left: 0; width: 100%;
-      z-index: 1000;
-    }
-    
-    .btn-back {
-      color: var(--text-main);
-      font-size: 1.2rem;
-      text-decoration: none;
-      display: flex; align-items: center; gap: 0.3rem;
-    }
-    .btn-back span { font-size: 0.9rem; font-weight: 700; font-family: 'Open Sans', sans-serif; }
-    
-    .store-badge {
-      font-size: 0.8rem; font-weight: 700; color: var(--green-dark);
-      background: var(--green-light); padding: 0.3rem 0.8rem; border-radius: 50px;
-      text-decoration: none; display: flex; align-items: center; gap: 0.3rem;
-    }
-
-    /* ─── PRODUCT IMAGE ──────────────────────────────────── */
-    .product-image-container {
-      margin-top: 60px; /* offset for fixed nav */
-      width: 100%;
-      aspect-ratio: 4/5;
-      background: #f1f5f9;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 5rem;
-      position: relative;
-    }
-    
-    .image-indicator {
-      position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%);
-      background: rgba(0,0,0,0.5); color: white; padding: 0.2rem 0.6rem;
-      border-radius: 50px; font-size: 0.75rem; font-weight: 600;
-    }
-
-    /* ─── PRODUCT DETAILS ────────────────────────────────── */
-    .product-details { padding: 1.25rem; }
-    
-    .product-title { font-size: 1.4rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.4rem; line-height: 1.2; }
-    .product-price { font-size: 1.4rem; font-weight: 900; color: var(--green); margin-bottom: 1rem; }
-    .product-desc { font-size: 0.9rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 1.5rem; }
-
-    /* ─── VARIANTS (SIZES/COLORS) ────────────────────────── */
-    .variant-section { margin-bottom: 1.5rem; }
-    .variant-title { font-size: 0.85rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.5rem; }
-    
-    .variant-options { display: flex; flex-wrap: wrap; gap: 8px; }
-    
-    .variant-pill {
-      padding: 0.5rem 1rem; border: 1.5px solid var(--border-color); border-radius: 8px;
-      font-size: 0.85rem; font-weight: 600; color: var(--text-muted);
-      cursor: pointer; transition: all 0.2s; background: var(--card-bg);
-    }
-    .variant-pill.active { border-color: var(--green); background: var(--green-light); color: var(--green-dark); }
-
-    /* ─── QUANTITY SELECTOR ──────────────────────────────── */
-    .qty-selector {
-      display: flex; align-items: center; border: 1.5px solid var(--border-color);
-      border-radius: 8px; width: fit-content; overflow: hidden;
-    }
-    .qty-btn {
-      background: var(--bg-color); border: none; padding: 0.5rem 1rem;
-      font-size: 1.2rem; font-weight: 600; color: var(--text-main); cursor: pointer;
-    }
-    .qty-btn:active { background: #e2e8f0; }
-    .qty-input {
-      width: 40px; text-align: center; border: none; font-size: 1rem; font-weight: 700;
-      pointer-events: none; background: var(--card-bg);
-    }
-
-    /* ─── STICKY CTA ─────────────────────────────────────── */
-    .sticky-cta {
-      position: fixed; bottom: 0; left: 0; width: 100%;
-      background: var(--card-bg); border-top: 1px solid var(--border-color);
-      padding: 1rem; z-index: 1000;
-      box-shadow: 0 -4px 12px rgba(0,0,0,0.05);
-    }
-    
-    .btn-whatsapp {
-      width: 100%; padding: 0.9rem; background: var(--wa-green); color: white;
-      border: none; border-radius: 12px; font-weight: 800; font-size: 1.05rem;
-      display: flex; align-items: center; justify-content: center; gap: 0.5rem;
-      text-decoration: none; transition: transform 0.2s; box-shadow: 0 4px 16px rgba(37, 211, 102, 0.25);
-    }
-    .btn-whatsapp:active { transform: scale(0.97); }
-
-  </style>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inventory - myvendor</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@700;900&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/dashboard.css">
 </head>
-<body>
+<body class="bg-light">
 
-  <nav class="product-nav">
-    <div class="container max-w-md mx-auto d-flex justify-content-between align-items-center px-3" style="max-width: 600px;">
-      <a href="javascript:history.back()" class="btn-back">
-        <i class="bi bi-arrow-left"></i>
-      </a>
-      <a href="/storefront/?vendor=glamstore" class="store-badge" id="navStoreName">
-        <i class="bi bi-shop"></i> GlamStore NG
-      </a>
-      <div style="width: 24px;"></div> </div>
+  <nav class="dash-nav bg-white border-bottom py-3 sticky-top">
+    <div class="container d-flex justify-content-between align-items-center" style="max-width: 600px;">
+      <a href="/dashboard/home.html" class="mv-logo fw-bold text-success text-decoration-none fs-4">my<span>vendor</span></a>
+      <div class="nav-actions">
+        <a href="/dashboard/home.html" class="text-muted mx-2 fs-5"><i class="bi bi-house-door"></i></a>
+        <a href="/dashboard/orders.html" class="text-muted mx-2 fs-5"><i class="bi bi-box-seam"></i></a>
+        <a href="/dashboard/products.html" class="active text-success mx-2 fs-5"><i class="bi bi-grid-fill"></i></a>
+      </div>
+    </div>
   </nav>
 
-  <main class="container max-w-md mx-auto p-0" style="max-width: 600px;">
-    
-    <div class="product-image-container">
-      <span id="productEmoji">👗</span>
-      <div class="image-indicator">1 / 3</div>
+  <main class="container py-4" style="max-width: 600px;">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2 class="fw-bold m-0">Inventory</h2>
+      <a href="/dashboard/add-product.html" class="btn btn-success rounded-pill px-3 fw-bold"><i class="bi bi-plus-lg"></i> Add</a>
     </div>
 
-    <div class="product-details">
-      <div class="d-flex justify-content-between align-items-start">
-        <h1 class="product-title" id="productTitle">Luxury Silk Blouse - Summer Collection</h1>
-      </div>
-      <div class="product-price" id="productPrice">₦15,000</div>
-      
-      <p class="product-desc" id="productDesc">
-        Premium silk blouse perfect for the Lagos heat. Lightweight, breathable, and elegant. Features a relaxed fit and button-down front. 
-      </p>
+    <div class="mb-3">
+      <input type="text" id="searchInput" class="form-control rounded-pill px-4" placeholder="Search products...">
+    </div>
 
-      <hr style="border-color: var(--border-color); margin: 1.5rem 0;">
-
-      <div class="variant-section" id="colorSection">
-        <div class="variant-title">Color: <span id="selectedColorText" style="font-weight: 600; color: var(--green-dark);">Red</span></div>
-        <div class="variant-options">
-          <div class="variant-pill active" onclick="selectVariant('color', 'Red', this)">Red</div>
-          <div class="variant-pill" onclick="selectVariant('color', 'Black', this)">Black</div>
-          <div class="variant-pill" onclick="selectVariant('color', 'White', this)">White</div>
-        </div>
+    <div class="order-list" id="productList">
       </div>
 
-      <div class="variant-section" id="sizeSection">
-        <div class="variant-title">Size: <span id="selectedSizeText" style="font-weight: 600; color: var(--green-dark);">Medium</span></div>
-        <div class="variant-options">
-          <div class="variant-pill" onclick="selectVariant('size', 'Small', this)">Small</div>
-          <div class="variant-pill active" onclick="selectVariant('size', 'Medium', this)">Medium</div>
-          <div class="variant-pill" onclick="selectVariant('size', 'Large', this)">Large</div>
-          <div class="variant-pill" onclick="selectVariant('size', 'XL', this)">XL</div>
-        </div>
-      </div>
-
-      <div class="variant-section mt-4">
-        <div class="variant-title">Quantity</div>
-        <div class="qty-selector">
-          <button class="qty-btn" onclick="updateQty(-1)">-</button>
-          <input type="text" class="qty-input" id="qtyInput" value="1" readonly>
-          <button class="qty-btn" onclick="updateQty(1)">+</button>
-        </div>
-      </div>
-      
+    <div id="emptyState" class="text-center py-5 hidden">
+      <i class="bi bi-box-seam text-muted fs-1"></i>
+      <h5 class="mt-3 fw-bold">No products yet</h5>
+      <p class="text-muted small">Tap 'Add' to upload your first product.</p>
     </div>
   </main>
 
-  <div class="sticky-cta">
-    <div class="container max-w-md mx-auto p-0" style="max-width: 600px;">
-      <a href="#" class="btn-whatsapp" id="orderBtn" onclick="generateOrder(event)">
-        <i class="bi bi-whatsapp"></i> Order on WhatsApp
-      </a>
-    </div>
-  </div>
-
-  <script>
-    // ─── STATE MANAGEMENT ───────────────────────────────────────
-    let selectedColor = 'Red';
-    let selectedSize = 'Medium';
-    let quantity = 1;
-
-    // Dummy Product Data (Will eventually be fetched from Supabase using URL ID)
-    const productData = {
-      title: "Luxury Silk Blouse",
-      price: 15000,
-      vendorPhone: "2348000000000" // Replace with real vendor number for testing
-    };
-
-    // ─── INIT ───────────────────────────────────────────────────
-    document.addEventListener("DOMContentLoaded", () => {
-      // Grab Vendor and Product ID from URL
-      const params = new URLSearchParams(window.location.search);
-      const vendorSlug = params.get('vendor');
-      const productId = params.get('id');
-
-      // Update Nav if vendor exists
-      if (vendorSlug) {
-        const storeName = vendorSlug.charAt(0).toUpperCase() + vendorSlug.slice(1);
-        document.getElementById('navStoreName').innerHTML = `<i class="bi bi-shop"></i> ${storeName}`;
-        document.getElementById('navStoreName').href = `/storefront/?vendor=${vendorSlug}`;
-      }
-
-      // Simulate fetching different products based on URL ID
-      if(productId === 'block-heels') {
-        document.getElementById('productEmoji').innerText = '👠';
-        document.getElementById('productTitle').innerText = 'Nude Block Heels';
-        document.getElementById('productPrice').innerText = '₦22,500';
-        productData.title = 'Nude Block Heels';
-        productData.price = 22500;
-        // Hide color, change sizes
-        document.getElementById('colorSection').style.display = 'none';
-        selectedColor = null;
-        document.getElementById('sizeSection').innerHTML = `
-          <div class="variant-title">Size: <span id="selectedSizeText" style="font-weight: 600; color: var(--green-dark);">38</span></div>
-          <div class="variant-options">
-            <div class="variant-pill active" onclick="selectVariant('size', '38', this)">38</div>
-            <div class="variant-pill" onclick="selectVariant('size', '39', this)">39</div>
-            <div class="variant-pill" onclick="selectVariant('size', '40', this)">40</div>
-          </div>
-        `;
-        selectedSize = '38';
-      }
-    });
-
-    // ─── UI INTERACTIONS ────────────────────────────────────────
-    function selectVariant(type, value, element) {
-      // Update State
-      if (type === 'color') {
-        selectedColor = value;
-        document.getElementById('selectedColorText').innerText = value;
-      } else if (type === 'size') {
-        selectedSize = value;
-        document.getElementById('selectedSizeText').innerText = value;
-      }
-
-      // Update UI Pills
-      const siblings = element.parentElement.children;
-      for(let sibling of siblings) {
-        sibling.classList.remove('active');
-      }
-      element.classList.add('active');
-    }
-
-    function updateQty(change) {
-      let newQty = quantity + change;
-      if (newQty >= 1 && newQty <= 10) { // Limit max 10 for safety
-        quantity = newQty;
-        document.getElementById('qtyInput').value = quantity;
-      }
-    }
-
-    // ─── ORDER GENERATION ───────────────────────────────────────
-    function generateOrder(event) {
-      event.preventDefault();
-
-      // Calculate total
-      const totalAmount = (productData.price * quantity).toLocaleString();
-
-      // Build message string based on selected variants
-      let variantString = '';
-      if (selectedColor && selectedSize) {
-        variantString = `(${selectedColor}, ${selectedSize})`;
-      } else if (selectedColor) {
-        variantString = `(${selectedColor})`;
-      } else if (selectedSize) {
-        variantString = `(Size ${selectedSize})`;
-      }
-
-      // Construct the WhatsApp Message
-      const message = `Hello! I would like to place an order from your myvendor store.\n\n` +
-                      `*Item:* ${productData.title} ${variantString}\n` +
-                      `*Quantity:* ${quantity}\n` +
-                      `*Total:* ₦${totalAmount}\n\n` +
-                      `Please let me know how to proceed with payment and delivery.`;
-
-      // Open WhatsApp
-      const waLink = `https://wa.me/${productData.vendorPhone}?text=${encodeURIComponent(message)}`;
-      window.open(waLink, '_blank');
-    }
-  </script>
+  <div class="toast-msg" id="toastMsg">Notification</div>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script type="module" src="/assets/js/dashboard.js"></script>
 </body>
 </html>
