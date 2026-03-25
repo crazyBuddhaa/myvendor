@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Add Product - myvendor</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@700;800;900&family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+
+  <style>
+    :root {
+      --green:       #16a34a;
+      --green-dark:  #14532d;
+      --green-light: #dcfce7;
+      --bg-color:    #f8faf8;
+      --card-bg:     #ffffff;
+      --text-main:   #0f1a0f;
+      --text-muted:  #4b6b50;
+      --border-color:#e5e7eb;
+      --border-input:#c8e6c9;
+    }
+
+    body {
+      font-family: 'Open Sans', sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    h1, h2, h3, h4, h5 { font-family: 'Raleway', sans-serif; }
+
+    /* ─── NAVBAR ─────────────────────────────────────────── */
+    .dash-nav {
+      background: var(--card-bg);
+      border-bottom: 1px solid var(--border-color);
+      padding: 1rem 0;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+    
+    .btn-back {
+      color: var(--text-main);
+      font-size: 1.2rem;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+    .btn-back span { font-size: 0.9rem; font-weight: 700; font-family: 'Open Sans', sans-serif; }
+
+    /* ─── FORM ELEMENTS ──────────────────────────────────── */
+    .form-section {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 1.25rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .form-label-mv {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--green-dark);
+      margin-bottom: 0.4rem;
+      display: block;
+    }
+
+    .form-control-mv {
+      width: 100%;
+      padding: 0.8rem 1rem;
+      border: 1.5px solid var(--border-input);
+      border-radius: 10px;
+      font-size: 0.95rem;
+      color: var(--text-main);
+      background: var(--card-bg);
+      transition: all 0.2s;
+      outline: none;
+    }
+    .form-control-mv:focus {
+      border-color: var(--green);
+      box-shadow: 0 0 0 3px rgba(22,197,94,0.15);
+    }
+    textarea.form-control-mv { resize: vertical; min-height: 100px; }
+
+    /* ─── IMAGE UPLOAD ───────────────────────────────────── */
+    .image-upload-box {
+      border: 2px dashed var(--green);
+      border-radius: 12px;
+      background: var(--green-light);
+      padding: 2rem 1rem;
+      text-align: center;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.2s;
+    }
+    .image-upload-box:active { transform: scale(0.98); }
+    
+    .upload-icon { font-size: 2.5rem; color: var(--green); margin-bottom: 0.5rem; }
+    .upload-text { font-size: 0.9rem; font-weight: 700; color: var(--green-dark); }
+    .upload-hint { font-size: 0.75rem; color: var(--text-muted); }
+    
+    #fileInput { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+
+    #imagePreview {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      object-fit: cover; border-radius: 10px; display: none; z-index: 5;
+    }
+
+    .btn-remove-img {
+      position: absolute; top: 8px; right: 8px; z-index: 10;
+      background: rgba(0,0,0,0.6); color: white; border: none;
+      border-radius: 50%; width: 30px; height: 30px;
+      display: none; align-items: center; justify-content: center;
+    }
+
+    /* ─── VARIANTS TOGGLE ────────────────────────────────── */
+    .switch-wrapper {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 0.5rem 0;
+    }
+    .switch-label { font-size: 0.9rem; font-weight: 700; color: var(--text-main); }
+    
+    .form-switch .form-check-input {
+      width: 2.5em; height: 1.25em; cursor: pointer;
+    }
+    .form-switch .form-check-input:checked {
+      background-color: var(--green); border-color: var(--green);
+    }
+
+    .variants-container {
+      background: var(--bg-color);
+      border-radius: 10px;
+      padding: 1rem;
+      margin-top: 1rem;
+      border: 1px dashed var(--border-color);
+    }
+
+    /* ─── SAVE BUTTON ────────────────────────────────────── */
+    .btn-save {
+      width: 100%;
+      padding: 1rem;
+      background: var(--green);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-weight: 800;
+      font-size: 1.05rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 8px 20px rgba(22,163,74,0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      transition: all 0.2s;
+    }
+    .btn-save:hover, .btn-save:active { background: var(--green-dark); transform: translateY(-2px); }
+
+    .spinner {
+      width: 18px; height: 18px; border: 2.5px solid rgba(255,255,255,.4);
+      border-top-color: white; border-radius: 50%; animation: spin .6s linear infinite; display: none;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ─── FOOTER ─────────────────────────────────────────── */
+    .dashboard-footer {
+      margin-top: auto;
+      text-align: center;
+      padding: 1.5rem 1rem;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      border-top: 1px solid var(--border-color);
+      background: var(--bg-color);
+    }
+    .dashboard-footer a { color: var(--green); text-decoration: none; font-weight: 600; }
+    
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+  <nav class="dash-nav">
+    <div class="container max-w-md mx-auto d-flex justify-content-between align-items-center" style="max-width: 600px;">
+      <a href="/dashboard/products.html" class="btn-back">
+        <i class="bi bi-arrow-left"></i> <span>Back</span>
+      </a>
+      <div class="font-raleway" style="font-weight: 800; color: var(--text-main);">Add Product</div>
+      <div style="width: 60px;"></div> </div>
+  </nav>
+
+  <main class="container max-w-md mx-auto mt-4 flex-grow-1" style="max-width: 600px;">
+    
+    <form id="productForm" onsubmit="saveProduct(event)">
+      
+      <div class="form-section">
+        <label class="form-label-mv">Product Image</label>
+        <div class="image-upload-box" id="uploadBox">
+          <i class="bi bi-camera-fill upload-icon"></i>
+          <div class="upload-text">Tap to upload photo</div>
+          <div class="upload-hint mt-1">JPEG or PNG. Max 2MB.</div>
+          
+          <input type="file" id="fileInput" accept="image/*" onchange="previewImage(this)">
+          <img id="imagePreview" src="" alt="Preview">
+          <button type="button" class="btn-remove-img" id="removeImgBtn" onclick="clearImage(event)">
+            <i class="bi bi-x-lg"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="mb-3">
+          <label class="form-label-mv" for="prodTitle">Product Title *</label>
+          <input type="text" id="prodTitle" class="form-control-mv" placeholder="e.g. Luxury Silk Blouse" required>
+        </div>
+        
+        <div class="mb-3">
+          <label class="form-label-mv" for="prodPrice">Price (₦) *</label>
+          <input type="number" id="prodPrice" class="form-control-mv" placeholder="0" required>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label-mv" for="prodCategory">Category</label>
+          <select id="prodCategory" class="form-control-mv">
+            <option value="fashion">Fashion & Clothing</option>
+            <option value="shoes">Shoes</option>
+            <option value="bags">Bags & Accessories</option>
+            <option value="beauty">Beauty & Makeup</option>
+            <option value="electronics">Electronics</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="form-label-mv" for="prodDesc">Description</label>
+          <textarea id="prodDesc" class="form-control-mv" placeholder="Tell buyers why they need this..."></textarea>
+        </div>
+      </div>
+
+      <div class="form-section">
+        
+        <div class="switch-wrapper mb-2">
+          <div class="switch-label">Item is in stock</div>
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="stockSwitch" checked>
+          </div>
+        </div>
+
+        <hr style="border-color: var(--border-color); margin: 1rem 0;">
+
+        <div class="switch-wrapper">
+          <div class="switch-label">This product has variants</div>
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="variantSwitch" onchange="toggleVariants()">
+          </div>
+        </div>
+
+        <div id="variantsBox" class="variants-container hidden">
+          <div class="mb-3">
+            <label class="form-label-mv" style="font-size: 0.75rem;">Sizes (Comma separated)</label>
+            <input type="text" id="varSizes" class="form-control-mv" placeholder="e.g. S, M, L, XL">
+          </div>
+          <div>
+            <label class="form-label-mv" style="font-size: 0.75rem;">Colors (Comma separated)</label>
+            <input type="text" id="varColors" class="form-control-mv" placeholder="e.g. Red, Blue, Black">
+          </div>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-save" id="btnSave">
+        <span class="spinner" id="saveSpinner"></span>
+        <i class="bi bi-check2-circle" id="saveIcon"></i>
+        <span id="saveLabel">Save Product</span>
+      </button>
+
+    </form>
+  </main>
+
+  <footer class="dashboard-footer">
+    <div class="container max-w-md mx-auto" style="max-width: 600px;">
+      &copy; 2026 myvendor &nbsp;·&nbsp; 
+      <a href="#">Help Center</a> &nbsp;·&nbsp; 
+      <a href="/terms.html">Terms</a>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  
+  <script>
+    // ─── IMAGE PREVIEW LOGIC ──────────────────────────────────
+    function previewImage(input) {
+      if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+          document.getElementById('imagePreview').src = e.target.result;
+          document.getElementById('imagePreview').style.display = 'block';
+          document.getElementById('removeImgBtn').style.display = 'flex';
+        }
+        
+        reader.readAsDataURL(input.files[0]);
+      }
+    }
+
+    function clearImage(event) {
+      event.preventDefault(); // Stop file input from opening again
+      document.getElementById('fileInput').value = '';
+      document.getElementById('imagePreview').src = '';
+      document.getElementById('imagePreview').style.display = 'none';
+      document.getElementById('removeImgBtn').style.display = 'none';
+    }
+
+    // ─── VARIANTS TOGGLE ──────────────────────────────────────
+    function toggleVariants() {
+      const isChecked = document.getElementById('variantSwitch').checked;
+      const box = document.getElementById('variantsBox');
+      if(isChecked) {
+        box.classList.remove('hidden');
+      } else {
+        box.classList.add('hidden');
+        document.getElementById('varSizes').value = '';
+        document.getElementById('varColors').value = '';
+      }
+    }
+
+    // ─── FORM SUBMISSION ──────────────────────────────────────
+    function saveProduct(event) {
+      event.preventDefault();
+      
+      // 1. Show loading state
+      document.getElementById('btnSave').disabled = true;
+      document.getElementById('saveSpinner').style.display = 'block';
+      document.getElementById('saveIcon').style.display = 'none';
+      document.getElementById('saveLabel').innerText = 'Saving...';
+
+      // 2. Gather data
+      const title = document.getElementById('prodTitle').value;
+      const price = document.getElementById('prodPrice').value;
+      const inStock = document.getElementById('stockSwitch').checked;
+      
+      // Logic for variants parsing
+      let variantsJson = [];
+      if(document.getElementById('variantSwitch').checked) {
+        const sizes = document.getElementById('varSizes').value.split(',').map(s => s.trim()).filter(Boolean);
+        const colors = document.getElementById('varColors').value.split(',').map(c => c.trim()).filter(Boolean);
+        
+        if(sizes.length > 0) variantsJson.push({ name: "Size", options: sizes });
+        if(colors.length > 0) variantsJson.push({ name: "Color", options: colors });
+      }
+
+      // 3. Simulate API call (In reality, assets/js/dashboard.js will send this to Supabase)
+      console.log("Saving to Supabase:", { title, price, inStock, variants: variantsJson });
+
+      setTimeout(() => {
+        // Redirect back to inventory on success
+        window.location.href = '/dashboard/products.html';
+      }, 800);
+    }
+  </script>
+</body>
+</html>
