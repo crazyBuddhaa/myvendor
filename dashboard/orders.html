@@ -1,58 +1,246 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Orders - myvendor</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@700;900&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/assets/css/dashboard.css">
-</head>
-<body class="bg-light">
 
-  <nav class="dash-nav bg-white border-bottom py-3 sticky-top">
-    <div class="container d-flex justify-content-between align-items-center" style="max-width: 600px;">
-      <a href="/dashboard/home.html" class="mv-logo fw-bold text-success text-decoration-none fs-4">my<span>vendor</span></a>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@700;800;900&family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+
+  <style>
+    :root {
+      --green:       #16a34a;
+      --green-dark:  #14532d;
+      --green-light: #dcfce7;
+      --bg-color:    #f8faf8;
+      --card-bg:     #ffffff;
+      --text-main:   #0f1a0f;
+      --text-muted:  #4b6b50;
+      --border-color:#e5e7eb;
+      --wa-green:    #25D366;
+    }
+
+    body {
+      font-family: 'Open Sans', sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    h1, h2, h3, h4, h5 { font-family: 'Raleway', sans-serif; }
+
+    /* ─── NAVBAR ─────────────────────────────────────────── */
+    .dash-nav {
+      background: var(--card-bg);
+      border-bottom: 1px solid var(--border-color);
+      padding: 1rem 0;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+    .mv-logo {
+      font-family: 'Raleway', sans-serif;
+      font-weight: 800;
+      font-size: 1.2rem;
+      color: var(--green-dark);
+      text-decoration: none;
+    }
+    .mv-logo span { color: var(--green); }
+    
+    .nav-actions a {
+      color: var(--text-muted);
+      font-size: 1.2rem;
+      text-decoration: none;
+      margin-left: 1rem;
+    }
+    .nav-actions a:hover, .nav-actions a.active { color: var(--green); }
+
+    /* ─── HEADER & FILTERS ───────────────────────────────── */
+    .page-header {
+      display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;
+    }
+
+    .filter-scroll {
+      display: flex;
+      overflow-x: auto;
+      gap: 0.5rem;
+      padding-bottom: 0.5rem;
+      margin-bottom: 0.5rem;
+      scrollbar-width: none;
+    }
+    .filter-scroll::-webkit-scrollbar { display: none; }
+
+    .filter-pill {
+      white-space: nowrap; padding: 0.4rem 1rem; border-radius: 50px;
+      font-size: 0.85rem; font-weight: 700; background: var(--card-bg);
+      border: 1px solid var(--border-color); color: var(--text-muted);
+      cursor: pointer; transition: all 0.2s;
+    }
+    .filter-pill.active { background: var(--green); color: white; border-color: var(--green); }
+
+    /* ─── ORDER CARDS ────────────────────────────────────── */
+    .order-list { display: flex; flex-direction: column; gap: 12px; padding-bottom: 1.5rem; }
+
+    .order-card {
+      background: var(--card-bg); border: 1px solid var(--border-color);
+      border-radius: 12px; padding: 1.25rem;
+    }
+
+    .order-header {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      margin-bottom: 0.75rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem;
+    }
+    .order-id { font-size: 1rem; font-weight: 800; color: var(--green-dark); margin-bottom: 0.1rem; }
+    .order-date { font-size: 0.75rem; color: var(--text-muted); }
+    .order-amount { font-size: 1.1rem; font-weight: 800; color: var(--green); }
+
+    .status-badge {
+      font-size: 0.7rem; padding: 0.3rem 0.6rem; border-radius: 6px; font-weight: 700; text-transform: uppercase;
+    }
+    .status-new { background: #fef3c7; color: #b45309; }
+    .status-processing { background: #e0f2fe; color: #0284c7; }
+    .status-shipped { background: #e0e7ff; color: #4338ca; }
+    .status-delivered { background: var(--green-light); color: var(--green-dark); }
+    .status-cancelled { background: #fee2e2; color: #b91c1c; }
+
+    .customer-info { margin-bottom: 0.75rem; }
+    .customer-name { font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 0.4rem; }
+    .item-summary { font-size: 0.8rem; color: var(--text-muted); background: var(--bg-color); padding: 0.5rem; border-radius: 8px; margin-top: 0.5rem; }
+
+    /* Rider Info Box */
+    .rider-info {
+      background: #f0fdf4; border: 1px dashed #bbf7d0; border-radius: 8px; padding: 0.6rem; margin-top: 0.5rem;
+    }
+    .rider-info-title { font-size: 0.75rem; font-weight: 700; color: var(--green-dark); margin-bottom: 0.1rem; }
+    .rider-info-details { font-size: 0.8rem; color: var(--text-muted); }
+    .rider-info-details a { color: var(--green); text-decoration: none; font-weight: 700; }
+
+    .order-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 1rem; }
+    
+    .btn-action {
+      padding: 0.6rem; border-radius: 8px; font-size: 0.8rem; font-weight: 700;
+      text-align: center; cursor: pointer; transition: all 0.2s;
+    }
+    .btn-action.chat { background: var(--wa-green); color: white; border: none; }
+    .btn-action.chat:hover { background: #1da851; }
+    .btn-action.update { background: var(--bg-color); color: var(--text-main); border: 1px solid var(--border-color); }
+    .btn-action.create { background: var(--green); color: white; border: none; display: flex; align-items: center; gap: 0.4rem; padding: 0.5rem 1rem; border-radius: 8px;}
+    
+    .btn-track-link {
+      width: 100%; margin-top: 8px; background: transparent; color: var(--green); border: 1px dashed var(--green);
+      padding: 0.5rem; border-radius: 8px; font-size: 0.8rem; font-weight: 700;
+    }
+
+    /* ─── MODAL STYLES ───────────────────────────────────── */
+    .modal-content { border-radius: 16px; border: none; }
+    .modal-header { border-bottom: 1px solid var(--border-color); padding: 1.25rem; }
+    .modal-title { font-size: 1.1rem; font-weight: 800; color: var(--green-dark); }
+    .modal-body { padding: 1.25rem; }
+    .form-select-mv {
+      width: 100%; padding: 0.8rem 1rem; border: 1.5px solid var(--border-color); border-radius: 10px;
+      font-size: 0.95rem; color: var(--text-main); outline: none; margin-bottom: 1rem;
+    }
+    .form-select-mv:focus { border-color: var(--green); }
+    
+    .btn-save-status {
+      width: 100%; padding: 0.85rem; background: var(--green); color: white; border: none;
+      border-radius: 10px; font-weight: 700; font-size: 1rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+    }
+
+    /* ─── FOOTER & TOAST ─────────────────────────────────── */
+    .dashboard-footer {
+      margin-top: auto; text-align: center; padding: 1.5rem 1rem; font-size: 0.75rem;
+      color: var(--text-muted); border-top: 1px solid var(--border-color); background: var(--bg-color);
+    }
+    .dashboard-footer a { color: var(--green); text-decoration: none; font-weight: 600; }
+    
+    .toast-msg {
+      position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(100px);
+      background: var(--text-main); color: white; padding: 0.6rem 1.2rem;
+      border-radius: 50px; font-size: 0.85rem; font-weight: 600;
+      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      z-index: 2000; opacity: 0; pointer-events: none; text-align: center; width: max-content;
+    }
+    .toast-msg.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+  <nav class="dash-nav">
+    <div class="container max-w-md mx-auto d-flex justify-content-between align-items-center" style="max-width: 600px;">
+      <a href="/dashboard/home.html" class="mv-logo">my<span>vendor</span></a>
       <div class="nav-actions">
-        <a href="/dashboard/home.html" class="text-muted mx-2 fs-5"><i class="bi bi-house-door"></i></a>
-        <a href="/dashboard/orders.html" class="active text-success mx-2 fs-5"><i class="bi bi-box-seam-fill"></i></a>
-        <a href="/dashboard/products.html" class="text-muted mx-2 fs-5"><i class="bi bi-grid"></i></a>
+        <a href="/dashboard/home.html"><i class="bi bi-house-door"></i></a>
+        <a href="/dashboard/orders.html" class="active"><i class="bi bi-box-seam-fill"></i></a>
+        <a href="/dashboard/products.html"><i class="bi bi-grid"></i></a>
       </div>
     </div>
   </nav>
 
-  <main class="container py-4" style="max-width: 600px;">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-      <h2 class="fw-bold m-0">Orders</h2>
-      <button class="btn btn-success rounded-pill px-3 fw-bold" onclick="openCreateOrderModal()"><i class="bi bi-plus-lg"></i> Create</button>
+  <main class="container max-w-md mx-auto mt-4 flex-grow-1" style="max-width: 600px;">
+    
+    <div class="page-header">
+      <h1 style="font-size: 1.4rem; font-weight: 800; color: var(--green-dark); margin: 0;">Orders</h1>
+      <button class="btn-action create" onclick="openCreateOrderModal()">
+        <i class="bi bi-plus-lg"></i> Create Order
+      </button>
     </div>
 
-    <div class="filter-scroll mb-4">
+    <div class="filter-scroll" id="orderFilters">
       <div class="filter-pill active" onclick="filterOrders('all', this)">All</div>
       <div class="filter-pill" onclick="filterOrders('new', this)">New</div>
+      <div class="filter-pill" onclick="filterOrders('processing', this)">Processing</div>
       <div class="filter-pill" onclick="filterOrders('shipped', this)">Shipped</div>
       <div class="filter-pill" onclick="filterOrders('delivered', this)">Delivered</div>
     </div>
 
     <div class="order-list" id="orderList">
-       </div>
-
+      </div>
+    
     <div id="emptyState" class="text-center py-5 hidden">
-      <i class="bi bi-inbox text-muted fs-1"></i>
-      <h5 class="mt-3 fw-bold">No orders found</h5>
+      <i class="bi bi-inbox text-muted" style="font-size: 3rem;"></i>
+      <h3 style="font-size: 1.1rem; font-weight: 800; color: var(--text-main); margin-top: 1rem;">No orders found</h3>
+      <p class="text-muted" style="font-size: 0.85rem;">Try changing your filter or create a new order.</p>
     </div>
+
   </main>
 
   <div class="modal fade" id="createOrderModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content rounded-4 border-0">
-        <div class="modal-header border-0"><h5 class="modal-title fw-bold">New Order</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Create New Order</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
         <div class="modal-body">
+          <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
+            Enter the details from your WhatsApp chat to generate a public tracking link for the buyer.
+          </p>
           <form id="createOrderForm" onsubmit="handleCreateOrder(event)">
-            <input type="text" id="newCustomerName" class="form-control mb-3 rounded-3" placeholder="Customer Name" required>
-            <textarea id="newOrderItems" class="form-control mb-3 rounded-3" placeholder="Items (e.g. 1x Red Blouse)" rows="2" required></textarea>
-            <input type="number" id="newOrderTotal" class="form-control mb-3 rounded-3" placeholder="Total Paid (₦)" required>
-            <button type="submit" class="btn btn-success w-100 rounded-3 py-2 fw-bold">Generate Link</button>
+            
+            <div class="mb-3">
+              <label class="form-label text-muted" style="font-size: 0.8rem; font-weight: 700;">Customer Name</label>
+              <input type="text" class="form-select-mv" id="newCustomerName" placeholder="e.g. Sarah O." required>
+            </div>
+            
+            <div class="mb-3">
+              <label class="form-label text-muted" style="font-size: 0.8rem; font-weight: 700;">Items Ordered</label>
+              <textarea class="form-select-mv" id="newOrderItems" placeholder="e.g. 1x Silk Blouse (Red, M)" rows="2" required></textarea>
+            </div>
+            
+            <div class="mb-3">
+              <label class="form-label text-muted" style="font-size: 0.8rem; font-weight: 700;">Total Amount Paid (₦)</label>
+              <input type="number" class="form-select-mv" id="newOrderTotal" placeholder="e.g. 15000" required>
+            </div>
+            
+            <button type="submit" class="btn-save-status">
+              <i class="bi bi-link-45deg"></i> Generate Tracking Link
+            </button>
           </form>
         </div>
       </div>
@@ -61,27 +249,45 @@
 
   <div class="modal fade" id="statusModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content rounded-4 border-0">
-        <div class="modal-header border-0"><h5 class="modal-title fw-bold">Update Status</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Update Order Status</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
         <div class="modal-body">
-            <select id="statusSelect" class="form-select mb-3 rounded-3">
-                <option value="new">New</option>
-                <option value="processing">Processing</option>
-                <option value="shipped">Shipped</option>
-                <option value="delivered">Delivered</option>
-            </select>
-            <div id="riderDetailsGroup" style="display:none;">
-                <input type="text" id="riderName" class="form-control mb-2 rounded-3" placeholder="Rider Name">
-                <input type="tel" id="riderPhone" class="form-control mb-3 rounded-3" placeholder="Rider Phone">
-            </div>
-            <button onclick="saveStatus()" class="btn btn-success w-100 rounded-3 py-2 fw-bold">Update</button>
+          <label class="form-label text-muted" style="font-size: 0.8rem; font-weight: 700;">Set new status</label>
+          <select class="form-select-mv" id="statusSelect">
+            <option value="new">New Order</option>
+            <option value="processing">Processing (Packaging)</option>
+            <option value="shipped">Shipped / Out for Delivery</option>
+            <option value="delivered">Delivered</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+          
+          <div class="mb-3" id="riderDetailsGroup" style="display: none;">
+            <label class="form-label text-muted" style="font-size: 0.8rem; font-weight: 700;">Rider Details (Optional)</label>
+            <input type="text" class="form-select-mv mb-2" id="riderName" placeholder="Rider Name">
+            <input type="tel" class="form-select-mv" id="riderPhone" placeholder="Rider Phone Number">
+          </div>
+
+          <button type="button" class="btn-save-status" onclick="saveStatus()">Save Update</button>
         </div>
       </div>
     </div>
   </div>
 
+  <footer class="dashboard-footer">
+    <div class="container max-w-md mx-auto" style="max-width: 600px;">
+      &copy; 2026 myvendor &nbsp;·&nbsp; 
+      <a href="#">Help Center</a> &nbsp;·&nbsp; 
+      <a href="/terms.html">Terms</a>
+    </div>
+  </footer>
+
   <div class="toast-msg" id="toastMsg">Notification</div>
+
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script type="module" src="/assets/js/dashboard.js"></script>
+
 </body>
 </html>
