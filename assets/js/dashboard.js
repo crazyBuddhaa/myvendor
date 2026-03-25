@@ -528,31 +528,84 @@ window.updateSettings = async function(e) {
 };
 
 // ─── 8. ANALYTICS LOGIC ──────────────────────────────────────────
+// ─── 8. ANALYTICS LOGIC ──────────────────────────────────────────
 window.loadAnalytics = async function() {
-    const { data: orders, error } = await supabase
+    // A. FETCH ORDERS (Revenue & Counts)
+    const { data: orders, error: oError } = await supabase
         .from('orders')
         .select('total_amount, status')
         .eq('vendor_id', currentUser.id);
 
-    if (error || !orders) return;
+    if (orders) {
+        let revenue = 0;
+        let pendingCount = 0;
 
-    let revenue = 0;
-    let pendingCount = 0;
+        orders.forEach(order => {
+            if (order.status === 'delivered') revenue += parseFloat(order.total_amount) || 0;
+            if (order.status === 'new' || order.status === 'processing') pendingCount++;
+        });
 
-    orders.forEach(order => {
-        // Only count 'delivered' orders toward total revenue
-        if (order.status === 'delivered') {
-            revenue += parseFloat(order.total_amount) || 0;
-        }
+        if(document.getElementById('totalRevenue')) document.getElementById('totalRevenue').innerText = `₦${revenue.toLocaleString()}`;
+        if(document.getElementById('totalOrders')) document.getElementById('totalOrders').innerText = orders.length;
+        if(document.getElementById('pendingOrders')) document.getElementById('pendingOrders').innerText = pendingCount;
+    }
+
+    // B. FETCH ANALYTICS EVENTS (Traffic & Clicks)
+    // We join the products table to get the actual title of the product, not just the ID
+    const { data: events, error: eError } = await supabase
+        .from('analytics_events')
+        .select('event_type, product_id, products(title)')
+        .eq('vendor_id', currentUser.id);
+
+    if (events) {
+        let storeViews = 0;
+        let productViews = 0;
+        let waClicks = 0;
+        let productStats = {}; // To calculate top products
+
+        events.forEach(ev => {
+            if (ev.event_type === 'store_view') storeViews++;
+            
+            if (ev.event_type === 'product_view') {
+                productViews++;
+                if(ev.product_id) {
+                    if(!productStats[ev.product_id]) productStats[ev.product_id] = { title: ev.products?.title || 'Unknown Item', views: 0, clicks: 0 };
+                    productStats[ev.product_id].views++;
+                }
+            }
+
+            if (ev.event_type === 'whatsapp_click') {
+                waClicks++;
+                if(ev.product_id) {
+                    if(!productStats[ev.product_id]) productStats[ev.product_id] = { title: ev.products?.title || 'Unknown Item', views: 0, clicks: 0 };
+                    productStats[ev.product_id].clicks++;
+                }
+            }
+        });
+
+        // Update UI numbers
+        if(document.getElementById('statStoreViews')) document.getElementById('statStoreViews').innerText = storeViews;
+        if(document.getElementById('statProductViews')) document.getElementById('statProductViews').innerText = productViews;
+        if(document.getElementById('statWaClicks')) document.getElementById('statWaClicks').innerText = waClicks;
+
+        // Calculate and render Top Products list
+        const topProductsHtml = Object.values(productStats)
+            .sort((a, b) => b.clicks - a.clicks || b.views - a.views) // Rank by Clicks first, then Views
+            .slice(0, 5) // Show top 5
+            .map(p => `
+                <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                    <div class="fw-bold small text-truncate" style="max-width: 60%;">${p.title}</div>
+                    <div class="text-end small">
+                        <span class="text-muted me-3" style="font-size:0.75rem;"><i class="bi bi-eye"></i> ${p.views}</span>
+                        <span class="text-success fw-bold" style="font-size:0.8rem;"><i class="bi bi-whatsapp"></i> ${p.clicks}</span>
+                    </div>
+                </div>
+            `).join('');
         
-        if (order.status === 'new' || order.status === 'processing') {
-            pendingCount++;
+        if(document.getElementById('topProductsList')) {
+            document.getElementById('topProductsList').innerHTML = topProductsHtml || '<p class="text-muted small py-3 text-center mb-0">No product traffic yet.</p>';
         }
-    });
-
-    document.getElementById('totalRevenue').innerText = `₦${revenue.toLocaleString()}`;
-    document.getElementById('totalOrders').innerText = orders.length;
-    document.getElementById('pendingOrders').innerText = pendingCount;
+    }
 };
 
 // ─── RUN THE APP ──────────────────────────────────────────────────
