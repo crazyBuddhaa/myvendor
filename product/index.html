@@ -151,122 +151,68 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script type="module">
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
-        // ⚠️ CRITICAL: PASTE YOUR ACTUAL SUPABASE URL AND KEY HERE ⚠️
+        // ⚠️ IMPORTANT: Paste your actual Supabase URL and Anon Key here!
         const SUPABASE_URL = 'https://sotdghhayztnpwnrzjzu.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_OcOKwSDnoCGm_rt725Bi-g_rV6tjGlK';
-        
-        window.currentProduct = null;
+        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
         window.currentVendor = null;
+        window.currentProduct = null;
 
         async function initProductPage() {
-            const loadingText = document.querySelector('#loadingState h4');
-            const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            const params = new URLSearchParams(window.location.search);
+            const vendorSlug = params.get('vendor');
+            const productId = params.get('id');
 
-            try {
-                loadingText.innerText = "Reading link details...";
-                
-                const params = new URLSearchParams(window.location.search);
-                const vendorSlug = params.get('vendor');
-                const productId = params.get('id');
-
-                const storeLink = vendorSlug ? `/${vendorSlug}` : '/';
-                document.getElementById('backBtn').href = storeLink;
-                document.getElementById('errorBackBtn').href = storeLink;
-
-                if (!vendorSlug || !productId) {
-                    throw new Error("Invalid Link: Missing store or product ID in the URL.");
-                }
-
-                loadingText.innerText = "Finding product...";
-                const { data: product, error: pError } = await supabase
-                    .from('products')
-                    .select('*')
-                    .eq('id', productId)
-                    .single();
-                    
-                if (pError || !product) throw new Error("Product not found in database.");
-
-                loadingText.innerText = "Finding store details...";
-                const { data: vendor, error: vError } = await supabase
-                    .from('vendor_profiles')
-                    .select('*')
-                    .eq('slug', vendorSlug)
-                    .single();
-                    
-                if (vError || !vendor) throw new Error("Vendor not found in database.");
-
-                // Store for the form
-                window.currentProduct = product;
-                window.currentVendor = vendor;
-
-                // Populate UI
-                document.getElementById('loadingState').classList.add('hidden');
-                document.getElementById('productContent').classList.remove('hidden');
-
-                document.title = `${product.title} - ${vendor.business_name}`;
-                document.getElementById('prodTitle').innerText = product.title;
-                document.getElementById('prodPrice').innerText = `₦${parseFloat(product.price).toLocaleString()}`;
-                document.getElementById('displayTotal').innerText = `₦${parseFloat(product.price).toLocaleString()}`;
-
-                // Inject Category and New Tags
-                let tagsHtml = '';
-                if (product.category) tagsHtml += `<div class="badge-category me-2">${product.category}</div>`;
-                if (product.colors) tagsHtml += `<div class="badge-category me-2 bg-light text-dark border"><i class="bi bi-palette me-1"></i> ${product.colors}</div>`;
-                if (product.quantity && product.status !== 'pre_order') tagsHtml += `<div class="badge-category bg-light text-danger border"><i class="bi bi-box-seam me-1"></i> Only ${product.quantity} left</div>`;
-                
-                document.getElementById('prodCategory').outerHTML = `<div class="mb-3">${tagsHtml}</div>`;
-                
-                if (product.description) document.getElementById('prodDesc').innerText = product.description;
-
-                const imgContainer = document.getElementById('imgContainer');
-                if (product.image_url) {
-                    imgContainer.innerHTML += `<img src="${product.image_url}" alt="${product.title}">`;
-                } else {
-                    imgContainer.innerHTML += `📦`;
-                }
-
-                // Handle Status
-                const checkoutBtn = document.getElementById('checkoutBtn');
-                const stockBadge = document.getElementById('stockBadge');
-                
-                if (product.status === 'out_of_stock' || !product.in_stock) {
-                    stockBadge.innerText = "Sold Out";
-                    stockBadge.classList.remove('hidden');
-                    checkoutBtn.classList.add('btn-disabled');
-                    checkoutBtn.innerHTML = `<i class="bi bi-cart-x fs-5"></i> Currently Sold Out`;
-                    checkoutBtn.removeAttribute('data-bs-toggle');
-                } else if (product.status === 'pre_order') {
-                    stockBadge.innerText = "Pre-Order Available";
-                    stockBadge.style.background = "#fffbeb"; 
-                    stockBadge.style.color = "#d97706"; 
-                    stockBadge.classList.remove('hidden');
-                    checkoutBtn.innerHTML = `Proceed to Pre-Order`;
-                }
-
-            } catch (err) {
-                console.error("PAGE CRASHED:", err);
-                document.getElementById('loadingState').classList.add('hidden');
-                document.getElementById('productContent').classList.add('hidden');
-                document.getElementById('errorState').classList.remove('hidden');
-                
-                // Show the exact error on screen so we can debug it
-                document.getElementById('errorText').innerText = err.message;
+            if (!vendorSlug || !productId) {
+                alert("Invalid product link");
+                return;
             }
-        }
 
-        // Live update the total price in the modal
-        const buyerQty = document.getElementById('buyerQty');
-        if(buyerQty) {
-            buyerQty.addEventListener('input', function(e) {
-                if(window.currentProduct) {
-                    const qty = parseInt(e.target.value) || 1;
-                    const total = parseFloat(window.currentProduct.price) * qty;
-                    document.getElementById('displayTotal').innerText = `₦${total.toLocaleString()}`;
+            // 1. Fetch Vendor
+            const { data: vendor, error: vError } = await supabase.from('vendor_profiles').select('*').eq('slug', vendorSlug).single();
+            if (vError || !vendor) { alert("Store not found"); return; }
+            window.currentVendor = vendor;
+
+            // 2. Fetch Product
+            const { data: product, error: pError } = await supabase.from('products').select('*').eq('id', productId).single();
+            if (pError || !product) { alert("Product not found"); return; }
+            window.currentProduct = product;
+
+            // 3. Update UI
+            document.title = `${product.title} - ${vendor.business_name}`;
+            
+            if(document.getElementById('navStoreLink')) document.getElementById('navStoreLink').href = `/${vendor.slug}`;
+            if(document.getElementById('navStoreName')) document.getElementById('navStoreName').innerText = vendor.business_name;
+            if(document.getElementById('prodTitle')) document.getElementById('prodTitle').innerText = product.title;
+            if(document.getElementById('prodPrice')) document.getElementById('prodPrice').innerText = `₦${parseFloat(product.price).toLocaleString()}`;
+            if(document.getElementById('prodDesc')) document.getElementById('prodDesc').innerText = product.description || "No description provided.";
+            
+            if(document.getElementById('prodImage') && product.image_url) {
+                document.getElementById('prodImage').src = product.image_url;
+            } else {
+                document.getElementById('prodImageContainer').innerHTML = '<div style="height:300px; display:flex; align-items:center; justify-content:center; background:#f1f5f9; font-size:4rem;">📦</div>';
+            }
+
+            if (!product.in_stock) {
+                const btn = document.getElementById('mainOrderBtn');
+                if(btn) {
+                    btn.disabled = true;
+                    btn.innerText = "Out of Stock";
+                    btn.classList.add('bg-secondary');
                 }
+            }
+
+            // 🌟 NEW: TRACK PRODUCT VIEW (Runs in background)
+            supabase.from('analytics_events').insert([{
+                vendor_id: window.currentVendor.id,
+                product_id: window.currentProduct.id,
+                event_type: 'product_view'
+            }]).then(({ error }) => {
+                if(error) console.error("Analytics Error:", error);
             });
         }
 
@@ -290,12 +236,26 @@
             if(notes) msg += `📝 *Notes/Size:* ${notes}\n`;
             msg += `\n🔗 *Product Link:* ${window.location.href}`;
 
-            const phone = window.currentVendor.phone || ""; 
+            // 🌟 NEW: TRACK WHATSAPP CLICK (Runs in background)
+            supabase.from('analytics_events').insert([{
+                vendor_id: window.currentVendor.id,
+                product_id: window.currentProduct.id,
+                event_type: 'whatsapp_click'
+            }]).then(({ error }) => {
+                if(error) console.error("Analytics Error:", error);
+            });
+
+            const phone = window.currentVendor.whatsapp_number || window.currentVendor.phone || ""; 
             const waUrl = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
             window.open(waUrl, '_blank');
-            
+
             const modalEl = document.getElementById('checkoutModal');
-            if(modalEl) bootstrap.Modal.getInstance(modalEl).hide();
+            if(modalEl) {
+                // Ensure bootstrap is loaded before trying to hide the modal
+                if (typeof bootstrap !== 'undefined') {
+                    bootstrap.Modal.getInstance(modalEl).hide();
+                }
+            }
         };
 
         // Initialize the page
