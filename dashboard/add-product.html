@@ -288,78 +288,7 @@
     </div>
   </footer>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  
-  <script>
-    // ─── IMAGE PREVIEW LOGIC ──────────────────────────────────
-    function previewImage(input) {
-      if (input.files && input.files[0]) {
-        const reader = new FileReader();
-        
-        reader.onload = function(e) {
-          document.getElementById('imagePreview').src = e.target.result;
-          document.getElementById('imagePreview').style.display = 'block';
-          document.getElementById('removeImgBtn').style.display = 'flex';
-        }
-        
-        reader.readAsDataURL(input.files[0]);
-      }
-    }
+  <script type="module" src="/assets/js/dashboard.js"></script>
 
-    function clearImage(event) {
-      event.preventDefault(); // Stop file input from opening again
-      document.getElementById('fileInput').value = '';
-      document.getElementById('imagePreview').src = '';
-      document.getElementById('imagePreview').style.display = 'none';
-      document.getElementById('removeImgBtn').style.display = 'none';
-    }
-
-    // ─── VARIANTS TOGGLE ──────────────────────────────────────
-    function toggleVariants() {
-      const isChecked = document.getElementById('variantSwitch').checked;
-      const box = document.getElementById('variantsBox');
-      if(isChecked) {
-        box.classList.remove('hidden');
-      } else {
-        box.classList.add('hidden');
-        document.getElementById('varSizes').value = '';
-        document.getElementById('varColors').value = '';
-      }
-    }
-
-    // ─── FORM SUBMISSION ──────────────────────────────────────
-    function saveProduct(event) {
-      event.preventDefault();
-      
-      // 1. Show loading state
-      document.getElementById('btnSave').disabled = true;
-      document.getElementById('saveSpinner').style.display = 'block';
-      document.getElementById('saveIcon').style.display = 'none';
-      document.getElementById('saveLabel').innerText = 'Saving...';
-
-      // 2. Gather data
-      const title = document.getElementById('prodTitle').value;
-      const price = document.getElementById('prodPrice').value;
-      const inStock = document.getElementById('stockSwitch').checked;
-      
-      // Logic for variants parsing
-      let variantsJson = [];
-      if(document.getElementById('variantSwitch').checked) {
-        const sizes = document.getElementById('varSizes').value.split(',').map(s => s.trim()).filter(Boolean);
-        const colors = document.getElementById('varColors').value.split(',').map(c => c.trim()).filter(Boolean);
-        
-        if(sizes.length > 0) variantsJson.push({ name: "Size", options: sizes });
-        if(colors.length > 0) variantsJson.push({ name: "Color", options: colors });
-      }
-
-      // 3. Simulate API call (In reality, assets/js/dashboard.js will send this to Supabase)
-      console.log("Saving to Supabase:", { title, price, inStock, variants: variantsJson });
-
-      setTimeout(() => {
-        // Redirect back to inventory on success
-        window.location.href = '/dashboard/products.html';
-      }, 800);
-    }
-  </script>
 </body>
 </html>
