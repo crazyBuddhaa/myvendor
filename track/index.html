@@ -10,10 +10,10 @@
     <style>
         body { font-family: 'Open Sans', sans-serif; background: #f8faf8; }
         .track-card { background: white; border-radius: 20px; border: 1px solid #eee; padding: 2rem; margin-top: 2rem; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-        .status-dot { width: 12px; height: 12px; border-radius: 50%; background: #ddd; position: relative; z-index: 2; }
+        .status-dot { width: 12px; height: 12px; border-radius: 50%; background: #ddd; position: relative; z-index: 2; transition: 0.3s; }
         .status-dot.active { background: #16a34a; box-shadow: 0 0 0 4px #dcfce7; }
         .timeline-item { position: relative; padding-left: 30px; margin-bottom: 2rem; }
-        .timeline-item::before { content: ''; position: absolute; left: 5px; top: 12px; height: 100%; width: 2px; background: #eee; }
+        .timeline-item::before { content: ''; position: absolute; left: 5px; top: 12px; height: 100%; width: 2px; background: #eee; transition: 0.3s; }
         .timeline-item:last-child::before { display: none; }
         .timeline-item.active::before { background: #16a34a; }
     </style>
@@ -21,85 +21,133 @@
 <body>
     <div class="container py-5" style="max-width: 500px;">
         <div class="text-center mb-4">
-            <h2 class="fw-bold" style="font-family:'Raleway';">Order Tracking</h2>
-            <p id="orderIdDisplay" class="text-muted fw-bold"></p>
+            <h2 class="fw-bold" style="font-family:'Raleway'; color: #14532d;">Order Tracking</h2>
+            <p id="orderIdDisplay" class="text-muted fw-bold">Connecting...</p>
         </div>
 
-        <div id="loading" class="text-center py-5"><div class="spinner-border text-success"></div></div>
+        <div id="loading" class="text-center py-5">
+            <div class="spinner-border text-success" role="status"></div>
+            <p class="text-muted mt-3 small fw-bold">Fetching latest updates...</p>
+        </div>
 
         <div id="trackContent" class="track-card d-none">
-            <div class="mb-4">
-                <label class="text-muted small fw-bold">Items</label>
-                <div id="displayItems" class="fw-bold"></div>
+            <div class="mb-4 bg-light p-3 rounded-3 border">
+                <label class="text-muted small fw-bold text-uppercase">Items in Order</label>
+                <div id="displayItems" class="fw-bold mt-1" style="color: #0f1a0f;"></div>
             </div>
 
             <div class="timeline">
                 <div class="timeline-item" id="step-new">
                     <div class="status-dot"></div>
-                    <div class="fw-bold small">Order Placed</div>
-                    <div class="text-muted extra-small">Vendor has recorded your order</div>
+                    <div class="fw-bold small text-dark">Order Confirmed</div>
+                    <div class="text-muted" style="font-size: 0.75rem;">Vendor has recorded your order</div>
                 </div>
                 <div class="timeline-item" id="step-processing">
                     <div class="status-dot"></div>
-                    <div class="fw-bold small">Processing</div>
-                    <div class="text-muted extra-small">Your order is being packaged</div>
+                    <div class="fw-bold small text-dark">Processing</div>
+                    <div class="text-muted" style="font-size: 0.75rem;">Your order is being prepared</div>
                 </div>
                 <div class="timeline-item" id="step-shipped">
                     <div class="status-dot"></div>
-                    <div class="fw-bold small">Out for Delivery</div>
-                    <div id="riderNote" class="text-muted extra-small">A rider is bringing your package</div>
+                    <div class="fw-bold small text-dark">Shipped / Out for Delivery</div>
+                    <div id="riderNote" class="text-muted" style="font-size: 0.75rem;">Package is on its way</div>
                 </div>
                 <div class="timeline-item" id="step-delivered">
                     <div class="status-dot"></div>
-                    <div class="fw-bold small">Delivered</div>
-                    <div class="text-muted extra-small">Order received successfully</div>
+                    <div class="fw-bold small text-dark">Delivered</div>
+                    <div class="text-muted" style="font-size: 0.75rem;">Order received successfully</div>
                 </div>
             </div>
         </div>
 
-        <div id="errorState" class="text-center py-5 d-none">
-            <i class="bi bi-exclamation-circle fs-1 text-danger"></i>
-            <h5 class="mt-3">Order Not Found</h5>
-            <p class="text-muted">Check the link again or contact the vendor.</p>
+        <div id="errorState" class="text-center py-5 d-none bg-white rounded-4 border">
+            <i class="bi bi-search fs-1 text-muted"></i>
+            <h5 class="mt-3 fw-bold" id="errorTitle">Order Not Found</h5>
+            <p class="text-muted small" id="errorDesc">Please check the link again or contact the vendor.</p>
         </div>
     </div>
 
     <script type="module">
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+        
+        // ⚠️ IMPORTANT: PASTE YOUR ACTUAL SUPABASE URL AND KEY HERE ⚠️
         const supabase = createClient('YOUR_URL', 'YOUR_KEY');
 
-        async function track() {
-            const id = new URLSearchParams(window.location.search).get('id');
-            if(!id) return;
-            document.getElementById('orderIdDisplay').innerText = id;
-
-            const { data, error } = await supabase.from('orders').select('*').eq('id', id).single();
-            document.getElementById('loading').classList.add('d-none');
-
-            if(error || !data) {
-                document.getElementById('errorState').classList.remove('d-none');
-                return;
-            }
-
-            document.getElementById('trackContent').classList.remove('d-none');
-            document.getElementById('displayItems').innerText = data.items;
-
-            const steps = ['new', 'processing', 'shipped', 'delivered'];
-            const currentIndex = steps.indexOf(data.status);
-
-            steps.forEach((step, index) => {
-                const el = document.getElementById(`step-${step}`);
-                if(index <= currentIndex) {
-                    el.classList.add('active');
-                    el.querySelector('.status-dot').classList.add('active');
+        async function initTracking() {
+            try {
+                // 1. Get the ID from the URL
+                const id = new URLSearchParams(window.location.search).get('id');
+                
+                if(!id) {
+                    showError("Invalid Tracking Link", "There is no order ID in this URL.");
+                    return;
                 }
-            });
 
-            if(data.rider_name) {
-                document.getElementById('riderNote').innerText = `Rider: ${data.rider_name} (${data.rider_phone})`;
+                document.getElementById('orderIdDisplay').innerText = `ID: ${id}`;
+
+                // 2. Fetch from Database
+                const { data, error } = await supabase.from('orders').select('*').eq('id', id).single();
+
+                // 3. Stop the spinner
+                document.getElementById('loading').classList.add('d-none');
+
+                // 4. Handle missing data
+                if(error || !data) {
+                    showError("Order Not Found", "We couldn't find an order with this ID. It may have been deleted.");
+                    return;
+                }
+
+                // 5. Populate Data
+                document.getElementById('trackContent').classList.remove('d-none');
+                document.getElementById('displayItems').innerText = data.items;
+
+                // 6. Animate the timeline based on status
+                const steps = ['new', 'processing', 'shipped', 'delivered'];
+                
+                // If it's cancelled, we handle it specially
+                if (data.status === 'cancelled') {
+                    document.getElementById('trackContent').innerHTML = `
+                        <div class="text-center py-3">
+                            <i class="bi bi-x-circle text-danger fs-1"></i>
+                            <h4 class="fw-bold text-danger mt-2">Order Cancelled</h4>
+                            <p class="text-muted small">This order has been cancelled by the vendor.</p>
+                        </div>`;
+                    return;
+                }
+
+                const currentIndex = steps.indexOf(data.status);
+
+                steps.forEach((step, index) => {
+                    const el = document.getElementById(`step-${step}`);
+                    if(index <= currentIndex) {
+                        el.classList.add('active');
+                        el.querySelector('.status-dot').classList.add('active');
+                    }
+                });
+
+                // 7. Add rider details if it's shipped
+                if(data.rider_name && (data.status === 'shipped' || data.status === 'delivered')) {
+                    document.getElementById('riderNote').innerHTML = `
+                        <span class="badge bg-success bg-opacity-10 text-success border border-success mb-1">
+                            <i class="bi bi-bicycle"></i> Rider: ${data.rider_name} - ${data.rider_phone}
+                        </span>`;
+                }
+
+            } catch (err) {
+                showError("Connection Error", "Could not connect to the database. Check your connection.");
             }
         }
-        track();
+
+        function showError(title, desc) {
+            document.getElementById('loading').classList.add('d-none');
+            document.getElementById('errorState').classList.remove('d-none');
+            document.getElementById('errorTitle').innerText = title;
+            document.getElementById('errorDesc').innerText = desc;
+            document.getElementById('orderIdDisplay').innerText = '';
+        }
+
+        // Run it
+        initTracking();
     </script>
 </body>
 </html>
