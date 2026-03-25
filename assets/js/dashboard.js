@@ -149,12 +149,22 @@ window.loadEditProduct = async function() {
     }
 
     document.getElementById('editProductForm').classList.remove('hidden');
-    document.getElementById('editProdTitle').value = product.title;
-    document.getElementById('editProdPrice').value = product.price;
+    
+    // Fill basic details
+    document.getElementById('editProdTitle').value = product.title || '';
+    document.getElementById('editProdPrice').value = product.price || '';
     if(document.getElementById('editProdCategory')) document.getElementById('editProdCategory').value = product.category || 'Other';
     if(document.getElementById('editProdDesc')) document.getElementById('editProdDesc').value = product.description || '';
-    if(document.getElementById('editStockSwitch')) document.getElementById('editStockSwitch').checked = product.in_stock;
+    
+    // Fill the new Tags/Inventory details
+    if(document.getElementById('editProdStatus')) {
+        // Fallback: If they haven't set a status yet, guess based on the old boolean
+        document.getElementById('editProdStatus').value = product.status || (product.in_stock ? 'in_stock' : 'out_of_stock');
+    }
+    if(document.getElementById('editProdQty')) document.getElementById('editProdQty').value = product.quantity || '';
+    if(document.getElementById('editProdColors')) document.getElementById('editProdColors').value = product.colors || '';
 
+    // Handle Image
     if (product.image_url) {
         currentExistingImageUrl = product.image_url;
         document.getElementById('editImagePreview').src = product.image_url;
@@ -172,7 +182,6 @@ window.updateProduct = async function(e) {
         let finalImgUrl = currentExistingImageUrl;
         const fileInput = document.getElementById('editFileInput');
 
-        // Only upload a new image if they selected one
         if (fileInput && fileInput.files.length > 0) {
             const file = fileInput.files[0];
             const name = `${currentUser.id}-${Date.now()}.${file.name.split('.').pop()}`;
@@ -180,12 +189,26 @@ window.updateProduct = async function(e) {
             finalImgUrl = supabase.storage.from('product-images').getPublicUrl(name).data.publicUrl;
         }
 
+        // Grab the new tag values
+        const newStatus = document.getElementById('editProdStatus').value;
+        const rawQty = document.getElementById('editProdQty').value;
+        const newQty = rawQty ? parseInt(rawQty) : null;
+        const newColors = document.getElementById('editProdColors').value;
+
         const { error } = await supabase.from('products').update({
             title: document.getElementById('editProdTitle').value,
             price: document.getElementById('editProdPrice').value,
             category: document.getElementById('editProdCategory').value,
             description: document.getElementById('editProdDesc').value,
-            in_stock: document.getElementById('editStockSwitch').checked,
+            
+            // Send the new tags to the database
+            status: newStatus,
+            quantity: newQty,
+            colors: newColors,
+            
+            // Keep the old boolean updated so we don't break the inventory page's toggle switch
+            in_stock: (newStatus === 'in_stock' || newStatus === 'pre_order'), 
+            
             image_url: finalImgUrl
         }).eq('id', currentEditId);
 
