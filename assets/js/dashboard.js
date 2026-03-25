@@ -258,4 +258,4 @@ if (searchInput) {
     });
 }
 
-initDashboard();
+initDashboard(); 
