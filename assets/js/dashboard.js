@@ -246,18 +246,52 @@ window.openCreateOrderModal = function() {
 
 window.handleCreateOrder = async function(e) {
     e.preventDefault();
-    const id = `MV-${new Date().toISOString().slice(2,10).replace(/-/g,'')}-${Math.floor(Math.random()*900)+100}`;
-    const { error } = await supabase.from('orders').insert([{ 
-        id, vendor_id: currentUser.id, customer_name: document.getElementById('newCustomerName').value, 
-        items: document.getElementById('newOrderItems').value, total_amount: document.getElementById('newOrderTotal').value, status: 'new' 
-    }]);
-    if (!error) {
-        bootstrap.Modal.getInstance(document.getElementById('createOrderModal')).hide();
+    
+    // 1. Grab the submit button and freeze it
+    const submitBtn = document.querySelector('#createOrderForm button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving...';
+
+    try {
+        const id = `MV-${new Date().toISOString().slice(2,10).replace(/-/g,'')}-${Math.floor(Math.random()*900)+100}`;
+        
+        const { error } = await supabase.from('orders').insert([{ 
+            id, 
+            vendor_id: currentUser.id, 
+            customer_name: document.getElementById('newCustomerName').value, 
+            items: document.getElementById('newOrderItems').value, 
+            total_amount: document.getElementById('newOrderTotal').value, 
+            status: 'new' 
+        }]);
+
+        if (error) throw error;
+
+        // 2. Success! Hide modal and refresh
+        if(document.getElementById('createOrderModal')) {
+            bootstrap.Modal.getInstance(document.getElementById('createOrderModal')).hide();
+        }
         window.loadOrders();
         navigator.clipboard.writeText(`https://myvendor.qzz.io/track/?id=${id}`);
-        alert('Order Created & Link Copied!');
-    } else { alert(error.message); }
+        
+        const toast = document.getElementById('toastMsg');
+        if (toast) {
+            toast.innerText = "Order Created & Link Copied!";
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        } else {
+            alert('Order Created & Link Copied!');
+        }
+
+    } catch (error) {
+        alert("Error creating order: " + error.message);
+    } finally {
+        // 3. Unfreeze the button no matter what happens
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
+    }
 };
+        
 
 window.copyTracking = function(id) { navigator.clipboard.writeText(`https://myvendor.qzz.io/track/?id=${id}`); alert("Tracking link copied!"); };
 
