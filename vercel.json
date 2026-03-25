@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    { "source": "/track/:order", "destination": "/track/index.html" },
+    { "source": "/dashboard/:path*", "destination": "/dashboard/:path*.html" },
+    { "source": "/:vendor", "destination": "/[vendor]/index.html" },
+    { "source": "/:vendor/p/:product", "destination": "/product/index.html" }
+  ]
+}
