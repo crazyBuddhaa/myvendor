@@ -1,279 +1,52 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Vendor Storefront - myvendor</title>
-
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet"/>
-  <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@700;800;900&family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
-
-  <style>
-    :root {
-      --green:       #16a34a;
-      --green-dark:  #14532d;
-      --green-light: #dcfce7;
-      --bg-color:    #f8faf8;
-      --card-bg:     #ffffff;
-      --text-main:   #0f1a0f;
-      --text-muted:  #4b6b50;
-      --border-color:#e5e7eb;
-    }
-
-    body {
-      font-family: 'Open Sans', sans-serif;
-      background-color: var(--bg-color);
-      color: var(--text-main);
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
-      padding-bottom: 40px;
-    }
-
-    h1, h2, h3, .store-name { font-family: 'Raleway', sans-serif; }
-
-    /* ─── STORE HEADER ────────────────────────────────────── */
-    .store-cover {
-      background: linear-gradient(135deg, var(--green-dark), var(--green));
-      height: 140px;
-      width: 100%;
-      position: absolute;
-      top: 0; left: 0;
-      z-index: -1;
-    }
-
-    .store-profile {
-      margin-top: 70px;
-      background: var(--card-bg);
-      border-radius: 16px;
-      padding: 1.5rem 1.25rem;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.04);
-      text-align: center;
-      position: relative;
-      border: 1px solid var(--border-color);
-      margin-bottom: 1.5rem;
-    }
-
-    .store-avatar {
-      width: 86px; height: 86px;
-      background: var(--bg-color);
-      border: 4px solid var(--card-bg);
-      border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 2.2rem; color: var(--green);
-      position: absolute; top: -43px; left: 50%; transform: translateX(-50%);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-    }
-
-    .store-name {
-      margin-top: 35px;
-      font-weight: 800;
-      font-size: 1.4rem;
-      color: var(--green-dark);
-      margin-bottom: 0.2rem;
-      display: flex; align-items: center; justify-content: center; gap: 0.3rem;
-    }
-
-    .verified-badge { color: #0ea5e9; font-size: 1.1rem; }
-
-    .store-meta { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.8rem; }
-    
-    .store-bio {
-      font-size: 0.9rem; line-height: 1.5; color: var(--text-main); margin: 0;
-    }
-
-    /* ─── SEARCH & FILTERS ────────────────────────────────── */
-    .search-container { position: relative; margin-bottom: 1rem; }
-    .search-input {
-      width: 100%; padding: 0.8rem 1rem 0.8rem 2.8rem;
-      border-radius: 12px; border: 1.5px solid var(--border-color);
-      background: var(--card-bg); font-size: 0.95rem; outline: none; transition: all 0.2s;
-    }
-    .search-input:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(22,197,94,0.15); }
-    .search-icon { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 1.1rem; }
-
-    .category-scroll {
-      display: flex; overflow-x: auto; gap: 0.5rem; padding-bottom: 0.5rem; margin-bottom: 1rem; scrollbar-width: none;
-    }
-    .category-scroll::-webkit-scrollbar { display: none; }
-    
-    .cat-pill {
-      white-space: nowrap; padding: 0.4rem 1.2rem; border-radius: 50px;
-      font-size: 0.85rem; font-weight: 700; background: var(--card-bg);
-      border: 1px solid var(--border-color); color: var(--text-muted);
-      cursor: pointer; transition: all 0.2s;
-    }
-    .cat-pill.active { background: var(--green-dark); color: white; border-color: var(--green-dark); }
-
-    /* ─── PRODUCT GRID ────────────────────────────────────── */
-    .product-grid {
-      display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;
-    }
-
-    .product-card {
-      background: var(--card-bg); border-radius: 12px; overflow: hidden;
-      border: 1px solid var(--border-color); text-decoration: none; color: inherit;
-      display: flex; flex-direction: column; transition: transform 0.2s, box-shadow 0.2s;
-    }
-    .product-card:active { transform: scale(0.97); }
-
-    .product-img {
-      width: 100%; aspect-ratio: 1 / 1; background: #f1f5f9;
-      display: flex; align-items: center; justify-content: center; font-size: 3rem;
-    }
-
-    .product-info { padding: 0.75rem; display: flex; flex-direction: column; flex-grow: 1; }
-    .product-title {
-      font-size: 0.85rem; font-weight: 700; line-height: 1.3; margin-bottom: 0.3rem;
-      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
-    }
-    .product-price { font-size: 1rem; font-weight: 800; color: var(--green); margin-top: auto; }
-
-    /* ─── FOOTER BRANDING ─────────────────────────────────── */
-    .storefront-footer {
-      text-align: center; margin-top: auto; padding-top: 3rem; font-size: 0.8rem; color: var(--text-muted);
-    }
-    .storefront-footer a { color: var(--green-dark); font-weight: 800; text-decoration: none; font-family: 'Raleway', sans-serif; }
-    
-    .hidden { display: none !important; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Storefront - myvendor</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@700;900&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --green: #16a34a; --green-dark: #14532d; }
+        body { font-family: 'Open Sans', sans-serif; background: #f8faf8; }
+        .product-card { background: white; border-radius: 12px; border: 1px solid #eee; overflow: hidden; position: relative; height: 100%; transition: 0.2s; }
+        .product-img { aspect-ratio: 1/1; background: #f1f5f9; display: flex; align-items: center; justify-content: center; font-size: 2rem; overflow: hidden; }
+        .product-img img { width: 100%; height: 100%; object-fit: cover; }
+        .product-info { padding: 10px; }
+        .product-title { font-size: 0.85rem; font-weight: 700; color: #333; margin: 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; height: 2.4rem; }
+        .product-price { color: var(--green); font-weight: 800; margin-top: 5px; font-size: 0.95rem; }
+        .stock-tag { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.7); color: white; font-size: 0.6rem; padding: 4px 8px; border-radius: 4px; font-weight: 700; z-index: 2; }
+        .search-input { border-radius: 50px; padding: 12px 20px; border: 1px solid #eee; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .hidden { display: none; }
+    </style>
 </head>
 <body>
 
-  <div class="store-cover"></div>
-
-  <main class="container max-w-md mx-auto px-3" style="max-width: 600px;">
-    
-    <div class="store-profile">
-      <div class="store-avatar"><i class="bi bi-bag-heart-fill"></i></div>
-      
-      <h1 class="store-name" id="displayStoreName">
-        GlamStore NG <i class="bi bi-patch-check-fill verified-badge" title="Verified Vendor"></i>
-      </h1>
-      
-      <div class="store-meta">
-        <i class="bi bi-geo-alt-fill text-green me-1"></i> Lagos, Nigeria &nbsp;·&nbsp;
-        <i class="bi bi-star-fill text-warning me-1"></i> 4.9
-      </div>
-      
-      <p class="store-bio">
-        Premium fashion and accessories for the modern woman. Delivery nationwide. 🚀
-      </p>
-    </div>
-
-    <div class="search-container">
-      <i class="bi bi-search search-icon"></i>
-      <input type="text" class="search-input" placeholder="Search products..." id="searchInput">
-    </div>
-
-    <div class="category-scroll" id="categoryFilters">
-      <div class="cat-pill active" onclick="filterCategory('all', this)">All Items</div>
-      <div class="cat-pill" onclick="filterCategory('clothing', this)">Clothing</div>
-      <div class="cat-pill" onclick="filterCategory('shoes', this)">Shoes</div>
-      <div class="cat-pill" onclick="filterCategory('bags', this)">Bags</div>
-      <div class="cat-pill" onclick="filterCategory('beauty', this)">Beauty</div>
-    </div>
-
-    <div class="product-grid" id="productGrid">
-      
-      <a href="/product/?vendor=glamstore&id=silk-blouse" class="product-card" data-category="clothing">
-        <div class="product-img" style="background:#fef9c3;">👗</div>
-        <div class="product-info">
-          <h2 class="product-title">Luxury Silk Blouse - Summer Collection</h2>
-          <p class="product-price">₦15,000</p>
+    <nav class="bg-white border-bottom py-3 sticky-top">
+        <div class="container d-flex justify-content-between" style="max-width: 600px;">
+            <a href="#" id="navStoreLink" class="fw-bold text-dark text-decoration-none">
+                <i class="bi bi-shop me-2 text-success"></i> <span id="displayStoreName">Loading...</span>
+            </a>
+            <span class="text-muted small">Powered by myvendor</span>
         </div>
-      </a>
+    </nav>
 
-      <a href="/product/?vendor=glamstore&id=block-heels" class="product-card" data-category="shoes">
-        <div class="product-img" style="background:#fce7f3;">👠</div>
-        <div class="product-info">
-          <h2 class="product-title">Nude Block Heels (Sizes 38-42)</h2>
-          <p class="product-price">₦22,500</p>
+    <main class="container py-4" style="max-width: 600px;">
+        <div class="mb-4">
+            <input type="text" id="searchInput" class="form-control search-input" placeholder="Search products..." onkeyup="searchStore()">
         </div>
-      </a>
 
-      <a href="/product/?vendor=glamstore&id=mini-bag" class="product-card" data-category="bags">
-        <div class="product-img" style="background:#dcfce7;">👜</div>
-        <div class="product-info">
-          <h2 class="product-title">Leather Mini Crossbody Bag</h2>
-          <p class="product-price">₦18,000</p>
+        <div class="row g-3" id="productGrid">
+            </div>
+
+        <div id="emptyState" class="text-center py-5 hidden">
+            <i class="bi bi-search fs-1 text-muted"></i>
+            <h5 class="mt-3">No products found</h5>
+            <p class="text-muted">Try searching for something else.</p>
         </div>
-      </a>
+    </main>
 
-      <a href="/product/?vendor=glamstore&id=lip-kit" class="product-card" data-category="beauty">
-        <div class="product-img" style="background:#ede9fe;">💄</div>
-        <div class="product-info">
-          <h2 class="product-title">Matte Lip Kit - Ruby Red</h2>
-          <p class="product-price">₦6,500</p>
-        </div>
-      </a>
-
-    </div>
-    
-    <div id="emptyState" class="text-center py-5 hidden">
-      <i class="bi bi-search text-muted" style="font-size: 2.5rem;"></i>
-      <h3 style="font-size: 1rem; font-weight: 800; color: var(--text-main); margin-top: 1rem;">No products found</h3>
-      <p class="text-muted" style="font-size: 0.85rem;">Try a different search or category.</p>
-    </div>
-
-  </main>
-
-  <footer class="storefront-footer">
-    Powered by <a href="/">myvendor</a>
-  </footer>
-
-  <script>
-    // ─── DYNAMIC STORE NAME FROM URL (For testing) ────────────
-    document.addEventListener("DOMContentLoaded", () => {
-      const params = new URLSearchParams(window.location.search);
-      const vendorSlug = params.get('vendor');
-      
-      if (vendorSlug) {
-        // Capitalize the slug just for a quick visual test
-        const storeName = vendorSlug.charAt(0).toUpperCase() + vendorSlug.slice(1);
-        document.getElementById('displayStoreName').innerHTML = `${storeName} <i class="bi bi-patch-check-fill verified-badge"></i>`;
-      }
-    });
-
-    // ─── SEARCH & FILTER LOGIC ────────────────────────────────
-    let currentCategory = 'all';
-    
-    function filterCategory(category, pillElement) {
-      // Update UI Pills
-      document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('active'));
-      pillElement.classList.add('active');
-      
-      currentCategory = category;
-      applyFilters();
-    }
-
-    document.getElementById('searchInput').addEventListener('keyup', applyFilters);
-
-    function applyFilters() {
-      const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-      const cards = document.querySelectorAll('.product-card');
-      let visibleCount = 0;
-
-      cards.forEach(card => {
-        const title = card.querySelector('.product-title').innerText.toLowerCase();
-        const category = card.getAttribute('data-category');
-        
-        const matchesSearch = title.includes(searchTerm);
-        const matchesCategory = currentCategory === 'all' || category === currentCategory;
-
-        if (matchesSearch && matchesCategory) {
-          card.classList.remove('hidden');
-          visibleCount++;
-        } else {
-          card.classList.add('hidden');
-        }
-      });
-
-      const emptyState = document.getElementById('emptyState');
-      if (visibleCount === 0) emptyState.classList.remove('hidden');
-      else emptyState.classList.add('hidden');
-    }
-  </script>
+    <script type="module" src="/assets/js/storefront.js"></script>
 </body>
 </html>
