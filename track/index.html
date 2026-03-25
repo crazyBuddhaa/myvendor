@@ -1,358 +1,105 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Track Order - myvendor</title>
-
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet"/>
-  <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@700;800&family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
-
-  <style>
-    :root {
-      --green: #16a34a;
-      --green-dark: #14532d;
-      --green-light: #dcfce7;
-      --bg-color: #f8faf8;
-      --card-bg: #ffffff;
-      --text-main: #0f1a0f;
-      --text-muted: #4b6b50;
-      --border-color: #e5e7eb;
-    }
-
-    body {
-      font-family: 'Open Sans', sans-serif;
-      background-color: var(--bg-color);
-      color: var(--text-main);
-      padding-bottom: 60px;
-    }
-
-    h1, h2, h3, h4, h5 { font-family: 'Raleway', sans-serif; }
-
-    /* ─── NAVBAR ─────────────────────────────────────────── */
-    .mv-nav {
-      background: var(--card-bg);
-      border-bottom: 1px solid var(--border-color);
-      padding: 1rem 0;
-      position: sticky;
-      top: 0;
-      z-index: 1000;
-    }
-    .mv-logo {
-      font-family: 'Raleway', sans-serif;
-      font-weight: 800;
-      font-size: 1.2rem;
-      color: var(--green-dark);
-      text-decoration: none;
-    }
-    .mv-logo span { color: var(--green); }
-
-    /* ─── CARD COMPONENTS ────────────────────────────────── */
-    .track-card {
-      background: var(--card-bg);
-      border: 1px solid var(--border-color);
-      border-radius: 16px;
-      padding: 1.5rem;
-      margin-bottom: 1.25rem;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.02);
-    }
-
-    .status-badge {
-      display: inline-block;
-      padding: 0.35rem 0.8rem;
-      border-radius: 50px;
-      font-size: 0.75rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-    .status-processing { background: #fef3c7; color: #b45309; }
-    .status-shipped    { background: #e0e7ff; color: #4338ca; }
-    .status-delivered  { background: var(--green-light); color: var(--green-dark); }
-
-    /* ─── SEARCH SECTION ─────────────────────────────────── */
-    .search-input {
-      width: 100%;
-      padding: 1rem 1.2rem;
-      border-radius: 12px;
-      border: 1.5px solid var(--border-color);
-      font-size: 1rem;
-      margin-bottom: 1rem;
-      outline: none;
-      transition: all 0.2s;
-    }
-    .search-input:focus {
-      border-color: var(--green);
-      box-shadow: 0 0 0 3px rgba(22,197,94,0.15);
-    }
-
-    .btn-track {
-      width: 100%;
-      padding: 0.9rem;
-      background: var(--green);
-      color: white;
-      border: none;
-      border-radius: 12px;
-      font-weight: 700;
-      font-size: 1rem;
-      transition: background 0.2s;
-    }
-    .btn-track:hover { background: var(--green-dark); }
-
-    /* ─── TIMELINE ───────────────────────────────────────── */
-    .timeline {
-      position: relative;
-      padding-left: 24px;
-      margin-top: 1rem;
-    }
-    .timeline::before {
-      content: '';
-      position: absolute;
-      left: 6px;
-      top: 8px;
-      bottom: 0;
-      width: 2px;
-      background: var(--border-color);
-    }
-    .timeline-item {
-      position: relative;
-      margin-bottom: 1.5rem;
-    }
-    .timeline-item:last-child { margin-bottom: 0; }
-    
-    .timeline-dot {
-      position: absolute;
-      left: -24px;
-      top: 4px;
-      width: 14px;
-      height: 14px;
-      border-radius: 50%;
-      background: var(--border-color);
-      border: 2px solid var(--card-bg);
-    }
-    .timeline-item.active .timeline-dot {
-      background: var(--green);
-      box-shadow: 0 0 0 3px var(--green-light);
-    }
-    
-    .timeline-date {
-      font-size: 0.75rem;
-      color: var(--text-muted);
-      margin-bottom: 0.2rem;
-      font-weight: 600;
-    }
-    .timeline-title {
-      font-size: 0.95rem;
-      font-weight: 700;
-      color: var(--text-main);
-      margin-bottom: 0.2rem;
-    }
-    .timeline-desc {
-      font-size: 0.85rem;
-      color: var(--text-muted);
-      margin: 0;
-      line-height: 1.4;
-    }
-
-    /* ─── ORDER SUMMARY ──────────────────────────────────── */
-    .item-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 0.75rem 0;
-      border-bottom: 1px solid var(--border-color);
-    }
-    .item-row:last-child { border-bottom: none; padding-bottom: 0; }
-    
-    .item-name { font-size: 0.9rem; font-weight: 600; color: var(--text-main); }
-    .item-var  { font-size: 0.75rem; color: var(--text-muted); }
-    .item-price{ font-size: 0.9rem; font-weight: 700; color: var(--text-main); }
-
-    .total-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding-top: 1rem;
-      margin-top: 0.5rem;
-      border-top: 1.5px dashed var(--border-color);
-      font-weight: 800;
-      font-size: 1.1rem;
-      color: var(--green-dark);
-    }
-
-    /* ─── REVIEW CTA ─────────────────────────────────────── */
-    .review-box {
-      background: var(--green-light);
-      border: 1px solid #bbf7d0;
-      border-radius: 12px;
-      padding: 1.25rem;
-      text-align: center;
-      margin-top: 1.5rem;
-    }
-    .btn-review {
-      background: var(--green-dark);
-      color: white;
-      border: none;
-      border-radius: 8px;
-      padding: 0.6rem 1.2rem;
-      font-size: 0.85rem;
-      font-weight: 700;
-      margin-top: 0.75rem;
-      transition: transform 0.2s;
-    }
-    .btn-review:hover { transform: translateY(-2px); color: white; }
-
-    /* Utilities */
-    .hidden { display: none !important; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Track Order - myvendor</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@700;900&family=Open+Sans:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Open Sans', sans-serif; background: #f8faf8; }
+        .track-card { background: white; border-radius: 20px; border: 1px solid #eee; padding: 2rem; margin-top: 2rem; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .status-dot { width: 12px; height: 12px; border-radius: 50%; background: #ddd; position: relative; z-index: 2; }
+        .status-dot.active { background: #16a34a; box-shadow: 0 0 0 4px #dcfce7; }
+        .timeline-item { position: relative; padding-left: 30px; margin-bottom: 2rem; }
+        .timeline-item::before { content: ''; position: absolute; left: 5px; top: 12px; height: 100%; width: 2px; background: #eee; }
+        .timeline-item:last-child::before { display: none; }
+        .timeline-item.active::before { background: #16a34a; }
+    </style>
 </head>
 <body>
-
-  <nav class="mv-nav">
-    <div class="container max-w-md mx-auto d-flex justify-content-center" style="max-width: 600px;">
-      <a href="/" class="mv-logo">my<span>vendor</span></a>
-    </div>
-  </nav>
-
-  <main class="container max-w-md mx-auto mt-4" style="max-width: 600px;">
-
-    <div id="searchState" class="track-card text-center py-5">
-      <div style="font-size: 2.5rem; color: var(--green); margin-bottom: 1rem;">
-        <i class="bi bi-box-seam"></i>
-      </div>
-      <h2 style="font-size: 1.4rem; font-weight: 800; color: var(--green-dark);">Track Your Order</h2>
-      <p class="text-muted" style="font-size: 0.9rem; margin-bottom: 1.5rem;">
-        Enter the tracking number provided by the vendor.
-      </p>
-      
-      <form onsubmit="searchOrder(event)">
-        <input type="text" id="orderInput" class="search-input" placeholder="e.g. MV-250325-001" required>
-        <button type="submit" class="btn-track">
-          <i class="bi bi-search me-2"></i> Track Package
-        </button>
-      </form>
-    </div>
-
-    <div id="resultState" class="hidden">
-      
-      <div class="track-card">
-        <div class="d-flex justify-content-between align-items-start mb-3">
-          <div>
-            <div class="text-muted mb-1" style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase;">Order Number</div>
-            <h1 style="font-size: 1.2rem; font-weight: 800; margin: 0;" id="displayOrderId">MV-000000-000</h1>
-          </div>
-          <div class="status-badge status-shipped" id="displayStatus">Out for Delivery</div>
+    <div class="container py-5" style="max-width: 500px;">
+        <div class="text-center mb-4">
+            <h2 class="fw-bold" style="font-family:'Raleway';">Order Tracking</h2>
+            <p id="orderIdDisplay" class="text-muted fw-bold"></p>
         </div>
-        
-        <div style="background: var(--bg-color); padding: 0.75rem; border-radius: 8px; font-size: 0.85rem;">
-          <i class="bi bi-shop text-green me-2"></i> Sold by: <strong id="displayVendor">Store Name</strong>
-        </div>
-      </div>
 
-      <div class="track-card">
-        <h3 style="font-size: 1rem; font-weight: 800; margin-bottom: 1rem;">Tracking History</h3>
-        
-        <div class="timeline" id="timelineContainer">
-          <div class="timeline-item active">
-            <div class="timeline-dot"></div>
-            <div class="timeline-date">Today, 10:30 AM</div>
-            <div class="timeline-title">Out for Delivery</div>
-            <div class="timeline-desc">Rider (John: 08012345678) is heading to your location.</div>
-          </div>
-          
-          <div class="timeline-item">
-            <div class="timeline-dot"></div>
-            <div class="timeline-date">Yesterday, 4:15 PM</div>
-            <div class="timeline-title">Order Processed</div>
-            <div class="timeline-desc">Vendor has packaged your items.</div>
-          </div>
-          
-          <div class="timeline-item">
-            <div class="timeline-dot"></div>
-            <div class="timeline-date">Yesterday, 9:00 AM</div>
-            <div class="timeline-title">Order Confirmed</div>
-            <div class="timeline-desc">Payment confirmed on WhatsApp.</div>
-          </div>
-        </div>
-      </div>
+        <div id="loading" class="text-center py-5"><div class="spinner-border text-success"></div></div>
 
-      <div class="track-card">
-        <h3 style="font-size: 1rem; font-weight: 800; margin-bottom: 1rem;">Items Included</h3>
-        
-        <div id="itemsContainer">
-          <div class="item-row">
-            <div>
-              <div class="item-name">Luxury Silk Blouse</div>
-              <div class="item-var">Size: M | Color: Red</div>
+        <div id="trackContent" class="track-card d-none">
+            <div class="mb-4">
+                <label class="text-muted small fw-bold">Items</label>
+                <div id="displayItems" class="fw-bold"></div>
             </div>
-            <div class="item-price">₦15,000</div>
-          </div>
-          <div class="item-row">
-            <div>
-              <div class="item-name">Leather Mini Bag</div>
-              <div class="item-var">Qty: 1</div>
+
+            <div class="timeline">
+                <div class="timeline-item" id="step-new">
+                    <div class="status-dot"></div>
+                    <div class="fw-bold small">Order Placed</div>
+                    <div class="text-muted extra-small">Vendor has recorded your order</div>
+                </div>
+                <div class="timeline-item" id="step-processing">
+                    <div class="status-dot"></div>
+                    <div class="fw-bold small">Processing</div>
+                    <div class="text-muted extra-small">Your order is being packaged</div>
+                </div>
+                <div class="timeline-item" id="step-shipped">
+                    <div class="status-dot"></div>
+                    <div class="fw-bold small">Out for Delivery</div>
+                    <div id="riderNote" class="text-muted extra-small">A rider is bringing your package</div>
+                </div>
+                <div class="timeline-item" id="step-delivered">
+                    <div class="status-dot"></div>
+                    <div class="fw-bold small">Delivered</div>
+                    <div class="text-muted extra-small">Order received successfully</div>
+                </div>
             </div>
-            <div class="item-price">₦18,000</div>
-          </div>
         </div>
 
-        <div class="total-row">
-          <span>Total</span>
-          <span id="displayTotal">₦33,000</span>
+        <div id="errorState" class="text-center py-5 d-none">
+            <i class="bi bi-exclamation-circle fs-1 text-danger"></i>
+            <h5 class="mt-3">Order Not Found</h5>
+            <p class="text-muted">Check the link again or contact the vendor.</p>
         </div>
-      </div>
-
-      <div id="reviewSection" class="review-box hidden">
-        <h4 style="font-size: 1rem; font-weight: 800; color: var(--green-dark); margin-bottom: 0.2rem;">Received your order?</h4>
-        <p style="font-size: 0.8rem; color: var(--green-dark); margin: 0;">Leave a review to help others trust this vendor.</p>
-        <button class="btn-review"><i class="bi bi-star-fill me-1" style="color: #f59e0b;"></i> Leave a Review</button>
-      </div>
-
     </div>
 
-  </main>
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+        const supabase = createClient('YOUR_URL', 'YOUR_KEY');
 
-  <script>
-    // ─── UI LOGIC ─────────────────────────────────────────────
-    
-    // Check URL parameters on load
-    document.addEventListener("DOMContentLoaded", () => {
-      const params = new URLSearchParams(window.location.search);
-      const orderId = params.get('id');
-      
-      if (orderId) {
-        // If an ID is present, hide search, show results
-        document.getElementById('searchState').classList.add('hidden');
-        document.getElementById('resultState').classList.remove('hidden');
-        
-        // Update the UI with the ID (Later, this will fetch from Supabase)
-        document.getElementById('displayOrderId').innerText = orderId.toUpperCase();
-        
-        // Example: If order starts with 'DEL', simulate a Delivered state to show Review UI
-        if (orderId.toUpperCase().includes('DEL')) {
-          document.getElementById('displayStatus').innerText = 'Delivered';
-          document.getElementById('displayStatus').className = 'status-badge status-delivered';
-          document.getElementById('reviewSection').classList.remove('hidden');
+        async function track() {
+            const id = new URLSearchParams(window.location.search).get('id');
+            if(!id) return;
+            document.getElementById('orderIdDisplay').innerText = id;
+
+            const { data, error } = await supabase.from('orders').select('*').eq('id', id).single();
+            document.getElementById('loading').classList.add('d-none');
+
+            if(error || !data) {
+                document.getElementById('errorState').classList.remove('d-none');
+                return;
+            }
+
+            document.getElementById('trackContent').classList.remove('d-none');
+            document.getElementById('displayItems').innerText = data.items;
+
+            const steps = ['new', 'processing', 'shipped', 'delivered'];
+            const currentIndex = steps.indexOf(data.status);
+
+            steps.forEach((step, index) => {
+                const el = document.getElementById(`step-${step}`);
+                if(index <= currentIndex) {
+                    el.classList.add('active');
+                    el.querySelector('.status-dot').classList.add('active');
+                }
+            });
+
+            if(data.rider_name) {
+                document.getElementById('riderNote').innerText = `Rider: ${data.rider_name} (${data.rider_phone})`;
+            }
         }
-      }
-    });
-
-    // Handle manual search form submission
-    function searchOrder(event) {
-      event.preventDefault();
-      const val = document.getElementById('orderInput').value.trim();
-      if (val) {
-        // Redirect to the same page but with the URL parameter
-        window.location.href = `/track/?id=${encodeURIComponent(val)}`;
-      }
-    }
-    
-    // In assets/js/track.js, you will connect Supabase to:
-    // 1. Fetch order details from 'orders' table where order_number = URL param
-    // 2. Fetch history from 'order_status_history' table
-    // 3. Dynamically build the DOM elements for the timeline and items list
-  </script>
+        track();
+    </script>
 </body>
 </html>
-
