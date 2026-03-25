@@ -349,68 +349,6 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   
-  <script>
-    // Simple client-side search filtering
-    document.getElementById('searchInput').addEventListener('keyup', function(e) {
-      const term = e.target.value.toLowerCase();
-      const cards = document.querySelectorAll('.product-card');
-      let visibleCount = 0;
-      
-      cards.forEach(card => {
-        const title = card.querySelector('.prod-title').innerText.toLowerCase();
-        if(title.includes(term)) {
-          card.style.display = 'flex';
-          visibleCount++;
-        } else {
-          card.style.display = 'none';
-        }
-      });
-
-      // Show empty state if search yields no results
-      const emptyState = document.getElementById('emptyState');
-      if(visibleCount === 0 && cards.length > 0) {
-        emptyState.classList.remove('hidden');
-        emptyState.querySelector('.empty-title').innerText = "No products found";
-        emptyState.querySelector('p').innerText = "Try a different search term.";
-        emptyState.querySelector('.btn-add').classList.add('hidden');
-      } else if (cards.length > 0) {
-        emptyState.classList.add('hidden');
-      }
-    });
-
-    // Copy direct product link
-    function copyProductLink(productId) {
-      // In a real app, you'd pull the vendor slug dynamically from Supabase
-      const vendorSlug = "glamstore"; 
-      const linkText = `myvendor.ng/product/?vendor=${vendorSlug}&id=${productId}`;
-      
-      navigator.clipboard.writeText(`https://${linkText}`).then(() => {
-        const toast = document.getElementById('toastMsg');
-        toast.innerText = 'Product link copied!';
-        toast.classList.add('show');
-        setTimeout(() => toast.classList.remove('show'), 2500);
-      }).catch(err => {
-        console.error('Failed to copy: ', err);
-      });
-    }
-
-    // Dummy delete function
-    function deleteProduct(btnElement) {
-      if(confirm('Are you sure you want to delete this product?')) {
-        const card = btnElement.closest('.product-card');
-        card.remove();
-        
-        // Show empty state if all deleted
-        if(document.querySelectorAll('.product-card').length === 0) {
-          document.getElementById('emptyState').classList.remove('hidden');
-        }
-      }
-    }
-
-    // In assets/js/dashboard.js, you will connect Supabase to:
-    // 1. Fetch products where vendor_id = current user
-    // 2. Map through them to create these HTML cards dynamically
-    // 3. Handle actual deletion from the database
-  </script>
+  <script type="module" src="/assets/js/dashboard.js"></script>
 </body>
 </html>
