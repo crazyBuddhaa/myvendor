@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Orders - myvendor</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@700;800;900&family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+
+  <style>
+    :root {
+      --green:       #16a34a;
+      --green-dark:  #14532d;
+      --green-light: #dcfce7;
+      --bg-color:    #f8faf8;
+      --card-bg:     #ffffff;
+      --text-main:   #0f1a0f;
+      --text-muted:  #4b6b50;
+      --border-color:#e5e7eb;
+      --wa-green:    #25D366;
+    }
+
+    body {
+      font-family: 'Open Sans', sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    h1, h2, h3, h4, h5 { font-family: 'Raleway', sans-serif; }
+
+    /* ─── NAVBAR ─────────────────────────────────────────── */
+    .dash-nav {
+      background: var(--card-bg);
+      border-bottom: 1px solid var(--border-color);
+      padding: 1rem 0;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+    .mv-logo {
+      font-family: 'Raleway', sans-serif;
+      font-weight: 800;
+      font-size: 1.2rem;
+      color: var(--green-dark);
+      text-decoration: none;
+    }
+    .mv-logo span { color: var(--green); }
+    
+    .nav-actions a {
+      color: var(--text-muted);
+      font-size: 1.2rem;
+      text-decoration: none;
+      margin-left: 1rem;
+    }
+    .nav-actions a:hover, .nav-actions a.active { color: var(--green); }
+
+    /* ─── HEADER & FILTERS ───────────────────────────────── */
+    .page-header {
+      display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;
+    }
+
+    /* Horizontal scrollable filters for mobile */
+    .filter-scroll {
+      display: flex;
+      overflow-x: auto;
+      gap: 0.5rem;
+      padding-bottom: 0.5rem;
+      margin-bottom: 0.5rem;
+      scrollbar-width: none; /* Firefox */
+    }
+    .filter-scroll::-webkit-scrollbar { display: none; } /* Safari/Chrome */
+
+    .filter-pill {
+      white-space: nowrap;
+      padding: 0.4rem 1rem;
+      border-radius: 50px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .filter-pill.active {
+      background: var(--green);
+      color: white;
+      border-color: var(--green);
+    }
+
+    /* ─── ORDER CARDS ────────────────────────────────────── */
+    .order-list { display: flex; flex-direction: column; gap: 12px; padding-bottom: 1.5rem; }
+
+    .order-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 1.25rem;
+    }
+
+    .order-header {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      margin-bottom: 0.75rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem;
+    }
+    .order-id { font-size: 1rem; font-weight: 800; color: var(--green-dark); margin-bottom: 0.1rem; }
+    .order-date { font-size: 0.75rem; color: var(--text-muted); }
+    .order-amount { font-size: 1.1rem; font-weight: 800; color: var(--green); }
+
+    /* Badges */
+    .status-badge {
+      font-size: 0.7rem; padding: 0.3rem 0.6rem; border-radius: 6px; font-weight: 700; text-transform: uppercase;
+    }
+    .status-new { background: #fef3c7; color: #b45309; }
+    .status-processing { background: #e0f2fe; color: #0284c7; }
+    .status-shipped { background: #e0e7ff; color: #4338ca; }
+    .status-delivered { background: var(--green-light); color: var(--green-dark); }
+    .status-cancelled { background: #fee2e2; color: #ef4444; }
+
+    /* Customer Info */
+    .customer-info { margin-bottom: 0.75rem; }
+    .customer-name { font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 0.4rem; }
+    .item-summary { font-size: 0.8rem; color: var(--text-muted); background: var(--bg-color); padding: 0.5rem; border-radius: 8px; margin-top: 0.5rem; }
+
+    /* Action Buttons */
+    .order-actions {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 1rem;
+    }
+    .btn-action {
+      padding: 0.6rem; border-radius: 8px; font-size: 0.8rem; font-weight: 700;
+      text-align: center; cursor: pointer; border: none; transition: all 0.2s;
+    }
+    .btn-action.chat { background: var(--wa-green); color: white; }
+    .btn-action.chat:hover { background: #1da851; }
+    
+    .btn-action.update { background: var(--bg-color); color: var(--text-main); border: 1px solid var(--border-color); }
+    .btn-action.update:hover { background: var(--border-color); }
+
+    .btn-track-link {
+      width: 100%; margin-top: 8px; background: transparent; color: var(--green); border: 1px dashed var(--green);
+      padding: 0.5rem; border-radius: 8px; font-size: 0.8rem; font-weight: 700;
+    }
+    .btn-track-link:active { background: var(--green-light); }
+
+    /* ─── MODAL STYLES ───────────────────────────────────── */
+    .modal-content { border-radius: 16px; border: none; }
+    .modal-header { border-bottom: 1px solid var(--border-color); padding: 1.25rem; }
+    .modal-title { font-size: 1.1rem; font-weight: 800; color: var(--green-dark); }
+    .modal-body { padding: 1.25rem; }
+    .form-select-mv {
+      width: 100%; padding: 0.8rem 1rem; border: 1.5px solid var(--border-color); border-radius: 10px;
+      font-size: 0.95rem; color: var(--text-main); outline: none; margin-bottom: 1rem;
+    }
+    .form-select-mv:focus { border-color: var(--green); }
+    
+    .btn-save-status {
+      width: 100%; padding: 0.85rem; background: var(--green); color: white; border: none;
+      border-radius: 10px; font-weight: 700; font-size: 1rem;
+    }
+
+    /* ─── FOOTER ─────────────────────────────────────────── */
+    .dashboard-footer {
+      margin-top: auto; text-align: center; padding: 1.5rem 1rem; font-size: 0.75rem;
+      color: var(--text-muted); border-top: 1px solid var(--border-color); background: var(--bg-color);
+    }
+    .dashboard-footer a { color: var(--green); text-decoration: none; font-weight: 600; }
+    
+    /* Toast */
+    .toast-msg {
+      position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(100px);
+      background: var(--text-main); color: white; padding: 0.6rem 1.2rem;
+      border-radius: 50px; font-size: 0.85rem; font-weight: 600;
+      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      z-index: 2000; opacity: 0; pointer-events: none;
+    }
+    .toast-msg.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+  <nav class="dash-nav">
+    <div class="container max-w-md mx-auto d-flex justify-content-between align-items-center" style="max-width: 600px;">
+      <a href="/dashboard/home.html" class="mv-logo">my<span>vendor</span></a>
+      <div class="nav-actions">
+        <a href="/dashboard/home.html"><i class="bi bi-house-door"></i></a>
+        <a href="/dashboard/orders.html" class="active"><i class="bi bi-box-seam-fill"></i></a>
+        <a href="/dashboard/products.html"><i class="bi bi-grid"></i></a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container max-w-md mx-auto mt-4 flex-grow-1" style="max-width: 600px;">
+    
+    <div class="page-header">
+      <h1 style="font-size: 1.4rem; font-weight: 800; color: var(--green-dark); margin: 0;">Orders</h1>
+    </div>
+
+    <div class="filter-scroll" id="orderFilters">
+      <div class="filter-pill active" onclick="filterOrders('all', this)">All</div>
+      <div class="filter-pill" onclick="filterOrders('new', this)">New</div>
+      <div class="filter-pill" onclick="filterOrders('processing', this)">Processing</div>
+      <div class="filter-pill" onclick="filterOrders('shipped', this)">Shipped</div>
+      <div class="filter-pill" onclick="filterOrders('delivered', this)">Delivered</div>
+    </div>
+
+    <div class="order-list" id="orderList">
+      
+      <div class="order-card" data-status="new">
+        <div class="order-header">
+          <div>
+            <div class="order-id">MV-250325-002</div>
+            <div class="order-date">Today, 10:15 AM</div>
+          </div>
+          <div class="text-end">
+            <div class="order-amount">₦33,000</div>
+            <div class="status-badge status-new mt-1">New Order</div>
+          </div>
+        </div>
+        
+        <div class="customer-info">
+          <div class="customer-name"><i class="bi bi-person-fill text-muted"></i> Sarah O.</div>
+          <div class="item-summary">1x Luxury Silk Blouse (Red, M)<br>1x Leather Mini Bag</div>
+        </div>
+
+        <div class="order-actions">
+          <a href="https://wa.me/2348000000000" target="_blank" class="btn-action chat text-decoration-none">
+            <i class="bi bi-whatsapp"></i> Chat Buyer
+          </a>
+          <button class="btn-action update" onclick="openStatusModal('MV-250325-002', 'new')">
+            <i class="bi bi-arrow-repeat"></i> Update Status
+          </button>
+        </div>
+        <button class="btn-track-link" onclick="copyTracking('MV-250325-002')">
+          <i class="bi bi-link-45deg"></i> Copy Tracking Link
+        </button>
+      </div>
+
+      <div class="order-card" data-status="processing">
+        <div class="order-header">
+          <div>
+            <div class="order-id">MV-250324-001</div>
+            <div class="order-date">Yesterday, 2:30 PM</div>
+          </div>
+          <div class="text-end">
+            <div class="order-amount">₦12,500</div>
+            <div class="status-badge status-processing mt-1">Processing</div>
+          </div>
+        </div>
+        
+        <div class="customer-info">
+          <div class="customer-name"><i class="bi bi-person-fill text-muted"></i> Emeka U.</div>
+          <div class="item-summary">1x Nude Block Heels (Size 40)</div>
+        </div>
+
+        <div class="order-actions">
+          <a href="https://wa.me/2348000000000" target="_blank" class="btn-action chat text-decoration-none">
+            <i class="bi bi-whatsapp"></i> Chat Buyer
+          </a>
+          <button class="btn-action update" onclick="openStatusModal('MV-250324-001', 'processing')">
+            <i class="bi bi-arrow-repeat"></i> Update Status
+          </button>
+        </div>
+        <button class="btn-track-link" onclick="copyTracking('MV-250324-001')">
+          <i class="bi bi-link-45deg"></i> Copy Tracking Link
+        </button>
+      </div>
+
+      <div class="order-card" data-status="delivered">
+        <div class="order-header">
+          <div>
+            <div class="order-id">MV-250320-045</div>
+            <div class="order-date">Mar 20, 2026</div>
+          </div>
+          <div class="text-end">
+            <div class="order-amount">₦6,500</div>
+            <div class="status-badge status-delivered mt-1">Delivered</div>
+          </div>
+        </div>
+        
+        <div class="customer-info">
+          <div class="customer-name"><i class="bi bi-person-fill text-muted"></i> Funmi A.</div>
+          <div class="item-summary">1x Matte Lip Kit (Ruby Red)</div>
+        </div>
+
+        <div class="order-actions" style="grid-template-columns: 1fr;">
+          <a href="/track/?id=MV-250320-045" target="_blank" class="btn-action update text-decoration-none text-center">
+            <i class="bi bi-eye"></i> View Public Tracking Page
+          </a>
+        </div>
+      </div>
+
+    </div>
+    
+    <div id="emptyState" class="text-center py-5 hidden">
+      <i class="bi bi-inbox text-muted" style="font-size: 3rem;"></i>
+      <h3 style="font-size: 1.1rem; font-weight: 800; color: var(--text-main); margin-top: 1rem;">No orders found</h3>
+      <p class="text-muted" style="font-size: 0.85rem;">Try changing your filter.</p>
+    </div>
+
+  </main>
+
+  <div class="modal fade" id="statusModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Update Order <span id="modalOrderId" class="text-green"></span></h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <label class="form-label text-muted" style="font-size: 0.8rem; font-weight: 700;">Set new status</label>
+          <select class="form-select-mv" id="statusSelect">
+            <option value="new">New Order</option>
+            <option value="processing">Processing (Packaging)</option>
+            <option value="shipped">Shipped / Out for Delivery</option>
+            <option value="delivered">Delivered</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+          
+          <div class="mb-3" id="riderDetailsGroup" style="display: none;">
+            <label class="form-label text-muted" style="font-size: 0.8rem; font-weight: 700;">Rider Details (Optional)</label>
+            <input type="text" class="form-select-mv mb-2" id="riderName" placeholder="Rider Name">
+            <input type="tel" class="form-select-mv" id="riderPhone" placeholder="Rider Phone Number">
+          </div>
+
+          <button type="button" class="btn-save-status" onclick="saveStatus()">Save Update</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="dashboard-footer">
+    <div class="container max-w-md mx-auto" style="max-width: 600px;">
+      &copy; 2026 myvendor &nbsp;·&nbsp; 
+      <a href="#">Help Center</a> &nbsp;·&nbsp; 
+      <a href="/terms.html">Terms</a>
+    </div>
+  </footer>
+
+  <div class="toast-msg" id="toastMsg">Tracking link copied!</div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  
+  <script>
+    // ─── FILTER LOGIC ─────────────────────────────────────────
+    function filterOrders(status, pillElement) {
+      // Update UI Pills
+      document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+      pillElement.classList.add('active');
+
+      // Filter Cards
+      const cards = document.querySelectorAll('.order-card');
+      let visibleCount = 0;
+
+      cards.forEach(card => {
+        if (status === 'all' || card.getAttribute('data-status') === status) {
+          card.classList.remove('hidden');
+          visibleCount++;
+        } else {
+          card.classList.add('hidden');
+        }
+      });
+
+      // Handle Empty State
+      const emptyState = document.getElementById('emptyState');
+      if (visibleCount === 0) {
+        emptyState.classList.remove('hidden');
+      } else {
+        emptyState.classList.add('hidden');
+      }
+    }
+
+    // ─── COPY TRACKING LINK ───────────────────────────────────
+    function copyTracking(orderId) {
+      const linkText = `myvendor.ng/track/?id=${orderId}`;
+      navigator.clipboard.writeText(`https://${linkText}`).then(() => {
+        const toast = document.getElementById('toastMsg');
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 2500);
+      });
+    }
+
+    // ─── MODAL LOGIC ──────────────────────────────────────────
+    let currentUpdateOrderId = null;
+    const statusModal = new bootstrap.Modal(document.getElementById('statusModal'));
+
+    function openStatusModal(orderId, currentStatus) {
+      currentUpdateOrderId = orderId;
+      document.getElementById('modalOrderId').innerText = orderId;
+      document.getElementById('statusSelect').value = currentStatus;
+      
+      // Show rider inputs if status is shipped
+      toggleRiderInputs();
+      
+      statusModal.show();
+    }
+
+    // Show rider details input if "Shipped" is selected
+    document.getElementById('statusSelect').addEventListener('change', toggleRiderInputs);
+    
+    function toggleRiderInputs() {
+      const status = document.getElementById('statusSelect').value;
+      const riderGroup = document.getElementById('riderDetailsGroup');
+      if(status === 'shipped') {
+        riderGroup.style.display = 'block';
+      } else {
+        riderGroup.style.display = 'none';
+      }
+    }
+
+    function saveStatus() {
+      const newStatus = document.getElementById('statusSelect').value;
+      // In production: Send this to Supabase `orders` table and insert into `order_status_history`
+      console.log(`Updating ${currentUpdateOrderId} to ${newStatus}`);
+      
+      statusModal.hide();
+      
+      // Show success toast
+      const toast = document.getElementById('toastMsg');
+      toast.innerText = 'Order updated successfully!';
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2500);
+      
+      // In production: Reload the orders list here
+    }
+  </script>
+</body>
+</html>
