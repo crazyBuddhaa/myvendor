@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Orders | myvendor — Manage Orders</title>
+  <title>Orders | myvendor</title>
 
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
@@ -11,269 +11,193 @@
 
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-
     :root {
-      --green-primary: #0f6e3f;
-      --green-bright: #22c55e;
-      --green-dark: #0a4a2a;
-      --green-soft: #e9f7ef;
-      --gray-bg: #fafcf9;
-      --card-white: #ffffff;
-      --text-dark: #1a2e1f;
-      --text-muted: #4a6741;
-      --border-light: #e9eee5;
-      --shadow-sm: 0 8px 20px rgba(0, 32, 0, 0.04), 0 2px 4px rgba(0, 0, 0, 0.02);
-      --shadow-md: 0 12px 28px rgba(0, 20, 0, 0.08);
-      --radius-xl: 28px;
-      --radius-lg: 20px;
-      --radius-md: 16px;
-      --radius-sm: 12px;
-      --wa-green: #25D366;
+      --green-primary: #0f6e3f; --green-bright: #22c55e; --green-dark: #0a4a2a; --green-soft: #e9f7ef;
+      --gray-bg: #fafcf9; --card-white: #ffffff; --text-dark: #1a2e1f; --text-muted: #4a6741;
+      --border-light: #e9eee5; --shadow-sm: 0 8px 20px rgba(0, 32, 0, 0.04); --radius-lg: 20px; --radius-md: 16px; --radius-sm: 12px;
     }
-
-    body {
-      background: linear-gradient(145deg, #f6fcf5 0%, #f0f7ec 100%);
-      font-family: 'Inter', sans-serif;
-      color: var(--text-dark);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
-
-    h1, h2, h3, h4, .logo-font {
-      font-family: 'Raleway', sans-serif;
-      font-weight: 800;
-      letter-spacing: -0.02em;
-    }
+    body { background: linear-gradient(145deg, #f6fcf5 0%, #f0f7ec 100%); font-family: 'Inter', sans-serif; color: var(--text-dark); min-height: 100vh; display: flex; flex-direction: column; }
+    h1, h2, h3, h4 { font-family: 'Raleway', sans-serif; font-weight: 800; letter-spacing: -0.02em; }
 
     /* Navbar */
-    .orders-nav {
-      background: rgba(255, 255, 255, 0.96);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid rgba(34, 197, 94, 0.2);
-      padding: 0.75rem 0;
-      position: sticky;
-      top: 0;
-      z-index: 1000;
-    }
+    .dashboard-nav { background: rgba(255, 255, 255, 0.96); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(34, 197, 94, 0.2); padding: 0.75rem 0; position: sticky; top: 0; z-index: 1000; }
+    .nav-container { max-width: 680px; margin: 0 auto; padding: 0 1rem; display: flex; justify-content: space-between; align-items: center; }
+    .btn-back-modern { background: rgba(100, 116, 100, 0.08); border-radius: 40px; padding: 0.5rem 1rem; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); text-decoration: none; transition: all 0.2s; display: inline-flex; align-items: center; gap: 0.4rem; }
+    .btn-back-modern:hover { background: rgba(34, 197, 94, 0.15); color: var(--green-primary); }
+    .mv-logo-modern { font-size: 1.5rem; font-weight: 900; background: linear-gradient(135deg, var(--green-dark), var(--green-primary)); -webkit-background-clip: text; color: transparent; text-decoration: none; }
+    .mv-logo-modern span { background: linear-gradient(135deg, var(--green-bright), #2b9348); -webkit-background-clip: text; color: transparent; }
 
-    .nav-container {
-      max-width: 680px; margin: 0 auto; padding: 0 1rem;
-      display: flex; justify-content: space-between; align-items: center; gap: 1rem;
-    }
+    /* Layout */
+    .main-container { max-width: 680px; margin: 0 auto; padding: 1.5rem 1rem 4rem; width: 100%; }
+    .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+    .page-title { font-size: 1.8rem; background: linear-gradient(125deg, #14532d, #2b6e3c); -webkit-background-clip: text; color: transparent; margin: 0; }
+    
+    .btn-add-modern { background: linear-gradient(105deg, var(--green-primary), var(--green-dark)); color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 40px; font-weight: 700; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 0.5rem; box-shadow: var(--shadow-sm); transition: 0.2s; text-decoration: none; }
+    .btn-add-modern:hover { transform: translateY(-2px); filter: brightness(1.05); color: white; }
 
-    .mv-logo-modern {
-      font-size: 1.5rem; font-weight: 900;
-      background: linear-gradient(135deg, var(--green-dark), var(--green-primary));
-      -webkit-background-clip: text; background-clip: text; color: transparent;
-      text-decoration: none; white-space: nowrap;
-    }
-    .mv-logo-modern span {
-      background: linear-gradient(135deg, var(--green-bright), #2b9348);
-      -webkit-background-clip: text; background-clip: text; color: transparent;
-    }
+    /* Filters */
+    .filter-scroll { display: flex; gap: 0.5rem; overflow-x: auto; padding-bottom: 1rem; margin-bottom: 0.5rem; scrollbar-width: none; }
+    .filter-scroll::-webkit-scrollbar { display: none; }
+    .filter-pill-modern { background: var(--card-white); border: 1px solid var(--border-light); color: var(--text-muted); padding: 0.5rem 1rem; border-radius: 40px; font-size: 0.8rem; font-weight: 700; white-space: nowrap; cursor: pointer; transition: 0.2s; }
+    .filter-pill-modern.active { background: var(--green-soft); border-color: var(--green-bright); color: var(--green-dark); }
 
-    .nav-actions-modern { display: flex; gap: 0.5rem; align-items: center; }
-    .nav-actions-modern a {
-      background: rgba(100, 116, 100, 0.08); border-radius: 40px;
-      width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center;
-      font-size: 1.2rem; color: var(--text-muted); text-decoration: none; transition: all 0.2s;
-    }
-    .nav-actions-modern a:hover, .nav-actions-modern a.active {
-      background: rgba(34, 197, 94, 0.15); color: var(--green-primary);
-    }
-
-    /* Main container */
-    .orders-container {
-      max-width: 680px; margin: 0 auto; padding: 1.5rem 1rem 2rem; width: 100%;
-    }
-
-    .orders-header {
-      display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;
-    }
-    .orders-header h1 {
-      font-size: 1.8rem; background: linear-gradient(125deg, #14532d, #2b6e3c);
-      -webkit-background-clip: text; background-clip: text; color: transparent; margin: 0;
-    }
-    .btn-create-order {
-      background: linear-gradient(105deg, var(--green-primary), var(--green-dark));
-      border: none; padding: 0.7rem 1.2rem; border-radius: 40px; font-weight: 700; font-size: 0.85rem;
-      color: white; display: flex; align-items: center; gap: 0.5rem; transition: all 0.2s; box-shadow: var(--shadow-sm);
-    }
-
-    /* Filter pills */
-    .filter-scroll-modern {
-      display: flex; overflow-x: auto; gap: 0.6rem; padding-bottom: 0.8rem; margin-bottom: 1.2rem; scrollbar-width: thin;
-    }
-    .filter-pill-modern {
-      white-space: nowrap; padding: 0.5rem 1.2rem; border-radius: 40px; font-size: 0.8rem; font-weight: 600;
-      background: var(--card-white); border: 1px solid var(--border-light); color: var(--text-muted); cursor: pointer; transition: all 0.2s;
-    }
-    .filter-pill-modern.active {
-      background: var(--green-primary); color: white; border-color: var(--green-primary); box-shadow: var(--shadow-sm);
-    }
-
-    /* Order cards */
-    .order-list { display: flex; flex-direction: column; gap: 1rem; }
-    .order-card-modern {
-      background: var(--card-white); border-radius: var(--radius-lg); padding: 1.25rem;
-      border: 1px solid var(--border-light); transition: all 0.2s; box-shadow: var(--shadow-sm);
-    }
-    .order-card-modern:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
-
-    .order-header-modern {
-      display: flex; justify-content: space-between; align-items: flex-start;
-      margin-bottom: 0.75rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border-light);
-    }
-    .order-id-modern { font-size: 1rem; font-weight: 800; color: var(--green-dark); margin-bottom: 0.1rem; }
-    .order-date-modern { font-size: 0.7rem; color: var(--text-muted); }
-    .order-amount-modern { font-size: 1.1rem; font-weight: 800; color: var(--green-primary); text-align: right; }
-
-    .status-badge-modern {
-      font-size: 0.65rem; padding: 0.25rem 0.7rem; border-radius: 50px; font-weight: 700; text-transform: uppercase; display: inline-block;
-    }
-    .status-new { background: #fef3c7; color: #b45309; }
-    .status-processing { background: #e0f2fe; color: #0284c7; }
-    .status-shipped { background: #e0e7ff; color: #4338ca; }
-    .status-delivered { background: var(--green-soft); color: var(--green-dark); }
+    /* JS Injected Order Cards */
+    .order-card-modern { background: var(--card-white); border-radius: var(--radius-md); padding: 1.2rem; margin-bottom: 1rem; border: 1px solid var(--border-light); box-shadow: var(--shadow-sm); transition: 0.2s; }
+    .order-header-modern { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; border-bottom: 1px dashed var(--border-light); padding-bottom: 0.8rem; }
+    .order-id-modern { font-weight: 800; font-family: 'Raleway', sans-serif; color: var(--green-dark); font-size: 1.1rem; }
+    .order-date-modern { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem; }
+    .order-amount-modern { font-weight: 800; font-size: 1.1rem; color: var(--text-dark); margin-bottom: 0.3rem; }
+    
+    .status-badge-modern { padding: 0.3rem 0.6rem; border-radius: 6px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; display: inline-block; }
+    .status-new { background: #e0f2fe; color: #0284c7; }
+    .status-processing { background: #fef08a; color: #a16207; }
+    .status-shipped { background: #e9d5ff; color: #7e22ce; }
+    .status-delivered { background: #dcfce7; color: #15803d; }
     .status-cancelled { background: #fee2e2; color: #b91c1c; }
 
-    .customer-info-modern { margin-bottom: 0.75rem; }
-    .customer-name-modern { font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 0.4rem; color: var(--text-dark); }
-    .item-summary-modern { font-size: 0.8rem; color: var(--text-muted); background: var(--gray-bg); padding: 0.5rem 0.75rem; border-radius: var(--radius-sm); margin-top: 0.5rem; }
+    .customer-info-modern { margin-bottom: 1rem; }
+    .customer-name-modern { font-weight: 700; font-size: 0.95rem; margin-bottom: 0.3rem; }
+    .item-summary-modern { font-size: 0.85rem; color: var(--text-muted); background: var(--gray-bg); padding: 0.6rem; border-radius: 8px; }
 
-    .rider-info-modern { background: #f0fdf4; border: 1px dashed #bbf7d0; border-radius: var(--radius-sm); padding: 0.6rem; margin-top: 0.5rem; }
-    .rider-title { font-size: 0.7rem; font-weight: 700; color: var(--green-dark); margin-bottom: 0.2rem; }
-    .rider-details { font-size: 0.75rem; color: var(--text-muted); }
-    .rider-details a { color: var(--green-primary); text-decoration: none; font-weight: 600; }
+    .rider-info-modern { background: #f8fafc; border: 1px dashed #cbd5e1; padding: 0.8rem; border-radius: 8px; margin-bottom: 1rem; }
+    .rider-title { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; color: #475569; margin-bottom: 0.3rem; }
+    .rider-details { font-size: 0.85rem; font-weight: 600; color: #1e293b; }
+    .rider-details a { color: var(--green-primary); text-decoration: none; }
 
-    .order-actions-modern { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; margin-top: 1rem; }
-    .btn-action-modern {
-      padding: 0.6rem; border-radius: 40px; font-size: 0.75rem; font-weight: 700; text-align: center; cursor: pointer;
-      transition: all 0.2s; border: none; display: flex; align-items: center; justify-content: center; gap: 0.4rem;
-    }
-    .btn-chat { background: var(--wa-green); color: white; }
-    .btn-chat:hover { background: #1da851; }
-    .btn-update { background: var(--gray-bg); color: var(--text-dark); border: 1px solid var(--border-light); }
-    .btn-update:hover { border-color: var(--green-bright); background: var(--green-soft); }
-    .btn-track { background: transparent; color: var(--green-primary); border: 1px dashed var(--green-primary); }
-    .btn-track:hover { background: var(--green-soft); }
+    .order-actions-modern { display: grid; gap: 0.5rem; }
+    .btn-action-modern { background: var(--gray-bg); border: 1px solid var(--border-light); padding: 0.6rem; border-radius: 8px; font-size: 0.8rem; font-weight: 700; color: var(--text-dark); cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 0.4rem; }
+    .btn-action-modern:hover { background: #f1f5f9; }
+    .btn-update { background: var(--green-soft); border-color: var(--green-bright); color: var(--green-dark); }
+    .btn-update:hover { background: #dcfce7; }
+    .btn-chat { background: #dcfce7; border-color: #22c55e; color: #15803d; }
+    .btn-chat:hover { background: #bbf7d0; }
 
-    /* Modals */
-    .modal-content-modern { border-radius: var(--radius-lg); border: none; overflow: hidden; }
-    .modal-header-modern { background: var(--green-soft); border-bottom: 1px solid var(--border-light); padding: 1rem 1.5rem; }
-    .modal-title-modern { font-size: 1.1rem; font-weight: 800; color: var(--green-dark); }
-    .form-control-modern {
-      width: 100%; padding: 0.8rem 1rem; border: 1.5px solid var(--border-light); border-radius: var(--radius-md); font-size: 0.9rem;
-      background: var(--gray-bg); transition: all 0.2s; margin-bottom: 1rem;
-    }
-    .form-control-modern:focus { border-color: var(--green-bright); background: white; outline: none; }
-    .btn-save-modern {
-      width: 100%; background: linear-gradient(105deg, var(--green-primary), var(--green-dark)); border: none; padding: 0.8rem;
-      border-radius: var(--radius-md); font-weight: 700; color: white; transition: all 0.2s;
-    }
-
-    /* Utils */
-    .empty-state-modern { text-align: center; padding: 2rem 1rem; background: var(--card-white); border-radius: var(--radius-lg); border: 1px solid var(--border-light); color: var(--text-muted); }
-    .empty-state-modern i { font-size: 3rem; opacity: 0.6; margin-bottom: 1rem; }
-    footer { text-align: center; padding: 1.2rem; font-size: 0.7rem; color: var(--text-muted); border-top: 1px solid rgba(34, 197, 94, 0.2); margin-top: auto; }
-    .hidden { display: none !important; }
+    /* Modals & Forms */
+    .form-label-modern { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.4rem; }
+    .form-control-modern { width: 100%; padding: 0.8rem 1rem; border: 1.5px solid var(--border-light); border-radius: var(--radius-sm); font-size: 0.9rem; background: var(--gray-bg); transition: all 0.2s; margin-bottom: 1rem; }
+    .form-control-modern:focus { border-color: var(--green-bright); background: white; outline: none; box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1); }
     
-    @media (max-width: 500px) {
-      .order-actions-modern { grid-template-columns: 1fr; }
-      .btn-track { grid-column: span 1 !important; }
-    }
+    select.form-control-modern { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%234a6741' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 1rem center; }
+
+    .btn-save-modern { width: 100%; background: linear-gradient(105deg, var(--green-primary), var(--green-dark)); border: none; padding: 0.9rem; border-radius: var(--radius-md); font-weight: 800; font-size: 0.9rem; color: white; transition: all 0.2s; }
+    
+    /* Toast Notification */
+    .toast-modern { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background: #1a2e1f; color: white; padding: 0.8rem 1.5rem; border-radius: 40px; font-size: 0.85rem; font-weight: 600; opacity: 0; transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55); z-index: 2000; box-shadow: 0 10px 25px rgba(0,0,0,0.2); pointer-events: none; }
+    .toast-modern.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+    
+    .hidden { display: none !important; }
   </style>
 </head>
 <body>
 
-<nav class="orders-nav">
+<nav class="dashboard-nav">
   <div class="nav-container">
+    <a href="/dashboard/home.html" class="btn-back-modern"><i class="bi bi-arrow-left-short"></i> Home</a>
     <a href="/dashboard/home.html" class="mv-logo-modern">my<span>vendor</span></a>
-    <div class="nav-actions-modern">
-      <a href="/dashboard/home.html"><i class="bi bi-house-door"></i></a>
-      <a href="/dashboard/orders.html" class="active"><i class="bi bi-box-seam"></i></a>
-      <a href="/dashboard/analytics.html"><i class="bi bi-graph-up"></i></a>
-      <a href="/dashboard/products.html"><i class="bi bi-grid"></i></a>
-    </div>
   </div>
 </nav>
 
-<main class="orders-container">
-  <div class="orders-header">
-    <h1>Orders <i class="bi bi-receipt text-success"></i></h1>
-    <button class="btn-create-order" onclick="openCreateOrderModal()">
-      <i class="bi bi-plus-circle"></i> Create order
+<main class="main-container">
+  
+  <div class="page-header">
+    <h1 class="page-title">Orders</h1>
+    <button class="btn-add-modern" data-bs-toggle="modal" data-bs-target="#createOrderModal">
+      <i class="bi bi-plus-lg"></i> Create Order
     </button>
   </div>
 
-  <div class="filter-scroll-modern" id="orderFilters">
-    <div class="filter-pill-modern active" data-status="all" onclick="filterOrders('all', this)">All</div>
-    <div class="filter-pill-modern" data-status="new" onclick="filterOrders('new', this)">New</div>
-    <div class="filter-pill-modern" data-status="processing" onclick="filterOrders('processing', this)">Processing</div>
-    <div class="filter-pill-modern" data-status="shipped" onclick="filterOrders('shipped', this)">Shipped</div>
-    <div class="filter-pill-modern" data-status="delivered" onclick="filterOrders('delivered', this)">Delivered</div>
+  <div class="filter-scroll">
+    <div class="filter-pill-modern active" onclick="window.filterOrders('all', this)">All</div>
+    <div class="filter-pill-modern" onclick="window.filterOrders('new', this)">New</div>
+    <div class="filter-pill-modern" onclick="window.filterOrders('processing', this)">Processing</div>
+    <div class="filter-pill-modern" onclick="window.filterOrders('shipped', this)">Shipped</div>
+    <div class="filter-pill-modern" onclick="window.filterOrders('delivered', this)">Delivered</div>
   </div>
 
-  <div class="order-list" id="orderList">
-    </div>
-
-  <div id="emptyState" class="empty-state-modern hidden">
-    <i class="bi bi-inbox"></i>
-    <h3 style="font-size: 1rem; font-weight: 800; color: var(--text-dark);">No orders found</h3>
-    <p class="text-muted">Try changing your filter or create a new order.</p>
+  <div id="emptyState" class="hidden text-center py-5">
+    <i class="bi bi-inbox fs-1 text-muted opacity-50 mb-3 d-block"></i>
+    <h4 style="font-weight: 800; color: var(--green-dark);">No orders found</h4>
+    <p class="text-muted" style="font-size: 0.9rem;">Create a manual order or share your store link.</p>
   </div>
+
+  <div id="orderList">
+    <div class="text-center py-5"><span class="spinner-border text-success"></span><p class="mt-2 text-muted small">Loading orders...</p></div>
+  </div>
+
 </main>
 
-<footer>
-  © 2026 myvendor &nbsp;·&nbsp; Help Center &nbsp;·&nbsp; Terms
-</footer>
-
-<div class="modal fade" id="createOrderModal" tabindex="-1">
+<div class="modal fade" id="createOrderModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content modal-content-modern">
-      <div class="modal-header modal-header-modern">
-        <h5 class="modal-title-modern">Create New Order</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+    <div class="modal-content" style="border: none; border-radius: var(--radius-lg);">
+      <div class="modal-header" style="background: var(--green-soft); border-bottom: 1px solid var(--border-light); border-radius: var(--radius-lg) var(--radius-lg) 0 0;">
+        <h5 class="modal-title" style="font-weight: 800; color: var(--green-dark);">Create Manual Order</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
+        
         <form id="createOrderForm" onsubmit="window.handleCreateOrder(event)">
-          <input type="text" class="form-control-modern" id="newCustomerName" placeholder="Customer Name (e.g. Sarah O.)" required>
-          <textarea class="form-control-modern" id="newOrderItems" placeholder="Items (e.g. 1x Silk Blouse)" rows="2" required></textarea>
-          <input type="number" class="form-control-modern" id="newOrderTotal" placeholder="Total Amount (₦)" required>
-          <button type="submit" class="btn-save-modern"><i class="bi bi-link-45deg"></i> Generate Tracking Link</button>
+          <div class="mb-3">
+            <label class="form-label-modern">Customer Name</label>
+            <input type="text" id="newCustomerName" class="form-control-modern" required placeholder="e.g. Jane Doe">
+          </div>
+          
+          <div class="mb-3">
+            <label class="form-label-modern">Items</label>
+            <textarea id="newOrderItems" class="form-control-modern" required placeholder="1x Red Dress, 2x Lip Gloss" rows="2"></textarea>
+          </div>
+          
+          <div class="mb-3">
+            <label class="form-label-modern">Total Amount (₦)</label>
+            <input type="number" id="newOrderTotal" class="form-control-modern" required placeholder="15000">
+          </div>
+          
+          <button type="submit" class="btn-save-modern mt-2">
+            <i class="bi bi-check-lg"></i> Create & Copy Link
+          </button>
         </form>
+
       </div>
     </div>
   </div>
 </div>
 
-<div class="modal fade" id="statusModal" tabindex="-1">
+<div class="modal fade" id="statusModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content modal-content-modern">
-      <div class="modal-header modal-header-modern">
-        <h5 class="modal-title-modern">Update Status</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+    <div class="modal-content" style="border: none; border-radius: var(--radius-lg);">
+      <div class="modal-header" style="background: var(--gray-bg); border-bottom: 1px solid var(--border-light); border-radius: var(--radius-lg) var(--radius-lg) 0 0;">
+        <h5 class="modal-title" style="font-weight: 800; color: var(--text-dark);">Update Order Status</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <select class="form-control-modern" id="statusSelect">
-          <option value="new">New Order</option>
-          <option value="processing">Processing (Packaging)</option>
-          <option value="shipped">Shipped / Out for Delivery</option>
-          <option value="delivered">Delivered</option>
-          <option value="cancelled">Cancelled</option>
-        </select>
-        <div id="riderDetailsGroup" style="display: none;">
-          <input type="text" class="form-control-modern" id="riderName" placeholder="Rider Name">
-          <input type="tel" class="form-control-modern" id="riderPhone" placeholder="Rider Phone Number">
+        
+        <div class="mb-3">
+          <label class="form-label-modern">Status</label>
+          <select id="statusSelect" class="form-control-modern">
+            <option value="new">New</option>
+            <option value="processing">Processing</option>
+            <option value="shipped">Shipped / Dispatched</option>
+            <option value="delivered">Delivered</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
         </div>
+
+        <div id="riderDetailsGroup" style="display: none; background: #f8fafc; padding: 1rem; border-radius: 12px; margin-bottom: 1rem; border: 1px dashed #cbd5e1;">
+            <div class="form-label-modern" style="color: #475569;"><i class="bi bi-bicycle"></i> Dispatch Rider Details</div>
+            <input type="text" id="riderName" class="form-control-modern" style="margin-bottom: 0.5rem;" placeholder="Rider / Company Name">
+            <input type="text" id="riderPhone" class="form-control-modern" style="margin-bottom: 0;" placeholder="Phone Number">
+        </div>
+
         <button type="button" class="btn-save-modern" onclick="window.saveStatus()">Save Update</button>
+        
       </div>
     </div>
   </div>
 </div>
+
+<div id="toastMsg" class="toast-modern">Link copied!</div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script type="module" src="/assets/js/dashboard.js"></script>
+
 </body>
 </html>
