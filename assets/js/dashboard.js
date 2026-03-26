@@ -365,28 +365,47 @@ window.loadOrders = async function() {
     if(emptyState) emptyState.classList.add('hidden');
 
     list.innerHTML = orders.map(o => {
-        const date = new Date(o.created_at).toLocaleDateString('en-NG', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-        const riderHtml = o.rider_name ? `<div class="rider-info-modern"><div class="rider-title"><i class="bi bi-bicycle"></i> Dispatch Details</div><div class="rider-details">${o.rider_name} • <a href="tel:${o.rider_phone}">${o.rider_phone}</a></div></div>` : '';
+        // Format the date and time
+        const dateStr = new Date(o.created_at).toLocaleDateString('en-NG', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+        
+        // 1. Build Rider & Delivery HTML based on status
+        let riderHtml = '';
+        if (o.status === 'delivered') {
+            riderHtml = `
+            <div class="rider-info-modern" style="background: var(--green-soft); border-color: var(--green-bright);">
+                <div class="rider-title"><i class="bi bi-check-circle-fill text-success"></i> Delivery Completed</div>
+                <div class="rider-details">Delivered by: ${o.rider_name || 'N/A'} • <a href="tel:${o.rider_phone || ''}">${o.rider_phone || 'N/A'}</a></div>
+            </div>`;
+        } else if (o.rider_name) {
+            riderHtml = `
+            <div class="rider-info-modern">
+                <div class="rider-title"><i class="bi bi-bicycle"></i> Dispatch Details</div>
+                <div class="rider-details">${o.rider_name} • <a href="tel:${o.rider_phone}">${o.rider_phone}</a></div>
+            </div>`;
+        }
 
-        return `
-        <div class="order-card-modern" data-status="${o.status}">
-            <div class="order-header-modern">
-                <div>
-                    <div class="order-id-modern">${o.id}</div>
-                    <div class="order-date-modern">${date}</div>
-                </div>
-                <div style="text-align: right;">
-                    <div class="order-amount-modern">₦${parseFloat(o.total_amount).toLocaleString()}</div>
-                    <span class="status-badge-modern status-${o.status}">${o.status.replace('_', ' ')}</span>
-                </div>
-            </div>
+        // 2. Build Action Buttons based on status (IMMUTABILITY LOGIC)
+        let actionsHtml = '';
+        
+        if (o.status === 'cancelled') {
+            // Cancelled: Completely Immutable. No buttons.
+            actionsHtml = ''; 
             
-            <div class="customer-info-modern">
-                <div class="customer-name-modern"><i class="bi bi-person-circle text-success" style="opacity: 0.8;"></i> ${o.customer_name}</div>
-                <div class="item-summary-modern">${o.items}</div>
-            </div>
-            ${riderHtml}
+        } else if (o.status === 'delivered') {
+            // Delivered: Immutable. Only Receipt and Link.
+            actionsHtml = `
+            <div class="order-actions-modern" style="grid-template-columns: 1fr 1fr;">
+                <button class="btn-action-modern btn-track" onclick="copyTracking('${o.id}')">
+                    <i class="bi bi-link-45deg"></i> Copy Link
+                </button>
+                <button class="btn-action-modern" style="background: #fefaf5; border: 1px solid #d97706; color: #b45309;" onclick="generateReceipt('${o.id}')">
+                    <i class="bi bi-receipt"></i> Receipt <i class="bi bi-lock-fill small ms-1"></i>
+                </button>
+            </div>`;
             
+        } else {
+            // Active Order: Full controls
+            actionsHtml = `
             <div class="order-actions-modern" style="grid-template-columns: 1fr 1fr;">
                 <button class="btn-action-modern btn-update" onclick="openStatusModal('${o.id}', '${o.status}')">
                     <i class="bi bi-pencil-square"></i> Update Status
@@ -400,7 +419,36 @@ window.loadOrders = async function() {
                 <button class="btn-action-modern" style="background: #fefaf5; border: 1px solid #d97706; color: #b45309;" onclick="generateReceipt('${o.id}')">
                     <i class="bi bi-receipt"></i> Receipt <i class="bi bi-lock-fill small ms-1"></i>
                 </button>
+            </div>`;
+        }
+
+        let statusClass = 'status-new';
+        if (o.status === 'processing') statusClass = 'status-processing';
+        if (o.status === 'shipped') statusClass = 'status-shipped';
+        if (o.status === 'delivered') statusClass = 'status-delivered';
+        if (o.status === 'cancelled') statusClass = 'status-cancelled';
+
+        return `
+        <div class="order-card-modern" data-status="${o.status}">
+            <div class="order-header-modern">
+                <div>
+                    <div class="order-id-modern">${o.id}</div>
+                    <div class="order-date-modern">${dateStr}</div>
+                </div>
+                <div style="text-align: right;">
+                    <div class="order-amount-modern">₦${parseFloat(o.total_amount).toLocaleString()}</div>
+                    <span class="status-badge-modern ${statusClass}">${o.status.replace('_', ' ')}</span>
+                </div>
             </div>
+            
+            <div class="customer-info-modern">
+                <div class="customer-name-modern"><i class="bi bi-person-circle text-success" style="opacity: 0.8;"></i> ${o.customer_name}</div>
+                <div class="item-summary-modern">${o.items}</div>
+            </div>
+            
+            ${riderHtml}
+            ${actionsHtml}
+            
         </div>`;
     }).join('');
 };
@@ -410,7 +458,6 @@ window.generateReceipt = function(orderId) {
         window.showPremiumModal("Custom Branded Receipts are a Premium feature.");
         return;
     }
-    // Logic to generate PDF receipt goes here
     alert("Receipt generator opening for Order: " + orderId);
 };
 
@@ -492,11 +539,29 @@ window.copyTracking = function(id) {
 };
 
 window.currentOrderId = null;
+
+// 🌟 FORWARD-ONLY PROGRESSION LOGIC 🌟
 window.openStatusModal = function(id, status) {
     currentOrderId = id;
-    document.getElementById('statusSelect').value = status;
+    const select = document.getElementById('statusSelect');
+    
+    // First, reset all options to be enabled
+    Array.from(select.options).forEach(opt => opt.disabled = false);
+
+    // Then, disable backwards progression based on current status
+    if (status === 'processing') {
+        select.querySelector('option[value="new"]').disabled = true;
+    } else if (status === 'shipped') {
+        select.querySelector('option[value="new"]').disabled = true;
+        select.querySelector('option[value="processing"]').disabled = true;
+    }
+
+    select.value = status;
+    
+    // Ensure rider details are visible if they are marking it shipped or delivered
     const riderGroup = document.getElementById('riderDetailsGroup');
-    if(riderGroup) riderGroup.style.display = (status === 'shipped') ? 'block' : 'none';
+    if(riderGroup) riderGroup.style.display = (status === 'shipped' || status === 'delivered') ? 'block' : 'none';
+    
     new bootstrap.Modal(document.getElementById('statusModal')).show();
 };
 
@@ -514,7 +579,8 @@ const statusSelect = document.getElementById('statusSelect');
 if (statusSelect) {
     statusSelect.addEventListener('change', (e) => {
         const riderGroup = document.getElementById('riderDetailsGroup');
-        if(riderGroup) riderGroup.style.display = e.target.value === 'shipped' ? 'block' : 'none';
+        // Keep rider details visible if they move to shipped OR delivered
+        if(riderGroup) riderGroup.style.display = (e.target.value === 'shipped' || e.target.value === 'delivered') ? 'block' : 'none';
     });
 }
 
