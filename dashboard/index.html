@@ -96,7 +96,7 @@
     .btn-submit:hover { transform: translateY(-2px); filter: brightness(1.03); }
     .btn-submit:disabled { opacity: 0.6; transform: none; cursor: not-allowed; }
 
-    /* message alerts */
+    /* message alerts (kept for simple form validation) */
     .auth-message { padding: 0.75rem 1rem; border-radius: var(--radius-sm); font-size: 0.8rem; margin-bottom: 1rem; display: none; }
     .auth-message.error { background: var(--error-bg); border: 1px solid #fecaca; color: var(--error); }
     .auth-message.success { background: var(--success-bg); border: 1px solid #bbf7d0; color: var(--green-dark); }
@@ -108,6 +108,12 @@
     /* footer */
     .auth-footer { text-align: center; padding: 1rem; font-size: 0.7rem; color: var(--text-muted); border-top: 1px solid rgba(34, 197, 94, 0.2); position: relative; z-index: 1;}
     .auth-footer a { color: var(--green-primary); text-decoration: none; font-weight: 600; }
+
+    /* Modal Tweaks */
+    .modal-content-modern { border-radius: var(--radius-lg); border: none; padding: 1.5rem 1rem; text-align: center; box-shadow: var(--shadow-md); }
+    .modal-icon { font-size: 3.5rem; margin-bottom: 1rem; line-height: 1; }
+    .modal-icon.success { color: var(--green-bright); }
+    .modal-icon.error { color: var(--error); }
 
     @media (max-width: 500px) {
       .auth-card { padding: 1.5rem; }
@@ -241,6 +247,17 @@
   <a href="/">← myvendor.qzz.io</a> &nbsp;·&nbsp; © 2026 theosnnetwork
 </footer>
 
+<div class="modal fade" id="resultModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+  <div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal-content modal-content-modern">
+      <div id="modalIcon" class="modal-icon"></div>
+      <h4 id="modalTitle" style="font-weight: 800; color: var(--text-dark); margin-bottom: 0.5rem;"></h4>
+      <p id="modalDesc" style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;"></p>
+      <button type="button" id="modalBtn" class="btn-submit" style="margin-top: 0;"></button>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 <script type="module">
@@ -250,6 +267,13 @@
   const SUPABASE_ANON_KEY = 'sb_publishable_OcOKwSDnoCGm_rt725Bi-g_rV6tjGlK'
   const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
   window._supabase = supabase
+
+  let resultModalInstance = null;
+
+  // Initialize modal after DOM loads
+  document.addEventListener('DOMContentLoaded', () => {
+    resultModalInstance = new bootstrap.Modal(document.getElementById('resultModal'));
+  });
 
   // Check if already logged in
   const { data: { session } } = await supabase.auth.getSession()
@@ -272,6 +296,31 @@
     msgDiv.textContent = text
     msgDiv.className = `auth-message ${type} show`
     setTimeout(() => msgDiv.classList.remove('show'), 5000)
+  }
+
+  // 🌟 NEW: Trigger the beautiful popup Modal
+  window.showResultModal = function(type, title, message) {
+    const icon = document.getElementById('modalIcon');
+    const titleEl = document.getElementById('modalTitle');
+    const descEl = document.getElementById('modalDesc');
+    const btn = document.getElementById('modalBtn');
+
+    titleEl.textContent = title;
+    descEl.textContent = message;
+
+    if (type === 'success') {
+      icon.innerHTML = '<i class="bi bi-check-circle-fill"></i>';
+      icon.className = 'modal-icon success';
+      btn.innerHTML = 'Go to Dashboard <i class="bi bi-arrow-right"></i>';
+      btn.onclick = () => window.location.href = '/dashboard/home.html';
+    } else {
+      icon.innerHTML = '<i class="bi bi-x-circle-fill"></i>';
+      icon.className = 'modal-icon error';
+      btn.innerHTML = 'Try Again';
+      btn.onclick = () => resultModalInstance.hide();
+    }
+
+    resultModalInstance.show();
   }
 
   window.switchTab = function(tab) {
@@ -309,8 +358,9 @@
     window.setLoading('login', true)
     const { error } = await supabase.auth.signInWithPassword({ email, password })
     window.setLoading('login', false)
+    
     if (error) {
-      window.showMessage('loginMsg', error.message, 'error')
+      window.showResultModal('error', 'Login Failed', error.message)
     } else {
       window.location.href = '/dashboard/home.html'
     }
@@ -325,6 +375,7 @@
     const terms = document.getElementById('termsCheckbox').checked
     const slug = document.getElementById('slugValue').textContent.trim()
 
+    // Minor validation shows inline text
     if (!name || !business || !wa || !email || !password || !terms) {
       window.showMessage('signupMsg', 'Please fill all fields and accept the terms.', 'error')
       return
@@ -333,49 +384,39 @@
     // Check if slug already exists
     const { data: existing } = await supabase.from('vendor_profiles').select('slug').eq('slug', slug).maybeSingle()
     if (existing) {
-      window.showMessage('signupMsg', 'That store name is already taken. Please choose another.', 'error')
+      window.showResultModal('error', 'Store Name Taken', 'That store link is already being used. Please choose another name.')
       return
     }
 
     window.setLoading('signup', true)
     
-    // Create the User in Auth
+    // Create the User in Auth (passing data for the database trigger to catch)
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email,
-      password
+      password,
+      options: {
+        data: {
+          full_name: name,
+          slug: slug,
+          business_name: business,
+          whatsapp_number: wa
+        }
+      }
     })
 
+    window.setLoading('signup', false)
+
     if (authError) {
-      window.setLoading('signup', false)
-      window.showMessage('signupMsg', authError.message, 'error')
+      window.showResultModal('error', 'Signup Failed', authError.message)
       return
     }
 
+    // Success! The database trigger handled the vendor_profiles insert.
     if (authData.user) {
-      const { error: profileError } = await supabase.from('vendor_profiles').insert([{
-        id: authData.user.id,
-        full_name: name,
-        slug: slug,
-        business_name: business,
-        wa_number: wa // Matches the wa_number column in Supabase
-      }]);
-
-      window.setLoading('signup', false)
-
-      if (profileError) {
-        // This will pop up an alert with the EXACT database error
-        alert("DB ERROR:\nMessage: " + profileError.message + "\nDetails: " + profileError.details + "\nHint: " + profileError.hint);
-        console.error("Full Profile Error:", profileError);
-        window.setLoading('signup', false);
-        return; // Stop the redirect so you can read the error!
-      } else {
-        window.showMessage('signupMsg', '🎉 Store created! Redirecting to your dashboard...', 'success')
-        setTimeout(() => window.location.href = '/dashboard/home.html', 1500)
-      }
+      window.showResultModal('success', 'Congratulations!', 'Your store has been created successfully. Welcome to myvendor!')
     }
   }
 
-  // Forgot Password with loading indicator and correct redirect URL
   window.handleForgotPassword = async (e) => {
     e.preventDefault()
     const email = document.getElementById('loginEmail').value.trim()
@@ -385,31 +426,27 @@
       return
     }
     
-    // Grab the link element that was clicked
     const forgotLink = e.target;
     const originalText = forgotLink.innerText;
     
-    // Set loading state
     forgotLink.innerText = 'Sending...';
-    forgotLink.style.pointerEvents = 'none'; // Prevent double-clicking
+    forgotLink.style.pointerEvents = 'none'; 
     forgotLink.style.opacity = '0.6';
     
-    // Pass the redirectTo option linking to your new reset-password page
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: window.location.origin + '/reset-password.html'
     })
     
-    // Revert loading state
     forgotLink.innerText = originalText;
     forgotLink.style.pointerEvents = 'auto';
     forgotLink.style.opacity = '1';
     
     if (error) {
-      window.showMessage('loginMsg', error.message, 'error')
+      window.showResultModal('error', 'Reset Failed', error.message)
     } else {
-      window.showMessage('loginMsg', 'Password reset link sent! Check your inbox.', 'success')
+      window.showResultModal('success', 'Check Your Email', 'We have sent a password reset link to your inbox.')
     }
   }
 </script>
 </body>
-</html> 
+</html>
