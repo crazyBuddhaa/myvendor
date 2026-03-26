@@ -39,7 +39,7 @@
     .image-upload-area:hover { border-color: var(--green-bright); background: var(--green-soft); }
     .image-preview-wrapper { position: relative; margin-top: 1rem; display: inline-block; width: 100%; }
     .image-preview { width: 100%; max-height: 200px; object-fit: cover; border-radius: var(--radius-sm); display: none; }
-    .remove-image-btn { position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); border: none; border-radius: 30px; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; color: white; cursor: pointer; transition: 0.2s; }
+    .remove-image-btn { position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); border: none; border-radius: 30px; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; color: white; cursor: pointer; transition: 0.2s; z-index: 10; }
     .remove-image-btn:hover { background: var(--danger); }
 
     /* Multi-Image Upload (Premium) */
@@ -68,6 +68,8 @@
     .hidden { display: none !important; }
     footer { margin-top: auto; text-align: center; padding: 1.2rem; font-size: 0.7rem; color: var(--text-muted); border-top: 1px solid rgba(34, 197, 94, 0.2); }
   </style>
+
+  <script src="https://upload-widget.cloudinary.com/global/all.js" type="text/javascript"></script>
 </head>
 <body>
 
@@ -90,15 +92,18 @@
 
   <form id="editProductForm" class="form-card-modern hidden" onsubmit="window.updateProduct(event)">
     
+    <input type="hidden" id="imageUrl" value="">
+    <input type="hidden" id="extraImagesData" value="[]">
+
     <div class="mb-3">
       <div class="form-label-modern"><i class="bi bi-image"></i> Primary Image</div>
-      <div class="image-upload-area" onclick="document.getElementById('editFileInput').click()">
+      <div class="image-upload-area" onclick="window.openPrimaryWidget()">
         <i class="bi bi-cloud-upload fs-2 text-muted"></i>
         <div class="text-muted mt-2" style="font-size: 0.75rem;">Click to change image</div>
-        <input type="file" id="editFileInput" class="hidden" accept="image/*" onchange="previewEditImage(this)">
+        
         <div class="image-preview-wrapper" id="imagePreviewWrapper" style="display: none;">
           <img id="editImagePreview" class="image-preview" src="">
-          <button type="button" id="editRemoveImgBtn" class="remove-image-btn" onclick="clearEditImage(event)"><i class="bi bi-trash3"></i></button>
+          <button type="button" id="editRemoveImgBtn" class="remove-image-btn" onclick="window.clearEditImage(event)"><i class="bi bi-trash3"></i></button>
         </div>
       </div>
     </div>
@@ -106,9 +111,11 @@
     <div class="mb-4 pt-2" style="border-top: 1px dashed var(--border-light);">
       <div class="form-label-modern mb-1"><i class="bi bi-images"></i> Additional Gallery <span class="premium-badge ms-2">Premium</span></div>
       <div class="text-muted mb-2" style="font-size: 0.65rem;">Add up to 4 more angles of your product.</div>
-      <div class="extra-images-grid" id="extraImagesContainer" data-existing-images="[]">
-        <div class="extra-image-box" onclick="handleAddExtraImage()"><i class="bi bi-plus-lg main-icon"></i><i class="bi bi-lock-fill lock-icon"></i></div>
-        <input type="file" id="extraFilesInput" class="hidden" accept="image/*" multiple onchange="previewExtraImages(this)">
+      <div class="extra-images-grid" id="extraImagesContainer">
+        <div class="extra-image-box" onclick="window.openGalleryWidget()">
+          <i class="bi bi-plus-lg main-icon"></i>
+          <i class="bi bi-lock-fill lock-icon"></i>
+        </div>
       </div>
     </div>
 
@@ -174,15 +181,13 @@
 
 <footer>© 2026 myvendor &nbsp;·&nbsp; <a href="#" style="color: var(--green-primary); text-decoration: none;">Help Center</a></footer>
 
-<script src="https://upload-widget.cloudinary.com/global/all.js" type="text/javascript"></script>
-
 <script>
   let uploadedGalleryImages = [];
   var primaryWidget;
   var galleryWidget;
 
   document.addEventListener('DOMContentLoaded', function() {
-      // Setup Primary Image Widget
+      // 1. Primary Image Widget Configuration
       primaryWidget = cloudinary.createUploadWidget({
         cloudName: 'dzxkxc7zu', 
         uploadPreset: 'myvendor_uploads', 
@@ -198,12 +203,7 @@
         }
       });
 
-      // Bind to the primary image upload box (Make sure the box in your HTML has onclick="window.openPrimaryWidget()")
-      window.openPrimaryWidget = function() {
-          primaryWidget.open();
-      };
-
-      // Setup Premium Gallery Widget
+      // 2. Premium Gallery Widget Configuration
       galleryWidget = cloudinary.createUploadWidget({
         cloudName: 'dzxkxc7zu',
         uploadPreset: 'myvendor_uploads',
@@ -229,7 +229,11 @@
       });
   });
 
-  // Expose gallery trigger & clear function
+  // 3. Expose Click Triggers
+  window.openPrimaryWidget = () => {
+      if (primaryWidget) primaryWidget.open();
+  };
+
   window.openGalleryWidget = () => {
     if (!window.currentUser || window.currentUser.tier !== 'premium') {
       if (window.showPremiumModal) window.showPremiumModal("Uploading multiple gallery images is a Premium feature.");
@@ -239,7 +243,6 @@
     if (galleryWidget) galleryWidget.open();
   };
 
-  // Clear Image Function
   window.clearEditImage = (e) => {
     e.stopPropagation();
     document.getElementById('imageUrl').value = '';
@@ -252,5 +255,6 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script type="module" src="/assets/js/dashboard.js"></script>
+
 </body>
 </html>
