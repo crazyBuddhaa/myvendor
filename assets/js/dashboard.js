@@ -39,7 +39,8 @@ async function initDashboard() {
     }
 
     // C. LOAD INVENTORY, ORDERS & EDIT PAGES
-    if (document.getElementById('productList')) await window.loadProducts();
+    // Change 'productList' to 'productGrid' right here:
+    if (document.getElementById('productGrid')) await window.loadProducts(); 
     if (document.getElementById('orderList')) await window.loadOrders();
     if (document.getElementById('editProductForm')) await window.loadEditProduct();
 
