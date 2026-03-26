@@ -2,496 +2,411 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>myvendor — Vendor Login</title>
-  <meta name="description" content="Login or create your myvendor store." />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>myvendor — Vendor Login & Signup</title>
+  <meta name="description" content="Login or create your myvendor store — sell smarter on WhatsApp." />
 
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet"/>
-  <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@700;800;900&family=Open+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=Raleway:wght@600;700;800;900&display=swap" rel="stylesheet" />
 
   <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
     :root {
-      --green:       #16a34a;
-      --green-dark:  #14532d;
-      --green-light: #dcfce7;
-      --green-mid:   #22c55e;
-      --green-glow:  rgba(34,197,94,.15);
-      --white:       #ffffff;
-      --off-white:   #f8faf8;
-      --text:        #0f1a0f;
-      --text-muted:  #4b6b50;
-      --border:      #d1fae5;
-      --border-input:#c8e6c9;
-      --error:       #dc2626;
+      --green-primary: #0f6e3f; --green-bright: #22c55e; --green-dark: #0a4a2a; --green-soft: #e9f7ef;
+      --gray-bg: #fafcf9; --card-white: #ffffff; --text-dark: #1a2e1f; --text-muted: #4a6741;
+      --border-light: #e9eee5;
+      --shadow-sm: 0 8px 20px rgba(0, 32, 0, 0.04), 0 2px 4px rgba(0, 0, 0, 0.02);
+      --shadow-md: 0 12px 28px rgba(0, 20, 0, 0.08);
+      --radius-lg: 20px; --radius-md: 16px; --radius-sm: 12px;
+      --error: #dc2626; --error-bg: #fee2e2; --success-bg: #dcfce7;
     }
 
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     body {
-      font-family: 'Open Sans', sans-serif;
-      background: var(--off-white);
-      color: var(--text);
+      background: linear-gradient(145deg, #f6fcf5 0%, #f0f7ec 100%);
+      font-family: 'Inter', sans-serif;
+      color: var(--text-dark);
       min-height: 100vh;
       display: flex;
       flex-direction: column;
     }
 
-    h1, h2, h3, h4, h5, h6 { font-family: 'Raleway', sans-serif; }
-
-    /* ── BACKGROUND PATTERN ─────────────────────────────── */
-    .auth-bg {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 2rem 1rem;
-      position: relative;
-      background:
-        radial-gradient(ellipse at 20% 20%, rgba(34,197,94,.12) 0%, transparent 55%),
-        radial-gradient(ellipse at 80% 80%, rgba(22,163,74,.08) 0%, transparent 55%),
-        var(--off-white);
-    }
-
-    .auth-bg::before {
+    /* subtle grain */
+    body::before {
       content: '';
       position: fixed;
       inset: 0;
-      background-image:
-        linear-gradient(var(--border) 1px, transparent 1px),
-        linear-gradient(90deg, var(--border) 1px, transparent 1px);
-      background-size: 40px 40px;
-      opacity: .35;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+      background-size: 280px;
+      opacity: 0.025;
       pointer-events: none;
+      z-index: 0;
     }
 
-    /* ── CARD & LOGO ─────────────────────────────────────── */
-    .auth-card {
-      background: var(--white);
-      border: 1.5px solid var(--border);
-      border-radius: 20px;
-      padding: 2.5rem 2rem;
-      width: 100%;
-      max-width: 440px;
-      position: relative;
-      z-index: 1;
-      box-shadow: 0 8px 40px rgba(22,163,74,.08), 0 2px 8px rgba(0,0,0,.04);
-    }
+    /* Navbar – glass */
+    .auth-nav { background: rgba(255, 255, 255, 0.96); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(34, 197, 94, 0.2); padding: 0.75rem 0; position: sticky; top: 0; z-index: 1000; }
+    .nav-container { max-width: 640px; margin: 0 auto; padding: 0 1rem; display: flex; justify-content: space-between; align-items: center; }
+    
+    .mv-logo-modern { font-family: 'Raleway', sans-serif; font-weight: 800; font-size: 1.5rem; background: linear-gradient(135deg, var(--green-dark), var(--green-primary)); -webkit-background-clip: text; color: transparent; text-decoration: none; }
+    .mv-logo-modern span { background: linear-gradient(135deg, var(--green-bright), #2b9348); -webkit-background-clip: text; color: transparent; }
 
-    .auth-logo {
-      font-family: 'Raleway', sans-serif;
-      font-weight: 900;
-      font-size: 1.6rem;
-      color: var(--green-dark);
-      text-decoration: none;
-      letter-spacing: -0.5px;
-      display: inline-block;
-      margin-bottom: 1.75rem;
-    }
-    .auth-logo span { color: var(--green); }
+    .btn-back-home { background: rgba(100, 116, 100, 0.08); border-radius: 40px; padding: 0.5rem 1rem; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); text-decoration: none; transition: all 0.2s; display: inline-flex; align-items: center; gap: 0.4rem; }
+    .btn-back-home:hover { background: rgba(34, 197, 94, 0.15); color: var(--green-primary); }
 
-    /* ── TABS ────────────────────────────────────────────── */
-    .auth-tabs {
-      display: flex;
-      background: var(--off-white);
-      border: 1.5px solid var(--border);
-      border-radius: 12px;
-      padding: 4px;
-      margin-bottom: 2rem;
-    }
+    /* main container */
+    .auth-container { flex: 1; display: flex; align-items: center; justify-content: center; padding: 2rem 1rem; position: relative; z-index: 1; }
+    .auth-card { max-width: 480px; width: 100%; background: var(--card-white); border-radius: var(--radius-lg); padding: 2rem 1.8rem; box-shadow: var(--shadow-md); border: 1px solid var(--border-light); animation: fadeUp 0.5s ease-out; }
 
-    .auth-tab {
-      flex: 1;
-      text-align: center;
-      padding: .6rem;
-      border-radius: 9px;
-      font-size: .9rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all .2s;
-      color: var(--text-muted);
-      border: none;
-      background: transparent;
-      font-family: 'Open Sans', sans-serif;
-    }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-    .auth-tab.active {
-      background: var(--white);
-      color: var(--green-dark);
-      box-shadow: 0 2px 8px rgba(0,0,0,.08);
-    }
+    .auth-header { margin-bottom: 1.5rem; text-align: center; }
+    .auth-header h1 { font-size: 1.6rem; font-weight: 800; background: linear-gradient(125deg, #14532d, #2b6e3c); -webkit-background-clip: text; color: transparent; margin-bottom: 0.25rem; }
+    .auth-header p { font-size: 0.85rem; color: var(--text-muted); }
 
+    /* tabs */
+    .auth-tabs { display: flex; gap: 0.5rem; background: var(--gray-bg); border-radius: 60px; padding: 0.25rem; margin-bottom: 1.5rem; }
+    .auth-tab { flex: 1; text-align: center; padding: 0.6rem; border-radius: 40px; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; background: transparent; border: none; color: var(--text-muted); }
+    .auth-tab.active { background: var(--card-white); color: var(--green-primary); box-shadow: var(--shadow-sm); }
     .auth-panel { display: none; }
     .auth-panel.active { display: block; }
 
-    /* ── FORM ELEMENTS ───────────────────────────────────── */
-    .form-label-mv {
-      font-size: .82rem;
-      font-weight: 600;
-      color: var(--green-dark);
-      margin-bottom: .4rem;
-      display: block;
-    }
-
-    .form-control-mv {
-      width: 100%;
-      padding: .75rem 1rem;
-      border: 1.5px solid var(--border-input);
-      border-radius: 10px;
-      font-family: 'Open Sans', sans-serif;
-      font-size: .9rem;
-      color: var(--text);
-      background: var(--white);
-      transition: border-color .2s, box-shadow .2s;
-      outline: none;
-    }
-    .form-control-mv:focus { border-color: var(--green); box-shadow: 0 0 0 3px var(--green-glow); }
-    .form-control-mv::placeholder { color: #9cb89c; }
-
-    .input-icon-wrap { position: relative; }
-    .input-icon-wrap .input-icon {
-      position: absolute; left: .9rem; top: 50%; transform: translateY(-50%);
-      color: #9cb89c; font-size: 1rem; pointer-events: none;
-    }
-    .input-icon-wrap .form-control-mv { padding-left: 2.6rem; }
+    /* form elements */
+    .form-group { margin-bottom: 1.2rem; }
+    .form-label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 0.4rem; display: flex; align-items: center; gap: 0.4rem; }
+    .input-icon-wrapper { position: relative; }
+    .input-icon { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.9rem; pointer-events: none; }
     
-    .input-icon-wrap .toggle-pw {
-      position: absolute; right: .9rem; top: 50%; transform: translateY(-50%);
-      color: #9cb89c; cursor: pointer; font-size: 1rem; border: none;
-      background: transparent; padding: 0; transition: color .2s;
-    }
-    .input-icon-wrap .toggle-pw:hover { color: var(--green); }
+    .form-control-modern { width: 100%; padding: 0.8rem 1rem 0.8rem 2.5rem; border: 1.5px solid var(--border-light); border-radius: var(--radius-sm); font-size: 0.9rem; background: var(--gray-bg); transition: all 0.2s; }
+    .form-control-modern:focus { border-color: var(--green-bright); background: white; outline: none; box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1); }
+    
+    .toggle-password { position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); background: transparent; border: none; color: var(--text-muted); cursor: pointer; padding: 0; }
+    .forgot-link { font-size: 0.7rem; color: var(--green-primary); text-decoration: none; font-weight: 600; transition: all 0.2s; }
+    
+    .slug-preview { background: var(--gray-bg); border-radius: var(--radius-sm); padding: 0.5rem 0.8rem; font-size: 0.7rem; color: var(--text-muted); margin-top: 0.4rem; display: flex; align-items: center; gap: 0.4rem; }
+    .slug-preview span { font-weight: 700; color: var(--green-dark); }
+    
+    .terms-check { display: flex; gap: 0.6rem; align-items: flex-start; margin: 1rem 0; }
+    .terms-check input { width: 16px; height: 16px; margin-top: 2px; accent-color: var(--green-primary); }
+    .terms-check label { font-size: 0.75rem; color: var(--text-muted); line-height: 1.4; cursor: pointer; }
+    .terms-check a { color: var(--green-primary); text-decoration: none; font-weight: 600; }
 
-    .form-group-mv { margin-bottom: 1.1rem; }
+    /* buttons */
+    .btn-submit { width: 100%; background: linear-gradient(105deg, var(--green-primary), var(--green-dark)); border: none; padding: 0.85rem; border-radius: var(--radius-sm); font-weight: 700; font-size: 0.9rem; color: white; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: all 0.2s; box-shadow: var(--shadow-sm); margin-top: 0.5rem; }
+    .btn-submit:hover { transform: translateY(-2px); filter: brightness(1.03); }
+    .btn-submit:disabled { opacity: 0.6; transform: none; cursor: not-allowed; }
 
-    /* ── BUTTONS & DIVIDERS ──────────────────────────────── */
-    .divider-or {
-      display: flex; align-items: center; gap: .75rem;
-      margin: 1.4rem 0; color: var(--text-muted); font-size: .8rem;
-    }
-    .divider-or::before, .divider-or::after {
-      content: ''; flex: 1; height: 1px; background: var(--border);
-    }
+    /* message alerts */
+    .auth-message { padding: 0.75rem 1rem; border-radius: var(--radius-sm); font-size: 0.8rem; margin-bottom: 1rem; display: none; }
+    .auth-message.error { background: var(--error-bg); border: 1px solid #fecaca; color: var(--error); }
+    .auth-message.success { background: var(--success-bg); border: 1px solid #bbf7d0; color: var(--green-dark); }
+    .auth-message.show { display: flex; align-items: center; gap: 0.5rem; }
 
-    .btn-google {
-      width: 100%; display: flex; align-items: center; justify-content: center; gap: .6rem;
-      padding: .75rem; border: 1.5px solid var(--border-input); border-radius: 10px;
-      background: var(--white); color: var(--text); font-weight: 600; font-size: .9rem;
-      cursor: pointer; transition: all .2s;
-    }
-    .btn-google:hover { border-color: var(--green); background: var(--off-white); }
-    .google-icon { width: 18px; height: 18px; }
-
-    .btn-submit-mv {
-      width: 100%; padding: .85rem; background: var(--green); color: white;
-      border: none; border-radius: 10px; font-weight: 700; font-size: 1rem;
-      cursor: pointer; transition: all .2s; display: flex; align-items: center;
-      justify-content: center; gap: .5rem; margin-top: .5rem;
-      box-shadow: 0 4px 16px rgba(22,163,74,.25);
-    }
-    .btn-submit-mv:hover { background: var(--green-dark); transform: translateY(-1px); }
-    .btn-submit-mv:disabled { opacity: .65; cursor: not-allowed; transform: none; }
-
-    .spinner {
-      width: 16px; height: 16px; border: 2px solid rgba(255,255,255,.4);
-      border-top-color: white; border-radius: 50%; animation: spin .6s linear infinite; display: none;
-    }
+    .spinner { width: 16px; height: 16px; border: 2px solid rgba(255, 255, 255, 0.3); border-top-color: white; border-radius: 50%; animation: spin 0.6s linear infinite; display: inline-block; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* ── MESSAGES & HELPERS ──────────────────────────────── */
-    .auth-message {
-      padding: .75rem 1rem; border-radius: 10px; font-size: .85rem; margin-bottom: 1rem;
-      display: none; align-items: flex-start; gap: .5rem;
+    /* footer */
+    .auth-footer { text-align: center; padding: 1rem; font-size: 0.7rem; color: var(--text-muted); border-top: 1px solid rgba(34, 197, 94, 0.2); position: relative; z-index: 1;}
+    .auth-footer a { color: var(--green-primary); text-decoration: none; font-weight: 600; }
+
+    @media (max-width: 500px) {
+      .auth-card { padding: 1.5rem; }
+      .auth-header h1 { font-size: 1.4rem; }
     }
-    .auth-message.error { background: #fef2f2; border: 1px solid #fecaca; color: var(--error); }
-    .auth-message.success { background: var(--green-light); border: 1px solid #bbf7d0; color: var(--green-dark); }
-    .auth-message.show { display: flex; }
-
-    .helper-text { font-size: .78rem; color: var(--text-muted); margin-top: .3rem; }
-    .forgot-link { font-size: .8rem; color: var(--green); text-decoration: none; font-weight: 600; }
-    .forgot-link:hover { color: var(--green-dark); text-decoration: underline; }
-
-    /* ── SLUG PREVIEW ────────────────────────────────────── */
-    .slug-preview {
-      background: var(--off-white); border: 1.5px solid var(--border); border-radius: 8px;
-      padding: .5rem .9rem; font-size: .82rem; color: var(--text-muted); margin-top: .4rem;
-      display: flex; align-items: center; gap: .3rem;
-    }
-    .slug-preview .slug-val { color: var(--green-dark); font-weight: 700; }
-    .slug-preview.valid { border-color: var(--green-mid); }
-    .slug-preview.taken { border-color: var(--error); }
-
-    /* ── TERMS ───────────────────────────────────────────── */
-    .terms-check { display: flex; align-items: flex-start; gap: .6rem; margin: 1rem 0; }
-    .terms-check input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--green); margin-top: 2px; }
-    .terms-check label { font-size: .8rem; color: var(--text-muted); line-height: 1.5; }
-    .terms-check a { color: var(--green); text-decoration: none; font-weight: 600; }
-
-    /* ── FOOTER ──────────────────────────────────────────── */
-    .auth-footer { text-align: center; padding: 1.5rem; font-size: .78rem; color: var(--text-muted); }
-    .auth-footer a { color: var(--green); text-decoration: none; font-weight: 600; }
-
-    .auth-card { animation: cardIn .5s ease both; }
-    @keyframes cardIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-
-    @media (max-width: 480px) { .auth-card { padding: 2rem 1.25rem; border-radius: 16px; } }
   </style>
 </head>
 <body>
 
-  <div class="auth-bg">
-    <div class="auth-card">
+<nav class="auth-nav">
+  <div class="nav-container">
+    <a href="/" class="mv-logo-modern">my<span>vendor</span></a>
+    <a href="/" class="btn-back-home"><i class="bi bi-arrow-left-short"></i> Back to Home</a>
+  </div>
+</nav>
 
-      <a href="/" class="auth-logo">my<span>vendor</span></a>
+<main class="auth-container">
+  <div class="auth-card">
+    <div class="auth-header">
+      <h1>Welcome to myvendor</h1>
+      <p>Your WhatsApp shop, beautifully organized</p>
+    </div>
 
-      <div class="auth-tabs">
-        <button class="auth-tab active" id="tab-login" onclick="switchTab('login')">Login</button>
-        <button class="auth-tab" id="tab-signup" onclick="switchTab('signup')">Create Store</button>
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tab-login" onclick="window.switchTab('login')">Login</button>
+      <button class="auth-tab" id="tab-signup" onclick="window.switchTab('signup')">Create Store</button>
+    </div>
+
+    <div class="auth-panel active" id="panel-login">
+      <div id="loginMsg" class="auth-message"></div>
+
+      <div class="form-group">
+        <label class="form-label"><i class="bi bi-envelope"></i> Email Address</label>
+        <div class="input-icon-wrapper">
+          <i class="bi bi-envelope input-icon"></i>
+          <input type="email" id="loginEmail" class="form-control-modern" placeholder="you@example.com" autocomplete="email">
+        </div>
       </div>
 
-      <div class="auth-panel active" id="panel-login">
-        <div class="auth-message" id="login-msg"></div>
-
-        <div class="form-group-mv">
-          <label class="form-label-mv" for="login-email">Email Address</label>
-          <div class="input-icon-wrap">
-            <i class="bi bi-envelope input-icon"></i>
-            <input type="email" class="form-control-mv" id="login-email" placeholder="you@example.com" autocomplete="email"/>
-          </div>
+      <div class="form-group">
+        <div class="d-flex justify-content-between align-items-center mb-1">
+          <label class="form-label mb-0"><i class="bi bi-lock"></i> Password</label>
+          <a href="#" class="forgot-link" onclick="window.handleForgotPassword(event)">Forgot?</a>
         </div>
-
-        <div class="form-group-mv">
-          <div class="d-flex justify-content-between align-items-center mb-1">
-            <label class="form-label-mv mb-0" for="login-password">Password</label>
-            <a href="#" class="forgot-link" onclick="showForgotPassword(event)">Forgot password?</a>
-          </div>
-          <div class="input-icon-wrap">
-            <i class="bi bi-lock input-icon"></i>
-            <input type="password" class="form-control-mv" id="login-password" placeholder="••••••••" autocomplete="current-password"/>
-            <button class="toggle-pw" type="button" onclick="togglePw('login-password', this)"><i class="bi bi-eye"></i></button>
-          </div>
+        <div class="input-icon-wrapper">
+          <i class="bi bi-lock input-icon"></i>
+          <input type="password" id="loginPassword" class="form-control-modern" placeholder="••••••••" autocomplete="current-password">
+          <button type="button" class="toggle-password" onclick="window.togglePassword('loginPassword', this)"><i class="bi bi-eye"></i></button>
         </div>
-
-        <button class="btn-submit-mv" id="btn-login" onclick="handleLogin()">
-          <span class="spinner" id="login-spinner"></span>
-          <i class="bi bi-box-arrow-in-right" id="login-icon"></i>
-          <span id="login-label">Login to Dashboard</span>
-        </button>
-
-        <p class="text-center mt-3 mb-0" style="font-size:.82rem; color:var(--text-muted);">
-          No store yet? <a href="#" onclick="switchTab('signup')" style="color:var(--green);font-weight:600;text-decoration:none;">Create one free →</a>
-        </p>
-
-        <div class="divider-or">or continue with</div>
-        <button class="btn-google" onclick="signInWithGoogle()">
-          <svg class="google-icon" viewBox="0 0 24 24">
-            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/>
-            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-          </svg>
-          Google
-        </button>
       </div>
 
-      <div class="auth-panel" id="panel-signup">
-        <div class="auth-message" id="signup-msg"></div>
+      <button id="loginBtn" class="btn-submit" onclick="window.handleLogin()">
+        <span id="loginSpinner" class="spinner" style="display: none;"></span>
+        <i id="loginIcon" class="bi bi-box-arrow-in-right"></i>
+        <span id="loginLabel">Login to Dashboard</span>
+      </button>
 
-        <div class="form-group-mv">
-          <label class="form-label-mv" for="signup-name">Full Name</label>
-          <div class="input-icon-wrap">
-            <i class="bi bi-person input-icon"></i>
-            <input type="text" class="form-control-mv" id="signup-name" placeholder="Your full name" autocomplete="name"/>
-          </div>
+      <p class="text-center mt-3 mb-0" style="font-size:0.75rem; color:var(--text-muted);">
+        No store? <a href="#" onclick="window.switchTab('signup')" style="color:var(--green-primary); font-weight:600; text-decoration:none;">Create one free →</a>
+      </p>
+    </div>
+
+    <div class="auth-panel" id="panel-signup">
+      <div id="signupMsg" class="auth-message"></div>
+
+      <div class="form-group">
+        <label class="form-label"><i class="bi bi-person"></i> Full Name</label>
+        <div class="input-icon-wrapper">
+          <i class="bi bi-person input-icon"></i>
+          <input type="text" id="signupName" class="form-control-modern" placeholder="Your full name" autocomplete="name">
         </div>
-
-        <div class="form-group-mv">
-          <label class="form-label-mv" for="signup-business">Business / Store Name</label>
-          <div class="input-icon-wrap">
-            <i class="bi bi-shop input-icon"></i>
-            <input type="text" class="form-control-mv" id="signup-business" placeholder="e.g. GlamStore NG" oninput="generateSlug(this.value)"/>
-          </div>
-          <div class="slug-preview" id="slug-preview">
-            <i class="bi bi-link-45deg"></i> myvendor.ng/<span class="slug-val" id="slug-val">yourstore</span>
-          </div>
-        </div>
-
-        <div class="form-group-mv">
-          <label class="form-label-mv" for="signup-wa">WhatsApp Number</label>
-          <div class="input-icon-wrap">
-            <i class="bi bi-whatsapp input-icon"></i>
-            <input type="tel" class="form-control-mv" id="signup-wa" placeholder="e.g. 08012345678" autocomplete="tel"/>
-          </div>
-        </div>
-
-        <div class="form-group-mv">
-          <label class="form-label-mv" for="signup-email">Email Address</label>
-          <div class="input-icon-wrap">
-            <i class="bi bi-envelope input-icon"></i>
-            <input type="email" class="form-control-mv" id="signup-email" placeholder="you@example.com" autocomplete="email"/>
-          </div>
-        </div>
-
-        <div class="form-group-mv">
-          <label class="form-label-mv" for="signup-password">Password</label>
-          <div class="input-icon-wrap">
-            <i class="bi bi-lock input-icon"></i>
-            <input type="password" class="form-control-mv" id="signup-password" placeholder="Min. 8 characters" autocomplete="new-password"/>
-            <button class="toggle-pw" type="button" onclick="togglePw('signup-password', this)"><i class="bi bi-eye"></i></button>
-          </div>
-        </div>
-
-        <div class="terms-check">
-          <input type="checkbox" id="terms" />
-          <label for="terms">
-            I agree to myvendor's <a href="/terms.html">Terms & Conditions</a> and <a href="/privacy.html">Privacy Policy</a>. All transactions are settled externally on WhatsApp.
-          </label>
-        </div>
-
-        <button class="btn-submit-mv" id="btn-signup" onclick="handleSignup()">
-          <span class="spinner" id="signup-spinner"></span>
-          <i class="bi bi-shop-window" id="signup-icon"></i>
-          <span id="signup-label">Create My Free Store</span>
-        </button>
-
-        <p class="text-center mt-3 mb-0" style="font-size:.82rem; color:var(--text-muted);">
-          Already have a store? <a href="#" onclick="switchTab('login')" style="color:var(--green);font-weight:600;text-decoration:none;">Login →</a>
-        </p>
-
-        <div class="divider-or">or continue with</div>
-        <button class="btn-google" onclick="signInWithGoogle()">
-          <svg class="google-icon" viewBox="0 0 24 24">
-            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/>
-            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-          </svg>
-          Google
-        </button>
       </div>
 
+      <div class="form-group">
+        <label class="form-label"><i class="bi bi-shop"></i> Store Name</label>
+        <div class="input-icon-wrapper">
+          <i class="bi bi-shop input-icon"></i>
+          <input type="text" id="signupBusiness" class="form-control-modern" placeholder="e.g. GlamStore NG" oninput="window.updateSlug(this.value)">
+        </div>
+        <div class="slug-preview">
+          <i class="bi bi-link-45deg"></i> myvendor.qzz.io/<span id="slugValue">yourstore</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label"><i class="bi bi-whatsapp"></i> WhatsApp Number</label>
+        <div class="input-icon-wrapper">
+          <i class="bi bi-whatsapp input-icon"></i>
+          <input type="tel" id="signupWa" class="form-control-modern" placeholder="2348012345678" autocomplete="tel">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label"><i class="bi bi-envelope"></i> Email Address</label>
+        <div class="input-icon-wrapper">
+          <i class="bi bi-envelope input-icon"></i>
+          <input type="email" id="signupEmail" class="form-control-modern" placeholder="you@example.com" autocomplete="email">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label"><i class="bi bi-lock"></i> Password</label>
+        <div class="input-icon-wrapper">
+          <i class="bi bi-lock input-icon"></i>
+          <input type="password" id="signupPassword" class="form-control-modern" placeholder="Min. 8 characters" autocomplete="new-password">
+          <button type="button" class="toggle-password" onclick="window.togglePassword('signupPassword', this)"><i class="bi bi-eye"></i></button>
+        </div>
+      </div>
+
+      <div class="terms-check">
+        <input type="checkbox" id="termsCheckbox">
+        <label for="termsCheckbox">
+          I agree to myvendor's <a href="/terms.html">Terms & Conditions</a> and <a href="/privacy.html">Privacy Policy</a>.
+        </label>
+      </div>
+
+      <button id="signupBtn" class="btn-submit" onclick="window.handleSignup()">
+        <span id="signupSpinner" class="spinner" style="display: none;"></span>
+        <i id="signupIcon" class="bi bi-shop-window"></i>
+        <span id="signupLabel">Create My Free Store</span>
+      </button>
+
+      <p class="text-center mt-3 mb-0" style="font-size:0.75rem; color:var(--text-muted);">
+        Already have a store? <a href="#" onclick="window.switchTab('login')" style="color:var(--green-primary); font-weight:600; text-decoration:none;">Login →</a>
+      </p>
     </div>
   </div>
+</main>
 
-  <footer class="auth-footer">
-    <a href="/">← Back to myvendor.ng</a> &nbsp;·&nbsp; © 2026 theosnnetwork
-  </footer>
+<footer class="auth-footer">
+  <a href="/">← myvendor.qzz.io</a> &nbsp;·&nbsp; © 2026 theosnnetwork
+</footer>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-  <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
-    const SUPABASE_URL     = 'https://sotdghhayztnpwnrzjzu.supabase.co'
-    const SUPABASE_ANON_KEY = 'sb_publishable_OcOKwSDnoCGm_rt725Bi-g_rV6tjGlK'
-    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
-    window._supabase = supabase
+  const SUPABASE_URL = 'https://sotdghhayztnpwnrzjzu.supabase.co'
+  const SUPABASE_ANON_KEY = 'sb_publishable_OcOKwSDnoCGm_rt725Bi-g_rV6tjGlK'
+  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+  window._supabase = supabase
 
-    const { data: { session } } = await supabase.auth.getSession()
-    if (session) window.location.href = '/dashboard/home.html'
+  // Check if already logged in
+  const { data: { session } } = await supabase.auth.getSession()
+  if (session) window.location.href = '/dashboard/home.html'
 
-    window.signInWithGoogle = async () => {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google', options: { redirectTo: window.location.origin + '/dashboard/home.html' }
-      })
-      if (error) showMsg('login-msg', error.message, 'error')
+  // Helper Functions
+  window.setLoading = function(form, isLoading) {
+    const btn = document.getElementById(`${form}Btn`)
+    const spinner = document.getElementById(`${form}Spinner`)
+    const icon = document.getElementById(`${form}Icon`)
+    const label = document.getElementById(`${form}Label`)
+    btn.disabled = isLoading
+    if (spinner) spinner.style.display = isLoading ? 'inline-block' : 'none'
+    if (icon) icon.style.display = isLoading ? 'none' : 'inline'
+    if (label) label.textContent = isLoading ? (form === 'login' ? 'Logging in...' : 'Creating store...') : (form === 'login' ? 'Login to Dashboard' : 'Create My Free Store')
+  }
+
+  window.showMessage = function(containerId, text, type) {
+    const msgDiv = document.getElementById(containerId)
+    msgDiv.textContent = text
+    msgDiv.className = `auth-message ${type} show`
+    setTimeout(() => msgDiv.classList.remove('show'), 5000)
+  }
+
+  window.switchTab = function(tab) {
+    document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'))
+    document.querySelectorAll('.auth-panel').forEach(p => p.classList.remove('active'))
+    document.getElementById(`tab-${tab}`).classList.add('active')
+    document.getElementById(`panel-${tab}`).classList.add('active')
+  }
+
+  window.updateSlug = function(value) {
+    const slug = value.toLowerCase().replace(/[^a-z0-9-]/g, '').replace(/-+/g, '-').substring(0, 30)
+    document.getElementById('slugValue').textContent = slug || 'yourstore'
+  }
+
+  window.togglePassword = function(inputId, btn) {
+    const input = document.getElementById(inputId)
+    const icon = btn.querySelector('i')
+    if (input.type === 'password') {
+      input.type = 'text'
+      icon.className = 'bi bi-eye-slash'
+    } else {
+      input.type = 'password'
+      icon.className = 'bi bi-eye'
+    }
+  }
+
+  // Auth Functions
+  window.handleLogin = async () => {
+    const email = document.getElementById('loginEmail').value.trim()
+    const password = document.getElementById('loginPassword').value
+    if (!email || !password) {
+      window.showMessage('loginMsg', 'Please fill in both email and password.', 'error')
+      return
+    }
+    window.setLoading('login', true)
+    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    window.setLoading('login', false)
+    if (error) {
+      window.showMessage('loginMsg', error.message, 'error')
+    } else {
+      window.location.href = '/dashboard/home.html'
+    }
+  }
+
+  window.handleSignup = async () => {
+    const name = document.getElementById('signupName').value.trim()
+    const business = document.getElementById('signupBusiness').value.trim()
+    const wa = document.getElementById('signupWa').value.trim()
+    const email = document.getElementById('signupEmail').value.trim()
+    const password = document.getElementById('signupPassword').value
+    const terms = document.getElementById('termsCheckbox').checked
+    const slug = document.getElementById('slugValue').textContent.trim()
+
+    if (!name || !business || !wa || !email || !password || !terms) {
+      window.showMessage('signupMsg', 'Please fill all fields and accept the terms.', 'error')
+      return
     }
 
-    window.handleLogin = async () => {
-      const email = document.getElementById('login-email').value.trim()
-      const password = document.getElementById('login-password').value
-      if (!email || !password) { showMsg('login-msg', 'Please fill in all fields.', 'error'); return }
-
-      setLoading('login', true)
-      const { error } = await supabase.auth.signInWithPassword({ email, password })
-      setLoading('login', false)
-
-      if (error) showMsg('login-msg', error.message, 'error')
-      else window.location.href = '/dashboard/home.html'
+    // Check if slug already exists
+    const { data: existing } = await supabase.from('vendor_profiles').select('slug').eq('slug', slug).maybeSingle()
+    if (existing) {
+      window.showMessage('signupMsg', 'That store name is already taken. Please choose another.', 'error')
+      return
     }
 
-    window.handleSignup = async () => {
-      const name     = document.getElementById('signup-name').value.trim()
-      const business = document.getElementById('signup-business').value.trim()
-      const wa       = document.getElementById('signup-wa').value.trim()
-      const email    = document.getElementById('signup-email').value.trim()
-      const password = document.getElementById('signup-password').value
-      const terms    = document.getElementById('terms').checked
-      const slug     = document.getElementById('slug-val').textContent.trim()
+    window.setLoading('signup', true)
+    
+    // Create the User in Auth
+    const { data: authData, error: authError } = await supabase.auth.signUp({
+      email,
+      password
+    })
 
-      if (!name || !business || !wa || !email || !password || !terms) {
-        showMsg('signup-msg', 'Please fill all fields and accept the terms.', 'error'); return
-      }
+    if (authError) {
+      window.setLoading('signup', false)
+      window.showMessage('signupMsg', authError.message, 'error')
+      return
+    }
 
-      // Check if slug is taken BEFORE hitting auth
-      const { data: existing } = await window._supabase.from('vendor_profiles').select('slug').eq('slug', slug).maybeSingle()
-      if (existing) {
-        showMsg('signup-msg', 'That store name is taken. Try another.', 'error'); 
-        document.getElementById('slug-preview').classList.add('taken'); return
-      }
+    if (authData.user) {
+      const { error: profileError } = await supabase.from('vendor_profiles').insert([{
+        id: authData.user.id,
+        full_name: name,
+        slug: slug,
+        business_name: business,
+        wa_number: wa // Matches the wa_number column in Supabase
+      }]);
 
-      setLoading('signup', true)
+      window.setLoading('signup', false)
 
-      // Notice how we pass all the store info inside options.data (user_metadata)
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            full_name: name,
-            slug: slug,
-            business_name: business,
-            whatsapp_number: wa
-          }
-        }
-      })
-
-      setLoading('signup', false)
-
-      if (error) {
-        showMsg('signup-msg', error.message, 'error')
+      if (profileError) {
+        window.showMessage('signupMsg', 'Account created but failed to save profile. Please contact support.', 'error')
+        setTimeout(() => window.location.href = '/dashboard/home.html', 2000)
       } else {
-        // Because email verification is ON, we don't insert here. We just tell them to check their email.
-        showMsg('signup-msg', '🎉 Store created! Please check your email inbox to verify your account before logging in.', 'success')
+        window.showMessage('signupMsg', '🎉 Store created! Redirecting to your dashboard...', 'success')
+        setTimeout(() => window.location.href = '/dashboard/home.html', 1500)
       }
     }
+  }
 
-    window.showForgotPassword = async (e) => {
-      e.preventDefault()
-      const email = document.getElementById('login-email').value.trim()
-      if (!email) { showMsg('login-msg', 'Enter your email above first.', 'error'); return }
-      const { error } = await supabase.auth.resetPasswordForEmail(email)
-      showMsg('login-msg', error ? error.message : 'Reset link sent! Check email.', error ? 'error' : 'success')
+  // Forgot Password with loading indicator and correct redirect URL
+  window.handleForgotPassword = async (e) => {
+    e.preventDefault()
+    const email = document.getElementById('loginEmail').value.trim()
+    
+    if (!email) {
+      window.showMessage('loginMsg', 'Enter your email address first.', 'error')
+      return
     }
-
-    function setLoading(form, loading) {
-      document.getElementById(`btn-${form}`).disabled = loading
-      document.getElementById(`${form}-spinner`).style.display = loading ? 'block' : 'none'
-      document.getElementById(`${form}-icon`).style.display = loading ? 'none' : 'inline'
+    
+    // Grab the link element that was clicked
+    const forgotLink = e.target;
+    const originalText = forgotLink.innerText;
+    
+    // Set loading state
+    forgotLink.innerText = 'Sending...';
+    forgotLink.style.pointerEvents = 'none'; // Prevent double-clicking
+    forgotLink.style.opacity = '0.6';
+    
+    // Pass the redirectTo option linking to your new reset-password page
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.origin + '/reset-password.html'
+    })
+    
+    // Revert loading state
+    forgotLink.innerText = originalText;
+    forgotLink.style.pointerEvents = 'auto';
+    forgotLink.style.opacity = '1';
+    
+    if (error) {
+      window.showMessage('loginMsg', error.message, 'error')
+    } else {
+      window.showMessage('loginMsg', 'Password reset link sent! Check your inbox.', 'success')
     }
-    function showMsg(id, text, type) {
-      const el = document.getElementById(id)
-      el.textContent = text; el.className = `auth-message ${type} show`
-    }
-  </script>
-
-  <script>
-    function switchTab(tab) {
-      document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'))
-      document.querySelectorAll('.auth-panel').forEach(p => p.classList.remove('active'))
-      document.getElementById(`tab-${tab}`).classList.add('active')
-      document.getElementById(`panel-${tab}`).classList.add('active')
-    }
-    function generateSlug(value) {
-      const slug = value.toLowerCase().replace(/[^a-z0-9-]/g, '').trim().replace(/-+/g, '-').substring(0, 30)
-      document.getElementById('slug-val').textContent = slug || 'yourstore'
-      document.getElementById('slug-preview').className = slug ? 'slug-preview valid' : 'slug-preview'
-    }
-    function togglePw(inputId, btn) {
-      const input = document.getElementById(inputId), icon = btn.querySelector('i')
-      input.type = input.type === 'password' ? 'text' : 'password'
-      icon.className = input.type === 'password' ? 'bi bi-eye' : 'bi bi-eye-slash'
-    }
-  </script>
+  }
+</script>
 </body>
-</html>
+</html> 

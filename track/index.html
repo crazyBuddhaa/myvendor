@@ -2,152 +2,696 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Track Order - myvendor</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Track Order | myvendor</title>
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@700;900&family=Open+Sans:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
     <style>
-        body { font-family: 'Open Sans', sans-serif; background: #f8faf8; }
-        .track-card { background: white; border-radius: 20px; border: 1px solid #eee; padding: 2rem; margin-top: 2rem; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-        .status-dot { width: 12px; height: 12px; border-radius: 50%; background: #ddd; position: relative; z-index: 2; transition: 0.3s; }
-        .status-dot.active { background: #16a34a; box-shadow: 0 0 0 4px #dcfce7; }
-        .timeline-item { position: relative; padding-left: 30px; margin-bottom: 2rem; }
-        .timeline-item::before { content: ''; position: absolute; left: 5px; top: 12px; height: 100%; width: 2px; background: #eee; transition: 0.3s; }
-        .timeline-item:last-child::before { display: none; }
-        .timeline-item.active::before { background: #16a34a; }
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --forest:       #0a3020;
+            --emerald:      #1a6040;
+            --jade:         #2a8a5a;
+            --sage:         #5aaa7a;
+            --mist:         #e6f4ec;
+            --fog:          #f3faf6;
+            --parchment:    #faf8f4;
+            --ink:          #131a15;
+            --slate:        #4a5e50;
+            --chalk:        #ffffff;
+            --border:       rgba(26, 96, 64, 0.14);
+            --border-strong:rgba(26, 96, 64, 0.25);
+            --gold:         #b8974a;
+            --gold-light:   #f5edd9;
+            --danger:       #c0392b;
+            --danger-light: #fdf0ef;
+            --r-xl:         24px;
+            --r-lg:         18px;
+            --r-md:         12px;
+            --r-sm:         8px;
+            --shadow-xs:    0 1px 4px rgba(10, 48, 32, 0.06);
+            --shadow-sm:    0 4px 12px rgba(10, 48, 32, 0.08);
+            --shadow-md:    0 8px 24px rgba(10, 48, 32, 0.1);
+            --shadow-lg:    0 16px 48px rgba(10, 48, 32, 0.14);
+        }
+
+        body {
+            background-color: var(--parchment);
+            font-family: 'Outfit', sans-serif;
+            color: var(--ink);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1.25rem;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Subtle radial glow behind card */
+        body::after {
+            content: '';
+            position: fixed;
+            top: -10%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 900px;
+            height: 600px;
+            background: radial-gradient(ellipse at center, rgba(42, 138, 90, 0.07) 0%, transparent 65%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Noise grain */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+            background-size: 200px;
+            opacity: 0.022;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .page-wrap {
+            max-width: 560px;
+            width: 100%;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ─── ANIMATIONS ─── */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50%       { opacity: 0.3; }
+        }
+
+        @keyframes spin { 
+            to { transform: rotate(360deg); } 
+        }
+
+        @keyframes pulse-ring {
+            0%, 100% { box-shadow: 0 0 0 4px rgba(42, 138, 90, 0.15), 0 0 0 7px rgba(42, 138, 90, 0.07); }
+            50%       { box-shadow: 0 0 0 5px rgba(42, 138, 90, 0.2),  0 0 0 10px rgba(42, 138, 90, 0.05); }
+        }
+
+        /* ─── MAIN CARD ─── */
+        .card {
+            background: var(--chalk);
+            border-radius: var(--r-xl);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-md);
+            overflow: hidden;
+            animation: fadeUp 0.55s ease both 0.08s;
+        }
+
+        /* card header strip */
+        .card-header-strip {
+            background: var(--forest);
+            padding: 1.5rem 1.8rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-header-strip::after {
+            content: '';
+            position: absolute;
+            right: -60px;
+            top: -60px;
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            border: 40px solid rgba(255,255,255,0.04);
+            pointer-events: none;
+        }
+
+        .card-header-strip::before {
+            content: '';
+            position: absolute;
+            right: 20px;
+            bottom: -80px;
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            border: 30px solid rgba(255,255,255,0.03);
+            pointer-events: none;
+        }
+
+        .strip-eyebrow {
+            font-size: 0.65rem;
+            font-weight: 600;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--sage);
+            margin-bottom: 0.35rem;
+        }
+
+        .strip-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-weight: 600;
+            font-size: 1.55rem;
+            color: var(--chalk);
+            letter-spacing: 0.01em;
+            margin-bottom: 0.8rem;
+        }
+
+        .order-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.14);
+            border-radius: 100px;
+            padding: 0.28rem 0.8rem;
+            font-size: 0.72rem;
+            font-weight: 500;
+            color: rgba(255,255,255,0.75);
+            backdrop-filter: blur(4px);
+        }
+
+        .order-pill i { font-size: 0.7rem; }
+
+        .card-body {
+            padding: 1.6rem 1.8rem;
+        }
+
+        /* ─── ORDER ITEMS BOX ─── */
+        .items-box {
+            border: 1px solid var(--border);
+            border-radius: var(--r-lg);
+            padding: 1rem 1.15rem;
+            margin-bottom: 2rem;
+            background: var(--fog);
+            display: flex;
+            gap: 0.8rem;
+            align-items: flex-start;
+        }
+
+        .items-box-icon {
+            width: 34px;
+            height: 34px;
+            min-width: 34px;
+            background: var(--mist);
+            border: 1px solid var(--border);
+            border-radius: var(--r-sm);
+            display: grid;
+            place-items: center;
+            color: var(--emerald);
+            font-size: 0.9rem;
+            margin-top: 2px;
+        }
+
+        .items-label {
+            font-size: 0.65rem;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--jade);
+            margin-bottom: 0.3rem;
+        }
+
+        .items-text {
+            font-size: 0.88rem;
+            font-weight: 500;
+            color: var(--ink);
+            line-height: 1.5;
+        }
+
+        /* ─── SECTION DIVIDER LABEL ─── */
+        .section-label {
+            font-size: 0.62rem;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--slate);
+            margin-bottom: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .section-label::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        /* ─── TIMELINE ─── */
+        .timeline {
+            position: relative;
+        }
+
+        .tl-item {
+            display: flex;
+            gap: 1rem;
+            padding-bottom: 1.75rem;
+            position: relative;
+            /* Will be animated by JS */
+            opacity: 0;
+            transform: translateY(10px); 
+        }
+
+        .tl-item:last-child {
+            padding-bottom: 0;
+        }
+
+        .tl-left {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex-shrink: 0;
+            width: 20px;
+        }
+
+        .tl-dot {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #e8ede9;
+            border: 2px solid #d4ddd5;
+            position: relative;
+            z-index: 2;
+            flex-shrink: 0;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .tl-dot-inner {
+            position: absolute;
+            inset: 3px;
+            border-radius: 50%;
+            background: transparent;
+            transition: background 0.3s ease;
+        }
+
+        .tl-line {
+            flex: 1;
+            width: 2px;
+            background: #e8ede9;
+            margin-top: 3px;
+            border-radius: 1px;
+            min-height: 20px;
+            transition: background 0.4s ease;
+        }
+
+        .tl-item:last-child .tl-line {
+            display: none;
+        }
+
+        .tl-content {
+            flex: 1;
+            padding-top: 1px;
+        }
+
+        .tl-title {
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: #a0b0a5;
+            margin-bottom: 0.2rem;
+            transition: color 0.3s ease;
+        }
+
+        .tl-desc {
+            font-size: 0.75rem;
+            color: #b8c8bc;
+            line-height: 1.45;
+            transition: color 0.3s ease;
+        }
+
+        /* Active state */
+        .tl-item.active .tl-dot {
+            background: var(--chalk);
+            border-color: var(--jade);
+            box-shadow: 0 0 0 4px rgba(42, 138, 90, 0.12);
+            transform: scale(1.15);
+        }
+
+        .tl-item.active .tl-dot-inner {
+            background: var(--jade);
+        }
+
+        .tl-item.active + .tl-item .tl-line,
+        .tl-item.active .tl-line {
+            background: var(--jade);
+        }
+
+        .tl-item.active .tl-title {
+            color: var(--ink);
+        }
+
+        .tl-item.active .tl-desc {
+            color: var(--slate);
+        }
+
+        /* Current (last active) step pulse */
+        .tl-item.current .tl-dot {
+            box-shadow: 0 0 0 4px rgba(42, 138, 90, 0.15), 0 0 0 7px rgba(42, 138, 90, 0.07);
+            animation: pulse-ring 2s ease infinite;
+        }
+
+        /* Status chip on current step */
+        .status-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            background: var(--mist);
+            border: 1px solid var(--border-strong);
+            border-radius: 100px;
+            padding: 0.22rem 0.7rem;
+            font-size: 0.67rem;
+            font-weight: 600;
+            color: var(--emerald);
+            margin-top: 0.45rem;
+            letter-spacing: 0.02em;
+        }
+
+        .status-chip-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--jade);
+            animation: blink 1.6s ease infinite;
+        }
+
+        /* Rider badge */
+        .rider-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--gold-light);
+            border: 1px solid rgba(184, 151, 74, 0.2);
+            border-radius: var(--r-sm);
+            padding: 0.4rem 0.75rem;
+            font-size: 0.73rem;
+            font-weight: 500;
+            color: #7a5e2a;
+            margin-top: 0.5rem;
+        }
+
+        .rider-badge i { color: var(--gold); font-size: 0.8rem; }
+
+        /* ─── LOADING STATE ─── */
+        .state-card {
+            background: var(--chalk);
+            border-radius: var(--r-xl);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-md);
+            padding: 3rem 2rem;
+            text-align: center;
+            animation: fadeUp 0.5s ease both 0.08s;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 2.5px solid var(--border);
+            border-top-color: var(--jade);
+            border-radius: 50%;
+            margin: 0 auto 1.25rem;
+            animation: spin 0.75s linear infinite;
+        }
+
+        .state-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .state-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-weight: 600;
+            font-size: 1.3rem;
+            color: var(--ink);
+            margin-bottom: 0.4rem;
+        }
+
+        .state-desc {
+            font-size: 0.82rem;
+            color: var(--slate);
+            line-height: 1.5;
+            max-width: 280px;
+            margin: 0 auto;
+        }
+
+        .btn-home {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            background: var(--forest);
+            color: var(--chalk);
+            padding: 0.6rem 1.3rem;
+            border-radius: 100px;
+            text-decoration: none;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-top: 1.4rem;
+            transition: background 0.2s, transform 0.2s;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-home:hover {
+            background: var(--emerald);
+            transform: translateY(-1px);
+            color: var(--chalk);
+        }
+
+        /* danger variant */
+        .state-icon.danger { color: var(--danger); }
+        .state-card.danger-card { border-color: rgba(192, 57, 43, 0.15); }
+        .state-card.danger-card .state-title { color: var(--danger); }
+
+        /* ─── UTILS ─── */
+        .hidden { display: none !important; }
+
+        /* ─── RESPONSIVE ─── */
+        @media (max-width: 480px) {
+            .card-header-strip { padding: 1.25rem; }
+            .card-body { padding: 1.25rem; }
+            .strip-title { font-size: 1.3rem; }
+            .page-wrap { max-width: 100%; }
+        }
     </style>
 </head>
 <body>
-    <div class="container py-5" style="max-width: 500px;">
-        <div class="text-center mb-4">
-            <h2 class="fw-bold" style="font-family:'Raleway'; color: #14532d;">Order Tracking</h2>
-            <p id="orderIdDisplay" class="text-muted fw-bold">Connecting...</p>
-        </div>
 
-        <div id="loading" class="text-center py-5">
-            <div class="spinner-border text-success" role="status"></div>
-            <p class="text-muted mt-3 small fw-bold">Fetching latest updates...</p>
-        </div>
+<div class="page-wrap">
 
-        <div id="trackContent" class="track-card d-none">
-            <div class="mb-4 bg-light p-3 rounded-3 border">
-                <label class="text-muted small fw-bold text-uppercase">Items in Order</label>
-                <div id="displayItems" class="fw-bold mt-1" style="color: #0f1a0f;"></div>
+    <div id="loadingState" class="state-card">
+        <div class="spinner"></div>
+        <p class="state-desc">Fetching your order details&hellip;</p>
+    </div>
+
+    <div id="errorState" class="state-card hidden">
+        <span class="state-icon">🔍</span>
+        <h2 id="errorTitle" class="state-title">Order Not Found</h2>
+        <p id="errorDesc" class="state-desc">Please check the link or contact your vendor.</p>
+        <a href="/" class="btn-home"><i class="bi bi-arrow-left"></i> Back to Store</a>
+    </div>
+
+    <div id="cancelledState" class="state-card danger-card hidden">
+        <span class="state-icon danger"><i class="bi bi-x-circle-fill"></i></span>
+        <h2 class="state-title">Order Cancelled</h2>
+        <p class="state-desc">This order has been cancelled by the vendor.</p>
+        <a href="/" class="btn-home"><i class="bi bi-arrow-left"></i> Back to Store</a>
+    </div>
+
+    <div id="trackCard" class="card hidden">
+
+        <div class="card-header-strip">
+            <div class="strip-eyebrow">Live Tracking</div>
+            <div class="strip-title">Order Status</div>
+            <div class="order-pill" id="orderIdDisplay">
+                <i class="bi bi-hash"></i>
+                <span>—</span>
             </div>
+        </div>
+
+        <div class="card-body">
+            <div class="items-box">
+                <div class="items-box-icon"><i class="bi bi-bag"></i></div>
+                <div>
+                    <div class="items-label">Order Items</div>
+                    <div id="displayItems" class="items-text">—</div>
+                </div>
+            </div>
+
+            <div class="section-label">Delivery Progress</div>
 
             <div class="timeline">
-                <div class="timeline-item" id="step-new">
-                    <div class="status-dot"></div>
-                    <div class="fw-bold small text-dark">Order Confirmed</div>
-                    <div class="text-muted" style="font-size: 0.75rem;">Vendor has recorded your order</div>
-                </div>
-                <div class="timeline-item" id="step-processing">
-                    <div class="status-dot"></div>
-                    <div class="fw-bold small text-dark">Processing</div>
-                    <div class="text-muted" style="font-size: 0.75rem;">Your order is being prepared</div>
-                </div>
-                <div class="timeline-item" id="step-shipped">
-                    <div class="status-dot"></div>
-                    <div class="fw-bold small text-dark">Shipped / Out for Delivery</div>
-                    <div id="riderNote" class="text-muted" style="font-size: 0.75rem;">Package is on its way</div>
-                </div>
-                <div class="timeline-item" id="step-delivered">
-                    <div class="status-dot"></div>
-                    <div class="fw-bold small text-dark">Delivered</div>
-                    <div class="text-muted" style="font-size: 0.75rem;">Order received successfully</div>
-                </div>
-            </div>
-        </div>
 
-        <div id="errorState" class="text-center py-5 d-none bg-white rounded-4 border">
-            <i class="bi bi-search fs-1 text-muted"></i>
-            <h5 class="mt-3 fw-bold" id="errorTitle">Order Not Found</h5>
-            <p class="text-muted small" id="errorDesc">Please check the link again or contact the vendor.</p>
+                <div class="tl-item" id="step-new">
+                    <div class="tl-left">
+                        <div class="tl-dot"><div class="tl-dot-inner"></div></div>
+                        <div class="tl-line"></div>
+                    </div>
+                    <div class="tl-content">
+                        <div class="tl-title">Order Confirmed</div>
+                        <div class="tl-desc">Vendor has recorded your order</div>
+                    </div>
+                </div>
+
+                <div class="tl-item" id="step-processing">
+                    <div class="tl-left">
+                        <div class="tl-dot"><div class="tl-dot-inner"></div></div>
+                        <div class="tl-line"></div>
+                    </div>
+                    <div class="tl-content">
+                        <div class="tl-title">Processing</div>
+                        <div class="tl-desc">Your order is being prepared</div>
+                    </div>
+                </div>
+
+                <div class="tl-item" id="step-shipped">
+                    <div class="tl-left">
+                        <div class="tl-dot"><div class="tl-dot-inner"></div></div>
+                        <div class="tl-line"></div>
+                    </div>
+                    <div class="tl-content">
+                        <div class="tl-title">Out for Delivery</div>
+                        <div id="riderNote" class="tl-desc">Package is on its way to you</div>
+                    </div>
+                </div>
+
+                <div class="tl-item" id="step-delivered">
+                    <div class="tl-left">
+                        <div class="tl-dot"><div class="tl-dot-inner"></div></div>
+                        <div class="tl-line"></div>
+                    </div>
+                    <div class="tl-content">
+                        <div class="tl-title">Delivered</div>
+                        <div class="tl-desc">Order received successfully</div>
+                    </div>
+                </div>
+
+            </div>
         </div>
     </div>
 
-    <script type="module">
-        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
-        
-        // ⚠️ IMPORTANT: PASTE YOUR ACTUAL SUPABASE URL AND KEY HERE ⚠️
-        const supabase = createClient('https://sotdghhayztnpwnrzjzu.supabase.co', 'sb_publishable_OcOKwSDnoCGm_rt725Bi-g_rV6tjGlK');
+</div>
 
-        async function initTracking() {
-            try {
-                // 1. Get the ID from the URL
-                const id = new URLSearchParams(window.location.search).get('id');
-                
-                if(!id) {
-                    showError("Invalid Tracking Link", "There is no order ID in this URL.");
-                    return;
-                }
+<script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-                document.getElementById('orderIdDisplay').innerText = `ID: ${id}`;
+    // SUPABASE CREDENTIALS
+    const SUPABASE_URL      = 'https://sotdghhayztnpwnrzjzu.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_OcOKwSDnoCGm_rt725Bi-g_rV6tjGlK';
+    const supabase          = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-                // 2. Fetch from Database
-                const { data, error } = await supabase.from('orders').select('*').eq('id', id).single();
+    const STATUS_FLOW = ['new', 'processing', 'shipped', 'delivered'];
 
-                // 3. Stop the spinner
-                document.getElementById('loading').classList.add('d-none');
+    async function initTracking() {
+        try {
+            const params  = new URLSearchParams(window.location.search);
+            const orderId = params.get('id');
 
-                // 4. Handle missing data
-                if(error || !data) {
-                    showError("Order Not Found", "We couldn't find an order with this ID. It may have been deleted.");
-                    return;
-                }
-
-                // 5. Populate Data
-                document.getElementById('trackContent').classList.remove('d-none');
-                document.getElementById('displayItems').innerText = data.items;
-
-                // 6. Animate the timeline based on status
-                const steps = ['new', 'processing', 'shipped', 'delivered'];
-                
-                // If it's cancelled, we handle it specially
-                if (data.status === 'cancelled') {
-                    document.getElementById('trackContent').innerHTML = `
-                        <div class="text-center py-3">
-                            <i class="bi bi-x-circle text-danger fs-1"></i>
-                            <h4 class="fw-bold text-danger mt-2">Order Cancelled</h4>
-                            <p class="text-muted small">This order has been cancelled by the vendor.</p>
-                        </div>`;
-                    return;
-                }
-
-                const currentIndex = steps.indexOf(data.status);
-
-                steps.forEach((step, index) => {
-                    const el = document.getElementById(`step-${step}`);
-                    if(index <= currentIndex) {
-                        el.classList.add('active');
-                        el.querySelector('.status-dot').classList.add('active');
-                    }
-                });
-
-                // 7. Add rider details if it's shipped
-                if(data.rider_name && (data.status === 'shipped' || data.status === 'delivered')) {
-                    document.getElementById('riderNote').innerHTML = `
-                        <span class="badge bg-success bg-opacity-10 text-success border border-success mb-1">
-                            <i class="bi bi-bicycle"></i> Rider: ${data.rider_name} - ${data.rider_phone}
-                        </span>`;
-                }
-
-            } catch (err) {
-                showError("Connection Error", "Could not connect to the database. Check your connection.");
+            if (!orderId) {
+                showError('Invalid Link', 'No order ID was found in the URL.');
+                return;
             }
-        }
 
-        function showError(title, desc) {
-            document.getElementById('loading').classList.add('d-none');
-            document.getElementById('errorState').classList.remove('d-none');
-            document.getElementById('errorTitle').innerText = title;
-            document.getElementById('errorDesc').innerText = desc;
-            document.getElementById('orderIdDisplay').innerText = '';
-        }
+            document.querySelector('#orderIdDisplay span').innerText = orderId;
 
-        // Run it
-        initTracking();
-    </script>
+            // Fetch order from Supabase
+            const { data: order, error } = await supabase
+                .from('orders')
+                .select('*')
+                .eq('id', orderId)
+                .single();
+
+            if (error || !order) {
+                showError('Order Not Found', "We couldn't find an order with this ID. It may have been removed or the link may be incorrect.");
+                return;
+            }
+
+            hide('loadingState');
+
+            if (order.status === 'cancelled') {
+                show('cancelledState');
+                return;
+            }
+
+            show('trackCard');
+
+            document.getElementById('displayItems').innerText = order.items || 'No items listed';
+
+            const currentIndex = STATUS_FLOW.indexOf(order.status || 'new');
+
+            // Set active states
+            STATUS_FLOW.forEach((status, index) => {
+                const el = document.getElementById(`step-${status}`);
+                if (!el) return;
+                
+                if (index <= currentIndex) {
+                    el.classList.add('active');
+                    if (index === currentIndex) el.classList.add('current');
+                }
+            });
+
+            // Animate timeline items
+            document.querySelectorAll('.tl-item').forEach((el, i) => {
+                setTimeout(() => {
+                    el.style.opacity = '1';
+                    el.style.transform = 'translateY(0)';
+                }, i * 150); // Staggered animation
+            });
+
+            // Add pulsing status chip
+            const currentEl = document.getElementById(`step-${order.status}`);
+            if (currentEl && order.status !== 'delivered') {
+                const chip = document.createElement('div');
+                chip.className = 'status-chip';
+                chip.innerHTML = `<div class="status-chip-dot"></div> ${statusLabel(order.status)}`;
+                currentEl.querySelector('.tl-content').appendChild(chip);
+            }
+
+            // Inject Rider info if dispatched
+            if ((order.status === 'shipped' || order.status === 'delivered') && (order.rider_name || order.rider_phone)) {
+                const riderNote = document.getElementById('riderNote');
+                let html = `<div class="rider-badge"><i class="bi bi-bicycle"></i>`;
+                
+                if (order.rider_name)  html += `<span>${order.rider_name}</span>`;
+                if (order.rider_phone) html += `<span style="opacity:.65">·</span><span>${order.rider_phone}</span>`;
+                
+                html += `</div>`;
+                riderNote.innerHTML = `Package is on its way to you<br>${html}`;
+            }
+
+        } catch (err) {
+            console.error(err);
+            showError('Connection Error', 'Unable to reach the tracking service. Please check your internet connection.');
+        }
+    }
+
+    function statusLabel(status) {
+        return { new: 'Order Confirmed', processing: 'In Progress', shipped: 'On the Way' }[status] || status;
+    }
+
+    function showError(title, msg) {
+        hide('loadingState');
+        show('errorState');
+        document.getElementById('errorTitle').innerText = title;
+        document.getElementById('errorDesc').innerText = msg;
+    }
+
+    function show(id) { document.getElementById(id).classList.remove('hidden'); }
+    function hide(id) { document.getElementById(id).classList.add('hidden'); }
+
+    // Initialize the tracking script
+    initTracking();
+</script>
 </body>
 </html>
