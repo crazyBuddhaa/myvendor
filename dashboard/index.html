@@ -363,9 +363,11 @@
       window.setLoading('signup', false)
 
       if (profileError) {
-        // This will print the EXACT error from Supabase to your screen
-        window.showMessage('signupMsg', 'DB Error: ' + profileError.message, 'error')
+        // This will pop up an alert with the EXACT database error
+        alert("DB ERROR:\nMessage: " + profileError.message + "\nDetails: " + profileError.details + "\nHint: " + profileError.hint);
         console.error("Full Profile Error:", profileError);
+        window.setLoading('signup', false);
+        return; // Stop the redirect so you can read the error!
       } else {
         window.showMessage('signupMsg', '🎉 Store created! Redirecting to your dashboard...', 'success')
         setTimeout(() => window.location.href = '/dashboard/home.html', 1500)
