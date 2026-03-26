@@ -178,4 +178,4 @@ window.filterStorefront = function(category, buttonElement) {
 };
 
 // Initialize the storefront
-initStore();
+initStore(); 
