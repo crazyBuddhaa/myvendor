@@ -764,4 +764,21 @@ window.loadAnalytics = async function() {
         topProductsList.innerHTML = sortedProducts.map((prod, index) => `
             <div class="top-product-item">
                 <div class="product-rank">${index + 1}</div>
-                <div class
+                <div class="product-info">
+                    <div class="product-name">${prod[0]}</div>
+                    <div class="product-sales">${prod[1].count} order${prod[1].count !== 1 ? 's' : ''}</div>
+                </div>
+                <div class="product-revenue">₦${prod[1].revenue.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0})}</div>
+            </div>
+        `).join('');
+    }
+};
+
+// ─── 7. UTILS & LOGOUT ───────────────────────────────────────────
+window.logout = async function() {
+    await supabase.auth.signOut();
+    window.location.href = '/login.html';
+};
+
+// Ignite!
+initDashboard();
