@@ -2,152 +2,432 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Track Order - myvendor</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Track Order | myvendor</title>
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@700;900&family=Open+Sans:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=Playfair+Display:ital,wght@0,700;0,900;1,700&display=swap" rel="stylesheet">
+
     <style>
-        body { font-family: 'Open Sans', sans-serif; background: #f8faf8; }
-        .track-card { background: white; border-radius: 20px; border: 1px solid #eee; padding: 2rem; margin-top: 2rem; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-        .status-dot { width: 12px; height: 12px; border-radius: 50%; background: #ddd; position: relative; z-index: 2; transition: 0.3s; }
-        .status-dot.active { background: #16a34a; box-shadow: 0 0 0 4px #dcfce7; }
-        .timeline-item { position: relative; padding-left: 30px; margin-bottom: 2rem; }
-        .timeline-item::before { content: ''; position: absolute; left: 5px; top: 12px; height: 100%; width: 2px; background: #eee; transition: 0.3s; }
-        .timeline-item:last-child::before { display: none; }
-        .timeline-item.active::before { background: #16a34a; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --green-deep: #0b3b2a;
+            --green-primary: #1f6e43;
+            --green-bright: #2b9b5a;
+            --green-soft: #e4f5e9;
+            --cream-bg: #fefaf5;
+            --card-white: #ffffff;
+            --text-dark: #1c2a1f;
+            --text-muted: #5c6e5a;
+            --border-light: #e8e2d9;
+            --shadow-sm: 0 6px 14px rgba(0, 24, 8, 0.04);
+            --shadow-md: 0 12px 28px rgba(0, 32, 8, 0.08);
+            --radius-lg: 28px;
+            --radius-md: 18px;
+            --radius-sm: 12px;
+        }
+
+        body {
+            background: linear-gradient(145deg, #f6fcf5 0%, #f0f7ec 100%);
+            font-family: 'Inter', sans-serif;
+            color: var(--text-dark);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+        }
+
+        /* subtle grain overlay */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+            background-size: 280px;
+            opacity: 0.025;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        .track-container {
+            max-width: 560px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        /* header */
+        .track-header {
+            text-align: center;
+            margin-bottom: 1.8rem;
+        }
+
+        .track-header h1 {
+            font-family: 'Playfair Display', serif;
+            font-weight: 900;
+            font-size: 1.8rem;
+            background: linear-gradient(125deg, #14532d, #2b6e3c);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 0.25rem;
+        }
+
+        .track-header .order-ref {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            background: var(--green-soft);
+            display: inline-block;
+            padding: 0.2rem 0.8rem;
+            border-radius: 40px;
+        }
+
+        /* main card */
+        .track-card {
+            background: var(--card-white);
+            border-radius: var(--radius-lg);
+            padding: 1.8rem;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-light);
+            transition: transform 0.2s;
+        }
+
+        /* order summary */
+        .order-summary {
+            background: var(--green-soft);
+            border-radius: var(--radius-sm);
+            padding: 1rem;
+            margin-bottom: 1.8rem;
+            border-left: 4px solid var(--green-primary);
+        }
+
+        .order-summary-label {
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--green-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .order-summary-items {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--text-dark);
+            line-height: 1.4;
+        }
+
+        /* timeline */
+        .timeline {
+            position: relative;
+            padding-left: 0;
+            margin-bottom: 0.5rem;
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-left: 2rem;
+            padding-bottom: 1.8rem;
+            margin-left: 0.25rem;
+        }
+
+        .timeline-item:last-child {
+            padding-bottom: 0;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: 5px;
+            top: 6px;
+            width: 2px;
+            height: calc(100% - 6px);
+            background: var(--border-light);
+            transition: background 0.3s;
+        }
+
+        .timeline-item:last-child::before {
+            display: none;
+        }
+
+        .timeline-item.active::before {
+            background: var(--green-primary);
+        }
+
+        .status-dot {
+            position: absolute;
+            left: 0;
+            top: 2px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--border-light);
+            border: 2px solid var(--card-white);
+            box-shadow: 0 0 0 1px var(--border-light);
+            transition: all 0.3s ease;
+            z-index: 2;
+        }
+
+        .timeline-item.active .status-dot {
+            background: var(--green-primary);
+            box-shadow: 0 0 0 3px rgba(31, 110, 67, 0.2);
+            transform: scale(1.1);
+        }
+
+        .timeline-title {
+            font-weight: 700;
+            font-size: 0.85rem;
+            margin-bottom: 0.2rem;
+            color: var(--text-dark);
+        }
+
+        .timeline-desc {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        .rider-info {
+            margin-top: 0.5rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--green-soft);
+            padding: 0.25rem 0.7rem;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--green-primary);
+        }
+
+        /* loading & error states */
+        .loading-state, .error-state {
+            background: var(--card-white);
+            border-radius: var(--radius-lg);
+            padding: 2.5rem;
+            text-align: center;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-light);
+        }
+
+        .loader {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border-light);
+            border-top-color: var(--green-bright);
+            border-radius: 50%;
+            margin: 0 auto 1rem;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .error-icon {
+            font-size: 3rem;
+            color: var(--text-muted);
+            opacity: 0.5;
+            margin-bottom: 1rem;
+        }
+
+        .btn-back-home {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--green-primary);
+            color: white;
+            padding: 0.6rem 1.2rem;
+            border-radius: 40px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.85rem;
+            margin-top: 1rem;
+            transition: 0.2s;
+        }
+
+        .btn-back-home:hover {
+            background: var(--green-deep);
+            color: white;
+        }
+
+        /* hidden utility */
+        .hidden {
+            display: none !important;
+        }
+
+        @media (max-width: 500px) {
+            .track-card {
+                padding: 1.2rem;
+            }
+            .timeline-item {
+                padding-left: 1.8rem;
+            }
+        }
     </style>
 </head>
 <body>
-    <div class="container py-5" style="max-width: 500px;">
-        <div class="text-center mb-4">
-            <h2 class="fw-bold" style="font-family:'Raleway'; color: #14532d;">Order Tracking</h2>
-            <p id="orderIdDisplay" class="text-muted fw-bold">Connecting...</p>
+
+<div class="track-container">
+    <div class="track-header">
+        <h1>Track Order</h1>
+        <div id="orderIdDisplay" class="order-ref">—</div>
+    </div>
+
+    <!-- Loading State -->
+    <div id="loadingState" class="loading-state">
+        <div class="loader"></div>
+        <p>Fetching order details...</p>
+    </div>
+
+    <!-- Error State -->
+    <div id="errorState" class="error-state hidden">
+        <div class="error-icon"><i class="bi bi-search-heart"></i></div>
+        <h5 id="errorTitle" class="fw-bold">Order Not Found</h5>
+        <p id="errorDesc" class="text-muted small">Please check the link again or contact the vendor.</p>
+        <a href="/" class="btn-back-home"><i class="bi bi-arrow-left"></i> Back to Store</a>
+    </div>
+
+    <!-- Main Tracking Card -->
+    <div id="trackCard" class="track-card hidden">
+        <!-- Order Summary -->
+        <div class="order-summary">
+            <div class="order-summary-label"><i class="bi bi-receipt"></i> Items in order</div>
+            <div id="displayItems" class="order-summary-items">—</div>
         </div>
 
-        <div id="loading" class="text-center py-5">
-            <div class="spinner-border text-success" role="status"></div>
-            <p class="text-muted mt-3 small fw-bold">Fetching latest updates...</p>
-        </div>
-
-        <div id="trackContent" class="track-card d-none">
-            <div class="mb-4 bg-light p-3 rounded-3 border">
-                <label class="text-muted small fw-bold text-uppercase">Items in Order</label>
-                <div id="displayItems" class="fw-bold mt-1" style="color: #0f1a0f;"></div>
+        <!-- Timeline -->
+        <div class="timeline">
+            <div class="timeline-item" id="step-new">
+                <div class="status-dot"></div>
+                <div class="timeline-title">Order Confirmed</div>
+                <div class="timeline-desc">Vendor has recorded your order</div>
             </div>
-
-            <div class="timeline">
-                <div class="timeline-item" id="step-new">
-                    <div class="status-dot"></div>
-                    <div class="fw-bold small text-dark">Order Confirmed</div>
-                    <div class="text-muted" style="font-size: 0.75rem;">Vendor has recorded your order</div>
-                </div>
-                <div class="timeline-item" id="step-processing">
-                    <div class="status-dot"></div>
-                    <div class="fw-bold small text-dark">Processing</div>
-                    <div class="text-muted" style="font-size: 0.75rem;">Your order is being prepared</div>
-                </div>
-                <div class="timeline-item" id="step-shipped">
-                    <div class="status-dot"></div>
-                    <div class="fw-bold small text-dark">Shipped / Out for Delivery</div>
-                    <div id="riderNote" class="text-muted" style="font-size: 0.75rem;">Package is on its way</div>
-                </div>
-                <div class="timeline-item" id="step-delivered">
-                    <div class="status-dot"></div>
-                    <div class="fw-bold small text-dark">Delivered</div>
-                    <div class="text-muted" style="font-size: 0.75rem;">Order received successfully</div>
-                </div>
+            <div class="timeline-item" id="step-processing">
+                <div class="status-dot"></div>
+                <div class="timeline-title">Processing</div>
+                <div class="timeline-desc">Your order is being prepared</div>
             </div>
-        </div>
-
-        <div id="errorState" class="text-center py-5 d-none bg-white rounded-4 border">
-            <i class="bi bi-search fs-1 text-muted"></i>
-            <h5 class="mt-3 fw-bold" id="errorTitle">Order Not Found</h5>
-            <p class="text-muted small" id="errorDesc">Please check the link again or contact the vendor.</p>
+            <div class="timeline-item" id="step-shipped">
+                <div class="status-dot"></div>
+                <div class="timeline-title">Shipped / Out for Delivery</div>
+                <div id="riderNote" class="timeline-desc">Package is on its way</div>
+            </div>
+            <div class="timeline-item" id="step-delivered">
+                <div class="status-dot"></div>
+                <div class="timeline-title">Delivered</div>
+                <div class="timeline-desc">Order received successfully</div>
+            </div>
         </div>
     </div>
 
-    <script type="module">
-        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
-        
-        // ⚠️ IMPORTANT: PASTE YOUR ACTUAL SUPABASE URL AND KEY HERE ⚠️
-        const supabase = createClient('https://sotdghhayztnpwnrzjzu.supabase.co', 'sb_publishable_OcOKwSDnoCGm_rt725Bi-g_rV6tjGlK');
+    <!-- Cancelled state (handled dynamically) -->
+    <div id="cancelledState" class="error-state hidden">
+        <div class="error-icon"><i class="bi bi-x-circle" style="color: #dc2626;"></i></div>
+        <h5 class="fw-bold text-danger">Order Cancelled</h5>
+        <p class="text-muted small">This order has been cancelled by the vendor.</p>
+        <a href="/" class="btn-back-home"><i class="bi bi-arrow-left"></i> Back to Store</a>
+    </div>
+</div>
 
-        async function initTracking() {
-            try {
-                // 1. Get the ID from the URL
-                const id = new URLSearchParams(window.location.search).get('id');
-                
-                if(!id) {
-                    showError("Invalid Tracking Link", "There is no order ID in this URL.");
-                    return;
-                }
+<script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-                document.getElementById('orderIdDisplay').innerText = `ID: ${id}`;
+    // Supabase configuration (from provided credentials)
+    const SUPABASE_URL = 'https://sotdghhayztnpwnrzjzu.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_OcOKwSDnoCGm_rt725Bi-g_rV6tjGlK';
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-                // 2. Fetch from Database
-                const { data, error } = await supabase.from('orders').select('*').eq('id', id).single();
+    async function initTracking() {
+        try {
+            // Get order ID from URL
+            const params = new URLSearchParams(window.location.search);
+            const orderId = params.get('id');
 
-                // 3. Stop the spinner
-                document.getElementById('loading').classList.add('d-none');
-
-                // 4. Handle missing data
-                if(error || !data) {
-                    showError("Order Not Found", "We couldn't find an order with this ID. It may have been deleted.");
-                    return;
-                }
-
-                // 5. Populate Data
-                document.getElementById('trackContent').classList.remove('d-none');
-                document.getElementById('displayItems').innerText = data.items;
-
-                // 6. Animate the timeline based on status
-                const steps = ['new', 'processing', 'shipped', 'delivered'];
-                
-                // If it's cancelled, we handle it specially
-                if (data.status === 'cancelled') {
-                    document.getElementById('trackContent').innerHTML = `
-                        <div class="text-center py-3">
-                            <i class="bi bi-x-circle text-danger fs-1"></i>
-                            <h4 class="fw-bold text-danger mt-2">Order Cancelled</h4>
-                            <p class="text-muted small">This order has been cancelled by the vendor.</p>
-                        </div>`;
-                    return;
-                }
-
-                const currentIndex = steps.indexOf(data.status);
-
-                steps.forEach((step, index) => {
-                    const el = document.getElementById(`step-${step}`);
-                    if(index <= currentIndex) {
-                        el.classList.add('active');
-                        el.querySelector('.status-dot').classList.add('active');
-                    }
-                });
-
-                // 7. Add rider details if it's shipped
-                if(data.rider_name && (data.status === 'shipped' || data.status === 'delivered')) {
-                    document.getElementById('riderNote').innerHTML = `
-                        <span class="badge bg-success bg-opacity-10 text-success border border-success mb-1">
-                            <i class="bi bi-bicycle"></i> Rider: ${data.rider_name} - ${data.rider_phone}
-                        </span>`;
-                }
-
-            } catch (err) {
-                showError("Connection Error", "Could not connect to the database. Check your connection.");
+            if (!orderId) {
+                showError('Invalid Tracking Link', 'No order ID provided in the link.');
+                return;
             }
-        }
 
-        function showError(title, desc) {
-            document.getElementById('loading').classList.add('d-none');
-            document.getElementById('errorState').classList.remove('d-none');
-            document.getElementById('errorTitle').innerText = title;
-            document.getElementById('errorDesc').innerText = desc;
-            document.getElementById('orderIdDisplay').innerText = '';
-        }
+            document.getElementById('orderIdDisplay').innerText = `ID: ${orderId}`;
 
-        // Run it
-        initTracking();
-    </script>
+            // Fetch order from Supabase
+            const { data: order, error } = await supabase
+                .from('orders')
+                .select('*')
+                .eq('id', orderId)
+                .single();
+
+            if (error || !order) {
+                showError('Order Not Found', 'We couldn\'t find an order with this ID. It may have been deleted or never existed.');
+                return;
+            }
+
+            // Hide loading, show tracking card
+            document.getElementById('loadingState').classList.add('hidden');
+            document.getElementById('trackCard').classList.remove('hidden');
+
+            // Handle cancelled orders separately
+            if (order.status === 'cancelled') {
+                document.getElementById('trackCard').classList.add('hidden');
+                document.getElementById('cancelledState').classList.remove('hidden');
+                return;
+            }
+
+            // Populate order items
+            document.getElementById('displayItems').innerText = order.items || 'No items listed';
+
+            // Define status order
+            const statusFlow = ['new', 'processing', 'shipped', 'delivered'];
+            const currentStatus = order.status || 'new';
+            const currentIndex = statusFlow.indexOf(currentStatus);
+
+            // Activate timeline steps up to current status
+            statusFlow.forEach((status, index) => {
+                const stepElement = document.getElementById(`step-${status}`);
+                if (stepElement) {
+                    if (index <= currentIndex) {
+                        stepElement.classList.add('active');
+                    } else {
+                        stepElement.classList.remove('active');
+                    }
+                }
+            });
+
+            // Add rider details if shipped or delivered and rider info exists
+            if ((order.status === 'shipped' || order.status === 'delivered') && (order.rider_name || order.rider_phone)) {
+                const riderNote = document.getElementById('riderNote');
+                let riderHtml = '';
+                if (order.rider_name) riderHtml += `👤 ${order.rider_name}`;
+                if (order.rider_phone) riderHtml += ` ${riderHtml ? '·' : ''} 📞 ${order.rider_phone}`;
+                if (riderHtml) {
+                    riderNote.innerHTML = `<div class="rider-info"><i class="bi bi-bicycle"></i> ${riderHtml}</div>`;
+                }
+            }
+
+        } catch (err) {
+            console.error(err);
+            showError('Connection Error', 'Unable to connect to the tracking service. Please check your internet connection.');
+        }
+    }
+
+    function showError(title, message) {
+        document.getElementById('loadingState').classList.add('hidden');
+        document.getElementById('errorState').classList.remove('hidden');
+        document.getElementById('errorTitle').innerText = title;
+        document.getElementById('errorDesc').innerText = message;
+        document.getElementById('orderIdDisplay').innerText = '';
+    }
+
+    // Initialize tracking
+    initTracking();
+</script>
 </body>
 </html>
