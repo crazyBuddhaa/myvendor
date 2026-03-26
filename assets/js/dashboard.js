@@ -158,56 +158,72 @@ window.saveProduct = async function(event) {
     }
 };
 
+// ─── 3. PRODUCT & INVENTORY LOGIC ─────────────────────────────────
+
 window.loadProducts = async function() {
-    const list = document.getElementById('productList');
-    const { data: prods } = await supabase.from('products').select('*').eq('vendor_id', currentUser.id).order('created_at', {ascending: false});
+    // 🌟 UPDATED: Targeting the new 'productGrid' ID instead of 'productList'
+    const list = document.getElementById('productGrid'); 
+    if (!list) return;
+
+    const { data: prods } = await supabase
+        .from('products')
+        .select('*')
+        .eq('vendor_id', currentUser.id)
+        .order('created_at', {ascending: false});
+
+    const emptyState = document.getElementById('emptyState');
 
     if (!prods || prods.length === 0) { 
-        document.getElementById('emptyState').classList.remove('hidden'); 
+        if(emptyState) {
+            emptyState.classList.remove('hidden');
+            emptyState.querySelector('h3').innerText = 'Your inventory is empty';
+            emptyState.querySelector('p').innerText = 'Add your first product to start selling.';
+            const addBtn = emptyState.querySelector('.btn-add-modern');
+            if (addBtn) addBtn.classList.remove('hidden');
+        }
         list.innerHTML = ''; 
         return; 
     }
 
-    document.getElementById('emptyState').classList.add('hidden');
+    if(emptyState) emptyState.classList.add('hidden');
+    
+    // 🌟 UPDATED: Generating the new Modern UI cards
     list.innerHTML = prods.map(p => {
         let badgeClass = 'stock-in';
         let badgeText = 'In Stock';
 
         if (p.status === 'pre_order') {
-            badgeClass = 'bg-warning text-dark';
+            badgeClass = 'stock-low';
             badgeText = 'Pre-Order';
         } else if (p.status === 'out_of_stock' || p.in_stock === false) {
             badgeClass = 'stock-out';
             badgeText = 'Sold Out';
         }
 
-        let metaArr = [];
-        if (p.category) metaArr.push(p.category);
-        if (p.quantity) metaArr.push(`Qty: ${p.quantity}`);
-        if (p.colors) metaArr.push(`Colors: ${p.colors}`);
-        const metaText = metaArr.length > 0 ? metaArr.join(' • ') : 'No extra details';
-
-        const imgHtml = p.image_url ? `<img src="${p.image_url}" alt="${p.title}" style="width:100%; height:100%; object-fit:cover;">` : '📦';
+        const imgHtml = p.image_url 
+            ? `<img src="${p.image_url}" alt="${p.title}">` 
+            : `<i class="bi bi-box placeholder-icon"></i>`;
 
         return `
-        <div class="product-card p-3 bg-white rounded-4 border mb-3">
-            <div class="d-flex gap-3">
-                <div style="width:70px; height:70px; background:#f1f5f9; border-radius:12px; display:flex; align-items:center; justify-content:center; overflow:hidden; flex-shrink:0;">
-                    ${imgHtml}
-                </div>
-                <div class="flex-grow-1 overflow-hidden">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <div class="fw-bold small text-truncate pe-2">${p.title}</div>
-                        <span class="stock-badge ${badgeClass} flex-shrink-0" style="font-size: 0.65rem; padding: 0.2rem 0.4rem; border-radius: 4px; font-weight: 700; text-transform: uppercase;">${badgeText}</span>
-                    </div>
-                    <div class="text-success fw-bold small mb-1">₦${parseFloat(p.price).toLocaleString()}</div>
-                    <div class="text-muted" style="font-size: 0.7rem;">${metaText}</div>
-                    
-                    <div class="mt-2 d-flex gap-2">
-                        <button class="btn btn-sm btn-light border px-2 py-1" style="font-size:0.75rem; font-weight:600;" onclick="window.location.href='/dashboard/edit-product.html?id=${p.id}'"><i class="bi bi-pencil"></i> Edit</button>
-                        <button class="btn btn-sm btn-light border px-2 py-1" style="font-size:0.75rem; font-weight:600;" onclick="copyProductLink('${p.id}')"><i class="bi bi-link"></i> Link</button>
-                        <button class="btn btn-sm btn-danger px-2 py-1 text-white" style="font-size:0.75rem; font-weight:600; border:none;" onclick="deleteProduct('${p.id}')"><i class="bi bi-trash"></i></button>
-                    </div>
+        <div class="product-card">
+            <div class="product-image">
+                ${imgHtml}
+            </div>
+            <div class="product-info">
+                <div class="product-title">${p.title}</div>
+                <div class="product-price">₦${parseFloat(p.price).toLocaleString()}</div>
+                <div class="stock-badge ${badgeClass}">${badgeText}</div>
+                
+                <div class="product-actions">
+                    <a href="/dashboard/edit-product.html?id=${p.id}" class="action-btn">
+                        <i class="bi bi-pencil"></i> Edit
+                    </a>
+                    <button class="action-btn" onclick="copyProductLink('${p.id}')">
+                        <i class="bi bi-link-45deg"></i> Link
+                    </button>
+                    <button class="action-btn delete" onclick="deleteProduct('${p.id}')">
+                        <i class="bi bi-trash"></i>
+                    </button>
                 </div>
             </div>
         </div>`;
@@ -232,6 +248,7 @@ window.copyProductLink = function(id) {
         alert("Product link copied!");
     }
 };
+
 
 // ─── 4. EDIT PRODUCT LOGIC ────────────────────────────────────────
 let currentEditId = null;
