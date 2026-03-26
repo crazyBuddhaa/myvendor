@@ -27,10 +27,10 @@ async function initStore() {
     // SHOW ERROR IF NO SLUG
     if (!slug) {
         document.body.innerHTML = `
-            <div class="text-center py-5" style="background: var(--cream); min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center;">
-                <i class="bi bi-shop text-muted" style="font-size: 3rem; color: var(--text-soft) !important;"></i>
-                <h3 class="mt-3 fw-bold" style="color: var(--forest); font-family: 'Playfair Display', serif;">Store not found</h3>
-                <p style="color: var(--text-soft);">We couldn't detect a store name in the link.</p>
+            <div class="text-center py-5" style="background: var(--cream-bg); min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+                <i class="bi bi-shop text-muted" style="font-size: 3rem; color: var(--text-muted) !important;"></i>
+                <h3 class="mt-3 fw-bold" style="color: var(--green-deep); font-family: 'Playfair Display', serif;">Store not found</h3>
+                <p style="color: var(--text-muted);">We couldn't detect a store name in the link.</p>
             </div>`;
         return;
     }
@@ -44,10 +44,10 @@ async function initStore() {
 
     if (vError || !vendor) {
         document.body.innerHTML = `
-            <div class="text-center py-5" style="background: var(--cream); min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+            <div class="text-center py-5" style="background: var(--cream-bg); min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center;">
                 <i class="bi bi-exclamation-circle text-danger" style="font-size: 3rem;"></i>
-                <h3 class="mt-3 fw-bold" style="color: var(--forest); font-family: 'Playfair Display', serif;">Store Does Not Exist</h3>
-                <p style="color: var(--text-soft);">There is no store registered with the name "${slug}".</p>
+                <h3 class="mt-3 fw-bold" style="color: var(--green-deep); font-family: 'Playfair Display', serif;">Store Does Not Exist</h3>
+                <p style="color: var(--text-muted);">There is no store registered with the name "${slug}".</p>
             </div>`;
         return;
     }
@@ -78,14 +78,14 @@ async function initStore() {
     if (pError || !products || products.length === 0) {
         if(grid) grid.innerHTML = '';
         if(empty) empty.classList.remove('hidden');
-        if(countEl) countEl.innerText = '0 Items';
+        if(countEl) countEl.innerText = '0 items';
         return;
     }
 
     if(empty) empty.classList.add('hidden');
-    if(countEl) countEl.innerText = `${products.length} Items`;
+    if(countEl) countEl.innerText = `${products.length} items`;
 
-    // 🌟 GENERATE PREMIUM CATEGORY PILLS 🌟
+    // 🌟 GENERATE ARTISANAL CATEGORY PILLS 🌟
     if (filterContainer) {
         const categories = ['All', ...new Set(products.map(p => p.category).filter(c => c && c.trim() !== 'Other' && c.trim() !== ''))];
         
@@ -99,30 +99,28 @@ async function initStore() {
         }
     }
 
-    // 🌟 RENDER PREMIUM PRODUCT GRID 🌟
+    // 🌟 RENDER NEW PRODUCT GRID (Matches your new HTML/CSS classes) 🌟
     if(grid) {
         grid.innerHTML = products.map((p, i) => {
             const delay = i * 0.05; // Stagger animation
             const isOut = !p.in_stock;
-            const badge = isOut ? `<div class="sold-out-badge">Sold Out</div>` : '';
-            const imgHtml = p.image_url ? `<img src="${p.image_url}" alt="${p.title}" style="${isOut ? 'filter: grayscale(1); opacity: 0.8;' : ''}">` : '📦';
+            const badge = isOut ? `<div class="sold-out-tag">SOLD OUT</div>` : '';
+            const imgHtml = p.image_url ? `<img src="${p.image_url}" alt="${p.title}" style="${isOut ? 'filter: grayscale(1); opacity: 0.8;' : ''}">` : '<i class="bi bi-box" style="font-size:2rem; color:var(--text-muted);"></i>';
             const catData = p.category ? p.category : 'Other';
 
             return `
-            <div class="product-item" data-category="${catData}" style="animation-delay: ${delay}s;">
-                <a href="/product/?vendor=${slug}&id=${p.id}" class="text-decoration-none">
-                    <div class="product-card">
+            <a href="/product/?vendor=${slug}&id=${p.id}" class="product-item text-decoration-none" data-category="${catData}" style="animation-delay: ${delay}s;">
+                <div class="product-card">
+                    <div class="prod-img">
                         ${badge}
-                        <div class="prod-img-wrapper">
-                            ${imgHtml}
-                        </div>
-                        <div class="prod-info">
-                            <h2 class="prod-title">${p.title}</h2>
-                            <p class="prod-price">₦${parseFloat(p.price).toLocaleString()}</p>
-                        </div>
+                        ${imgHtml}
                     </div>
-                </a>
-            </div>`;
+                    <div class="prod-info">
+                        <div class="prod-title">${p.title}</div>
+                        <div class="prod-price">₦${parseFloat(p.price).toLocaleString()}</div>
+                    </div>
+                </div>
+            </a>`;
         }).join('');
     }
 }
@@ -145,7 +143,15 @@ window.searchStore = function() {
     
     // Update count dynamically during search
     const countEl = document.getElementById('productCount');
-    if(countEl) countEl.innerText = `${visibleCount} Items`;
+    if(countEl) countEl.innerText = `${visibleCount} item${visibleCount !== 1 ? 's' : ''}`;
+    
+    // Handle empty state
+    const empty = document.getElementById('emptyState');
+    if (visibleCount === 0) {
+        empty.classList.remove('hidden');
+    } else {
+        empty.classList.add('hidden');
+    }
 };
 
 window.filterStorefront = function(category, buttonElement) {
@@ -153,10 +159,10 @@ window.filterStorefront = function(category, buttonElement) {
     document.querySelectorAll('.filter-pill').forEach(btn => btn.classList.remove('active'));
     buttonElement.classList.add('active');
 
-    // Update Section Label Text
-    const labelText = document.querySelector('.section-label-text');
+    // Update Section Title Text
+    const labelText = document.querySelector('.section-title');
     if (labelText) {
-        labelText.innerText = category === 'All' ? 'All Products' : category;
+        labelText.innerText = category === 'All' ? 'All offerings' : category;
     }
 
     // Filter the grid items
@@ -174,8 +180,16 @@ window.filterStorefront = function(category, buttonElement) {
 
     // Update count dynamically during filter
     const countEl = document.getElementById('productCount');
-    if(countEl) countEl.innerText = `${visibleCount} Items`;
+    if(countEl) countEl.innerText = `${visibleCount} item${visibleCount !== 1 ? 's' : ''}`;
+    
+    // Handle empty state
+    const empty = document.getElementById('emptyState');
+    if (visibleCount === 0) {
+        empty.classList.remove('hidden');
+    } else {
+        empty.classList.add('hidden');
+    }
 };
 
 // Initialize the storefront
-initStore(); 
+initStore();
