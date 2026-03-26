@@ -5,9 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Product Details - myvendor</title>
 
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#1f6e43">
+    <link rel="apple-touch-icon" href="/assets/img/logo.png">
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300..800&family=Playfair+Display:ital,wght@0,700..900&display=swap" rel="stylesheet">
 
     <style>
         * {
@@ -17,18 +21,16 @@
         }
 
         :root {
-            --forest:    #0d3320;
-            --green:     #1a6b3c;
-            --mint:      #22c55e;
-            --sage:      #86efac;
-            --cream:     #faf7f0;
-            --cream-dark:#f0ebe0;
-            --warm-white:#fffcf5;
-            --text-main: #0d1f12;
-            --text-mid:  #3a5c43;
-            --text-soft: #6b8f72;
-            --border:    #dde8de;
-            --wa-green:  #25D366;
+            --green-deep: #0b3b2a;
+            --green-primary: #1f6e43;
+            --green-bright: #2b9b5a;
+            --green-soft: #e4f5e9;
+            --cream-bg: #fefaf5;
+            --cream-card: #ffffff;
+            --text-dark: #1c2a1f;
+            --text-muted: #5c6e5a;
+            --border-light: #e8e2d9;
+            --wa-green: #25D366;
             --shadow-sm: 0 8px 20px rgba(0, 32, 0, 0.04);
             --shadow-md: 0 12px 28px rgba(0, 20, 0, 0.08);
             --radius-lg: 28px;
@@ -37,9 +39,9 @@
         }
 
         body {
-            font-family: 'DM Sans', sans-serif;
-            background: var(--cream);
-            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            background: var(--cream-bg);
+            color: var(--text-dark);
             padding-bottom: 0;
         }
 
@@ -51,15 +53,15 @@
             pointer-events: none;
             z-index: 9999;
             opacity: 0.025;
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
-            background-size: 180px;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+            background-size: 280px;
         }
 
         /* main container */
         .product-container {
             max-width: 640px;
             margin: 0 auto;
-            background: var(--warm-white);
+            background: var(--cream-card);
             min-height: 100vh;
             position: relative;
             border-radius: 0;
@@ -71,7 +73,7 @@
             position: relative;
             width: 100%;
             aspect-ratio: 1 / 1;
-            background: var(--cream-dark);
+            background: #f8f2ea;
             overflow: hidden;
             display: flex;
             align-items: center;
@@ -85,14 +87,14 @@
         }
         .placeholder-icon {
             font-size: 4rem;
-            color: var(--text-soft);
+            color: var(--text-muted);
             opacity: 0.5;
         }
         .back-button {
             position: absolute;
             top: 20px;
             left: 20px;
-            background: rgba(13, 51, 32, 0.7);
+            background: rgba(11, 59, 42, 0.7);
             backdrop-filter: blur(8px);
             padding: 8px 16px;
             border-radius: 40px;
@@ -108,13 +110,13 @@
             z-index: 2;
         }
         .back-button:hover {
-            background: rgba(13, 51, 32, 0.9);
-            color: var(--sage);
+            background: rgba(11, 59, 42, 0.9);
+            color: var(--green-soft);
         }
 
         /* content card */
         .product-content {
-            background: var(--warm-white);
+            background: var(--cream-card);
             border-radius: var(--radius-lg) var(--radius-lg) 0 0;
             margin-top: -24px;
             position: relative;
@@ -142,8 +144,8 @@
             gap: 5px;
         }
         .badge-category {
-            background: #e4f5e9;
-            color: var(--green);
+            background: var(--green-soft);
+            color: var(--green-primary);
         }
         .badge-outstock {
             background: #fee2e2;
@@ -159,7 +161,7 @@
             font-family: 'Playfair Display', serif;
             font-weight: 900;
             font-size: clamp(1.5rem, 5vw, 2rem);
-            color: var(--forest);
+            color: var(--green-deep);
             line-height: 1.2;
             margin-bottom: 0.5rem;
         }
@@ -173,7 +175,7 @@
             font-family: 'Playfair Display', serif;
             font-weight: 700;
             font-size: 1.8rem;
-            color: var(--green);
+            color: var(--green-primary);
         }
 
         /* attributes chips */
@@ -184,13 +186,13 @@
             margin-bottom: 1.5rem;
         }
         .attr-chip {
-            background: var(--cream-dark);
-            border: 1px solid var(--border);
+            background: var(--cream-bg);
+            border: 1px solid var(--border-light);
             padding: 0.4rem 0.9rem;
             border-radius: 30px;
             font-size: 0.75rem;
             font-weight: 600;
-            color: var(--text-mid);
+            color: var(--text-muted);
             display: inline-flex;
             align-items: center;
             gap: 6px;
@@ -206,17 +208,17 @@
         .divider-line {
             flex: 1;
             height: 1px;
-            background: var(--border);
+            background: var(--border-light);
         }
         .divider-icon {
             width: 28px;
             height: 28px;
-            background: #e4f5e9;
+            background: var(--green-soft);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: var(--green);
+            color: var(--green-primary);
             font-size: 0.7rem;
         }
 
@@ -225,13 +227,13 @@
             font-family: 'Playfair Display', serif;
             font-weight: 700;
             font-size: 0.9rem;
-            color: var(--forest);
+            color: var(--green-deep);
             margin-bottom: 0.5rem;
         }
         .product-description {
             font-size: 0.9rem;
             line-height: 1.6;
-            color: var(--text-mid);
+            color: var(--text-muted);
             white-space: pre-line;
         }
 
@@ -240,8 +242,8 @@
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
-            background: var(--cream-dark);
-            border: 1px solid var(--border);
+            background: var(--cream-bg);
+            border: 1px solid var(--border-light);
             border-radius: 60px;
             padding: 0.5rem 1rem 0.5rem 0.7rem;
             text-decoration: none;
@@ -249,12 +251,12 @@
             transition: background 0.2s;
         }
         .store-link:hover {
-            background: #e4ede5;
+            background: #f4efea;
         }
         .store-icon {
             width: 28px;
             height: 28px;
-            background: linear-gradient(135deg, var(--green), var(--forest));
+            background: linear-gradient(135deg, var(--green-bright), var(--green-primary));
             border-radius: 8px;
             display: flex;
             align-items: center;
@@ -265,11 +267,11 @@
         .store-text {
             font-size: 0.75rem;
             font-weight: 600;
-            color: var(--text-mid);
+            color: var(--text-muted);
         }
         .store-name {
             font-weight: 700;
-            color: var(--forest);
+            color: var(--green-deep);
         }
 
         /* action bar */
@@ -278,9 +280,9 @@
             bottom: 0;
             left: 0;
             right: 0;
-            background: rgba(250, 247, 240, 0.92);
+            background: rgba(255, 255, 255, 0.92);
             backdrop-filter: blur(12px);
-            border-top: 1px solid var(--border);
+            border-top: 1px solid var(--border-light);
             padding: 0.8rem 1rem;
             z-index: 100;
         }
@@ -290,7 +292,7 @@
         }
         .btn-order {
             width: 100%;
-            background: linear-gradient(135deg, var(--green), var(--forest));
+            background: linear-gradient(135deg, var(--green-primary), var(--green-deep));
             border: none;
             padding: 0.9rem;
             border-radius: 60px;
@@ -302,16 +304,16 @@
             justify-content: center;
             gap: 0.6rem;
             transition: transform 0.2s, box-shadow 0.2s;
-            box-shadow: 0 4px 12px rgba(13, 51, 32, 0.2);
+            box-shadow: 0 4px 12px rgba(11, 59, 42, 0.2);
         }
         .btn-order:active {
             transform: scale(0.98);
         }
         .btn-order.disabled {
-            background: var(--border);
+            background: var(--border-light);
             box-shadow: none;
             pointer-events: none;
-            color: var(--text-soft);
+            color: var(--text-muted);
         }
 
         /* loading & error states */
@@ -328,15 +330,15 @@
         .loader {
             width: 40px;
             height: 40px;
-            border: 3px solid var(--border);
-            border-top-color: var(--green);
+            border: 3px solid var(--border-light);
+            border-top-color: var(--green-primary);
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
         .error-state h3 {
             font-family: 'Playfair Display', serif;
-            color: var(--forest);
+            color: var(--green-deep);
         }
         .hidden {
             display: none !important;
@@ -346,11 +348,11 @@
         .modal-content {
             border: none;
             border-radius: var(--radius-lg);
-            background: var(--warm-white);
+            background: var(--cream-card);
             overflow: hidden;
         }
         .modal-header {
-            background: var(--forest);
+            background: var(--green-deep);
             padding: 1.2rem 1.5rem;
             border-bottom: none;
         }
@@ -377,8 +379,8 @@
             padding: 1.5rem;
         }
         .order-summary {
-            background: var(--cream-dark);
-            border: 1px solid var(--border);
+            background: var(--cream-bg);
+            border: 1px solid var(--border-light);
             border-radius: var(--radius-sm);
             padding: 0.8rem;
             display: flex;
@@ -394,6 +396,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            border: 1px solid var(--border-light);
         }
         .order-summary-img img {
             width: 100%;
@@ -403,15 +406,17 @@
         .form-control-modern {
             width: 100%;
             padding: 0.8rem 1rem;
-            border: 1.5px solid var(--border);
+            border: 1.5px solid var(--border-light);
             border-radius: var(--radius-sm);
-            background: var(--warm-white);
+            background: var(--cream-bg);
             transition: 0.2s;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
         }
         .form-control-modern:focus {
-            border-color: var(--green);
+            border-color: var(--green-primary);
             outline: none;
-            box-shadow: 0 0 0 3px rgba(26,107,60,0.1);
+            box-shadow: 0 0 0 3px rgba(31, 110, 67, 0.1);
         }
         .btn-wa {
             width: 100%;
@@ -432,14 +437,14 @@
 
 <div id="loadingState" class="loading-state">
     <div class="loader"></div>
-    <span>Loading product details...</span>
+    <span style="color: var(--text-muted); font-weight: 500;">Loading product details...</span>
 </div>
 
 <div id="errorState" class="error-state hidden">
-    <i class="bi bi-shop" style="font-size: 3rem; color: var(--text-soft);"></i>
+    <i class="bi bi-shop" style="font-size: 3rem; color: var(--text-muted);"></i>
     <h3>Something went wrong</h3>
     <p id="errorText">Product not found.</p>
-    <a href="/" id="errorBackBtn" class="btn btn-outline-success rounded-pill">Back to store</a>
+    <a href="/" id="errorBackBtn" class="btn btn-outline-success rounded-pill" style="border-color: var(--green-primary); color: var(--green-primary);">Back to store</a>
 </div>
 
 <div id="productContainer" class="product-container hidden">
@@ -462,7 +467,7 @@
 
         <div class="divider">
             <div class="divider-line"></div>
-            <div class="divider-icon"><i class="bi bi-leaf-fill"></i></div>
+            <div class="divider-icon"><i class="bi bi-flower2"></i></div>
             <div class="divider-line"></div>
         </div>
 
@@ -484,7 +489,6 @@
     </div>
 </div>
 
-<!-- Order Modal -->
 <div class="modal fade" id="orderModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" style="max-width: 480px;">
         <div class="modal-content">
@@ -498,36 +502,36 @@
                 <div class="order-summary">
                     <div class="order-summary-img" id="modalImgPlaceholder">📦</div>
                     <div>
-                        <div style="font-weight: 600;" id="modalProdName">—</div>
-                        <div style="font-weight: 700; color: var(--green);" id="modalProdPrice">₦0</div>
+                        <div style="font-weight: 600; color: var(--text-dark);" id="modalProdName">—</div>
+                        <div style="font-weight: 700; color: var(--green-primary);" id="modalProdPrice">₦0</div>
                     </div>
                 </div>
 
                 <form onsubmit="window.sendOrderWhatsApp(event)">
                     <div class="mb-3">
-                        <label class="form-label small fw-bold text-uppercase text-muted">Your name</label>
+                        <label class="form-label small fw-bold text-uppercase text-muted" style="letter-spacing: 0.5px;">Your name</label>
                         <input type="text" id="buyerName" class="form-control-modern" required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label small fw-bold text-uppercase text-muted">Phone number</label>
+                        <label class="form-label small fw-bold text-uppercase text-muted" style="letter-spacing: 0.5px;">Phone number</label>
                         <input type="tel" id="buyerPhone" class="form-control-modern" required>
                     </div>
                     <div class="row g-2 mb-3">
                         <div class="col-6">
-                            <label class="form-label small fw-bold text-uppercase text-muted">Quantity</label>
+                            <label class="form-label small fw-bold text-uppercase text-muted" style="letter-spacing: 0.5px;">Quantity</label>
                             <input type="number" id="buyerQty" class="form-control-modern" value="1" min="1" required>
                         </div>
                         <div class="col-6">
-                            <label class="form-label small fw-bold text-uppercase text-muted">Total</label>
-                            <div id="totalDisplay" class="form-control-modern" style="background: #e4f5e9; border-color: #c8e6d9;">₦0</div>
+                            <label class="form-label small fw-bold text-uppercase text-muted" style="letter-spacing: 0.5px;">Total</label>
+                            <div id="totalDisplay" class="form-control-modern" style="background: var(--green-soft); border-color: #c8e6d9; font-weight: 700; color: var(--green-deep);">₦0</div>
                         </div>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label small fw-bold text-uppercase text-muted">Delivery address</label>
+                        <label class="form-label small fw-bold text-uppercase text-muted" style="letter-spacing: 0.5px;">Delivery address</label>
                         <textarea id="buyerAddress" class="form-control-modern" rows="2" required></textarea>
                     </div>
                     <div class="mb-4">
-                        <label class="form-label small fw-bold text-uppercase text-muted">Notes (optional)</label>
+                        <label class="form-label small fw-bold text-uppercase text-muted" style="letter-spacing: 0.5px;">Notes (optional)</label>
                         <input type="text" id="buyerNotes" class="form-control-modern" placeholder="Size, color, etc.">
                     </div>
                     <button type="submit" class="btn-wa"><i class="bi bi-whatsapp"></i> Send via WhatsApp</button>
@@ -708,8 +712,10 @@ ${notes ? `📝 *Notes:* ${notes}\n` : ''}
             event_type: 'whatsapp_click'
         }]).then();
 
-        // Close modal
-        bootstrap.Modal.getInstance(document.getElementById('orderModal')).hide();
+        // Safely close modal
+        const orderModalEl = document.getElementById('orderModal');
+        const modalInstance = bootstrap.Modal.getInstance(orderModalEl) || new bootstrap.Modal(orderModalEl);
+        modalInstance.hide();
     };
 
     loadProduct();
