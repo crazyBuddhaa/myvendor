@@ -39,6 +39,8 @@
       font-family: 'Inter', sans-serif;
       color: var(--text-dark);
       min-height: 100vh;
+      display: flex;
+      flex-direction: column;
     }
 
     h1, h2, h3, h4, .logo-font {
@@ -93,6 +95,7 @@
       max-width: 680px;
       margin: 0 auto;
       padding: 1.5rem 1rem 2rem;
+      width: 100%;
     }
 
     /* Hero */
@@ -227,7 +230,8 @@
       padding: 0.8rem;
       font-size: 0.7rem;
       color: var(--green-dark);
-      margin-top: 1rem;
+      margin-top: -0.5rem;
+      margin-bottom: 1.2rem;
       text-align: center;
     }
 
@@ -242,7 +246,7 @@
       font-size: 0.7rem;
       color: var(--text-muted);
       border-top: 1px solid rgba(34, 197, 94, 0.2);
-      margin-top: 1rem;
+      margin-top: auto;
     }
 
     @media (max-width: 500px) {
@@ -270,7 +274,7 @@
     <div class="hero-sub">Manage your business identity & contact info</div>
   </div>
 
-  <form id="settingsForm" class="form-card-modern" onsubmit="updateSettings(event)">
+  <form id="settingsForm" class="form-card-modern" onsubmit="window.updateSettings(event)">
     <div>
       <div class="form-label-modern"><i class="bi bi-shop"></i> Business Name</div>
       <input type="text" id="setBizName" class="form-control-modern" placeholder="e.g., Green Grocers" required>
@@ -290,7 +294,7 @@
     <div>
       <div class="form-label-modern"><i class="bi bi-whatsapp"></i> WhatsApp Number</div>
       <input type="tel" id="setWaNumber" class="form-control-modern" placeholder="e.g., 2348012345678" required>
-      <small class="text-muted" style="font-size: 0.65rem; display: block; margin-top: -0.8rem; margin-bottom: 0.5rem;">Include country code without '+'</small>
+      <small class="text-muted" style="font-size: 0.65rem; display: block; margin-top: -0.8rem; margin-bottom: 0.5rem;">Include country code without '+' (e.g., 234 for Nigeria)</small>
     </div>
 
     <div>
@@ -309,17 +313,18 @@
   <a href="#" style="color: var(--green-primary); text-decoration: none;">Need help?</a>
 </footer>
 
-<!-- Existing dashboard.js handles data loading and form submission -->
 <script type="module" src="/assets/js/dashboard.js"></script>
 
-<!-- Live slug preview -->
 <script>
-  // Simple live preview for the store slug
   const slugInput = document.getElementById('setSlug');
   const slugPreview = document.getElementById('slugPreview');
   if (slugInput && slugPreview) {
     const updatePreview = () => {
-      const slugValue = slugInput.value.trim() || 'yourstore';
+      // Remove spaces and special characters live
+      let slugValue = slugInput.value.trim().toLowerCase().replace(/[^a-z0-9-]/g, '');
+      slugInput.value = slugValue; // Force input to be clean
+      
+      if (!slugValue) slugValue = 'yourstore';
       slugPreview.textContent = `myvendor.qzz.io/${slugValue}`;
     };
     slugInput.addEventListener('input', updatePreview);
