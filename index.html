@@ -2,50 +2,66 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>myvendor — Sell Smarter on WhatsApp</title>
-  <meta name="description" content="Beautiful product catalogs and order tracking for Lagos WhatsApp vendors. Free to start." />
+  <meta name="description" content="Beautiful product catalogs and order tracking for WhatsApp vendors. Free to start." />
 
-  <!-- Bootstrap 5 -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
-  <!-- Bootstrap Icons -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet"/>
-  <!-- Google Fonts: Raleway (headlines) + Open Sans (body) -->
-  <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@700;800;900&family=Open+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <!-- Canonical (adjust to your domain) -->
+  <link rel="canonical" href="https://myvendor.ng/" />
+
+  <!-- Open Graph / Social -->
+  <meta property="og:title" content="myvendor — Sell Smarter on WhatsApp" />
+  <meta property="og:description" content="Beautiful product catalogs and order tracking for WhatsApp vendors. Free to start." />
+  <meta property="og:image" content="https://myvendor.ng/og-image.jpg" />
+  <meta property="og:url" content="https://myvendor.ng/" />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <!-- Bootstrap + Icons + Fonts -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=Raleway:wght@600;700;800;900&display=swap" rel="stylesheet" />
 
   <style>
-    /* ─── TOKENS ─────────────────────────────────────────── */
-    :root {
-      --green:        #16a34a;
-      --green-dark:   #14532d;
-      --green-light:  #dcfce7;
-      --green-mid:    #22c55e;
-      --green-glow:   rgba(34,197,94,.18);
-      --white:        #ffffff;
-      --off-white:    #f8faf8;
-      --text:         #0f1a0f;
-      --text-muted:   #4b6b50;
-      --border:       #d1fae5;
-      --wa-green:     #25D366;
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
 
-    /* ─── BASE ───────────────────────────────────────────── */
-    *, *::before, *::after { box-sizing: border-box; }
-
-    html { scroll-behavior: smooth; }
+    :root {
+      --green-primary: #0f6e3f;
+      --green-bright: #22c55e;
+      --green-dark: #0a4a2a;
+      --green-soft: #e9f7ef;
+      --gray-bg: #fafcf9;
+      --card-white: #ffffff;
+      --text-dark: #1a2e1f;
+      --text-muted: #4a6741;
+      --border-light: #e9eee5;
+      --shadow-sm: 0 8px 20px rgba(0, 32, 0, 0.04), 0 2px 4px rgba(0, 0, 0, 0.02);
+      --shadow-md: 0 12px 28px rgba(0, 20, 0, 0.08);
+      --radius-xl: 28px;
+      --radius-lg: 20px;
+      --radius-md: 16px;
+      --radius-sm: 12px;
+      --wa-green: #25D366;
+    }
 
     body {
-      font-family: 'Open Sans', sans-serif;
-      background: var(--white);
-      color: var(--text);
+      background: linear-gradient(145deg, #f6fcf5 0%, #f0f7ec 100%);
+      font-family: 'Inter', sans-serif;
+      color: var(--text-dark);
       overflow-x: hidden;
     }
 
-    h1, h2, h3, .font-raleway {
+    h1, h2, h3, h4, .font-raleway {
       font-family: 'Raleway', sans-serif;
+      font-weight: 800;
+      letter-spacing: -0.02em;
     }
 
-    /* ─── NOISE TEXTURE OVERLAY ──────────────────────────── */
+    /* grain overlay */
     body::before {
       content: '';
       position: fixed;
@@ -53,18 +69,36 @@
       background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
       pointer-events: none;
       z-index: 0;
-      opacity: .4;
     }
 
-    section, nav, footer { position: relative; z-index: 1; }
+    section, nav, footer {
+      position: relative;
+      z-index: 1;
+    }
 
-    /* ─── NAVBAR ─────────────────────────────────────────── */
+    /* skip link */
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: var(--green-primary);
+      color: white;
+      padding: 8px 16px;
+      text-decoration: none;
+      border-radius: 0 0 8px 0;
+      z-index: 1001;
+      transition: top 0.2s;
+    }
+    .skip-link:focus {
+      top: 0;
+    }
+
+    /* Navbar – glass */
     .mv-nav {
-      background: rgba(255,255,255,0.92);
+      background: rgba(255, 255, 255, 0.96);
       backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--border);
-      padding: 1rem 0;
+      border-bottom: 1px solid rgba(34, 197, 94, 0.2);
+      padding: 0.75rem 0;
       position: sticky;
       top: 0;
       z-index: 1000;
@@ -73,74 +107,82 @@
     .mv-logo {
       font-family: 'Raleway', sans-serif;
       font-weight: 800;
-      font-size: 1.4rem;
-      color: var(--green-dark);
+      font-size: 1.5rem;
+      background: linear-gradient(135deg, var(--green-dark), var(--green-primary));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
       text-decoration: none;
-      letter-spacing: -0.5px;
     }
-
     .mv-logo span {
-      color: var(--green);
+      background: linear-gradient(135deg, var(--green-bright), #2b9348);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
     }
 
     .btn-nav-cta {
-      background: var(--green);
-      color: white;
+      background: linear-gradient(105deg, var(--green-primary), var(--green-dark));
       border: none;
-      padding: .5rem 1.2rem;
-      border-radius: 8px;
-      font-family: 'Open Sans', sans-serif;
+      padding: 0.5rem 1.2rem;
+      border-radius: 40px;
       font-weight: 600;
-      font-size: .9rem;
+      font-size: 0.85rem;
+      color: white;
       text-decoration: none;
-      transition: background .2s, transform .15s;
+      transition: all 0.2s;
+      box-shadow: var(--shadow-sm);
     }
-    .btn-nav-cta:hover { background: var(--green-dark); color: white; transform: translateY(-1px); }
+    .btn-nav-cta:hover {
+      transform: translateY(-2px);
+      filter: brightness(1.03);
+      color: white;
+    }
 
-    /* ─── HERO ───────────────────────────────────────────── */
+    /* Hero */
     .hero-section {
-      min-height: 92vh;
-      display: flex;
-      align-items: center;
-      background: linear-gradient(160deg, #f0fdf4 0%, #ffffff 55%, #dcfce7 100%);
-      padding: 5rem 0 4rem;
-      overflow: hidden;
+      padding: 4rem 0 3rem;
+      background: linear-gradient(115deg, #eaf6e6, #fff7ef);
+      border-bottom: 1px solid var(--border-light);
     }
 
     .hero-badge {
       display: inline-flex;
       align-items: center;
-      gap: .4rem;
-      background: var(--green-light);
-      color: var(--green-dark);
-      border: 1px solid #bbf7d0;
-      border-radius: 999px;
-      padding: .3rem .9rem;
-      font-size: .8rem;
+      gap: 0.4rem;
+      background: var(--green-soft);
+      border: 1px solid var(--border-light);
+      border-radius: 40px;
+      padding: 0.3rem 0.9rem;
+      font-size: 0.75rem;
       font-weight: 600;
-      margin-bottom: 1.5rem;
-      animation: fadeSlideDown .6s ease both;
+      color: var(--green-primary);
+      margin-bottom: 1.2rem;
     }
 
     .hero-badge .dot {
-      width: 7px; height: 7px;
-      background: var(--green);
+      width: 6px;
+      height: 6px;
+      background: var(--green-bright);
       border-radius: 50%;
-      animation: pulse 2s infinite;
+      animation: pulse 1.8s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.8); }
     }
 
     .hero-headline {
-      font-size: clamp(2.4rem, 7vw, 4.2rem);
+      font-size: clamp(2.2rem, 6vw, 3.8rem);
       font-weight: 800;
-      line-height: 1.08;
-      letter-spacing: -1.5px;
+      line-height: 1.1;
       color: var(--green-dark);
-      margin-bottom: 1.25rem;
-      animation: fadeSlideDown .7s ease .1s both;
+      margin-bottom: 1rem;
     }
 
     .hero-headline .accent {
-      color: var(--green);
+      color: var(--green-primary);
       position: relative;
       display: inline-block;
     }
@@ -148,548 +190,496 @@
     .hero-headline .accent::after {
       content: '';
       position: absolute;
-      bottom: 2px; left: 0; right: 0;
-      height: 4px;
-      background: var(--green-mid);
+      bottom: 2px;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--green-bright);
+      opacity: 0.4;
       border-radius: 2px;
-      opacity: .4;
     }
 
     .hero-sub {
-      font-size: 1.1rem;
+      font-size: 1rem;
       color: var(--text-muted);
-      line-height: 1.65;
+      line-height: 1.6;
       max-width: 500px;
-      margin-bottom: 2.2rem;
-      animation: fadeSlideDown .7s ease .2s both;
+      margin-bottom: 2rem;
     }
 
     .hero-actions {
       display: flex;
-      gap: .8rem;
+      gap: 0.8rem;
       flex-wrap: wrap;
-      animation: fadeSlideDown .7s ease .3s both;
     }
 
     .btn-primary-mv {
-      background: var(--green);
-      color: white;
+      background: linear-gradient(105deg, var(--green-primary), var(--green-dark));
       border: none;
-      padding: .85rem 2rem;
-      border-radius: 10px;
-      font-family: 'Open Sans', sans-serif;
-      font-weight: 600;
-      font-size: 1rem;
+      padding: 0.8rem 1.8rem;
+      border-radius: 40px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: white;
       text-decoration: none;
-      transition: all .2s;
       display: inline-flex;
       align-items: center;
-      gap: .5rem;
-      box-shadow: 0 4px 20px rgba(22,163,74,.3);
+      gap: 0.5rem;
+      transition: all 0.2s;
+      box-shadow: var(--shadow-sm);
     }
-    .btn-primary-mv:hover { background: var(--green-dark); color: white; transform: translateY(-2px); box-shadow: 0 8px 28px rgba(22,163,74,.35); }
+    .btn-primary-mv:hover {
+      transform: translateY(-2px);
+      filter: brightness(1.03);
+      color: white;
+    }
 
     .btn-outline-mv {
       background: transparent;
-      color: var(--green-dark);
-      border: 1.5px solid var(--border);
-      padding: .85rem 1.8rem;
-      border-radius: 10px;
-      font-family: 'Open Sans', sans-serif;
-      font-weight: 600;
-      font-size: 1rem;
+      border: 1.5px solid var(--border-light);
+      padding: 0.8rem 1.8rem;
+      border-radius: 40px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: var(--text-muted);
       text-decoration: none;
-      transition: all .2s;
       display: inline-flex;
       align-items: center;
-      gap: .5rem;
+      gap: 0.5rem;
+      transition: all 0.2s;
     }
-    .btn-outline-mv:hover { border-color: var(--green); color: var(--green); background: var(--green-light); }
-
-    /* ─── HERO VISUAL (PHONE MOCKUP) ─────────────────────── */
-    .hero-visual {
-      animation: fadeSlideUp .9s ease .2s both;
+    .btn-outline-mv:hover {
+      border-color: var(--green-primary);
+      color: var(--green-primary);
+      background: var(--green-soft);
     }
 
+    /* Phone mockup – unified */
     .phone-frame {
-      width: 240px;
+      width: 260px;
       margin: 0 auto;
       background: var(--green-dark);
       border-radius: 36px;
       padding: 12px;
-      box-shadow:
-        0 40px 80px rgba(20,83,45,.25),
-        0 0 0 1px rgba(255,255,255,.1) inset;
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.1) inset;
       position: relative;
     }
-
     .phone-screen {
-      background: var(--off-white);
+      background: var(--gray-bg);
       border-radius: 26px;
       overflow: hidden;
-      min-height: 460px;
     }
-
-    .phone-screen .store-header {
-      background: var(--green);
+    .store-header {
+      background: linear-gradient(135deg, var(--green-primary), var(--green-dark));
       padding: 1rem;
       text-align: center;
       color: white;
     }
-
-    .phone-screen .store-header .store-avatar {
-      width: 52px; height: 52px;
+    .store-avatar {
+      width: 48px;
+      height: 48px;
       background: white;
       border-radius: 50%;
-      margin: 0 auto .5rem;
+      margin: 0 auto 0.5rem;
       display: flex;
       align-items: center;
       justify-content: center;
-      color: var(--green);
-      font-size: 1.3rem;
+      font-size: 1.2rem;
+      color: var(--green-primary);
     }
-
-    .phone-screen .store-header h6 {
-      font-family: 'Raleway', sans-serif;
+    .store-header h6 {
       font-weight: 700;
       margin: 0;
-      font-size: .85rem;
+      font-size: 0.85rem;
     }
-
-    .phone-screen .store-header small {
-      opacity: .8;
-      font-size: .72rem;
+    .store-header small {
+      font-size: 0.7rem;
+      opacity: 0.9;
     }
-
     .phone-products {
-      padding: .75rem;
+      padding: 0.75rem;
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: .5rem;
+      gap: 0.6rem;
     }
-
     .phone-product-card {
-      background: white;
-      border-radius: 10px;
+      background: var(--card-white);
+      border-radius: var(--radius-sm);
       overflow: hidden;
-      box-shadow: 0 1px 6px rgba(0,0,0,.07);
+      box-shadow: var(--shadow-sm);
     }
-
     .product-img-placeholder {
       height: 70px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.6rem;
+      font-size: 1.5rem;
+      background: var(--green-soft);
     }
-
-    .phone-product-card .card-body-mini {
-      padding: .4rem .5rem .5rem;
+    .card-body-mini {
+      padding: 0.4rem 0.5rem 0.5rem;
     }
-
-    .phone-product-card .item-name {
-      font-size: .68rem;
+    .item-name {
+      font-size: 0.7rem;
       font-weight: 600;
-      color: var(--text);
-      line-height: 1.2;
-      margin-bottom: .2rem;
+      margin-bottom: 0.2rem;
     }
-
-    .phone-product-card .item-price {
-      font-size: .7rem;
-      color: var(--green);
+    .item-price {
+      font-size: 0.7rem;
       font-weight: 700;
+      color: var(--green-primary);
     }
-
     .phone-wa-btn {
-      margin: 0 .75rem .75rem;
       background: var(--wa-green);
-      color: white;
       border: none;
-      border-radius: 8px;
       width: calc(100% - 1.5rem);
-      padding: .5rem;
-      font-size: .72rem;
+      margin: 0 0.75rem 0.75rem;
+      padding: 0.5rem;
+      border-radius: 40px;
       font-weight: 600;
+      font-size: 0.7rem;
+      color: white;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: .3rem;
+      gap: 0.3rem;
     }
-
     .phone-notch {
       position: absolute;
-      top: 18px; left: 50%; transform: translateX(-50%);
-      width: 70px; height: 8px;
+      top: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 70px;
+      height: 8px;
       background: var(--green-dark);
       border-radius: 4px;
       z-index: 2;
     }
 
-    /* Floating badges around phone */
+    /* floating badges – decorative, hide from screen readers */
     .float-badge {
       position: absolute;
       background: white;
       border-radius: 12px;
-      padding: .5rem .75rem;
-      box-shadow: 0 8px 24px rgba(0,0,0,.1);
-      font-size: .75rem;
+      padding: 0.4rem 0.7rem;
+      box-shadow: var(--shadow-md);
+      font-size: 0.7rem;
       font-weight: 600;
       display: flex;
       align-items: center;
-      gap: .4rem;
+      gap: 0.4rem;
       white-space: nowrap;
-      border: 1px solid var(--border);
+      border: 1px solid var(--border-light);
     }
-
-    .float-badge.badge-orders {
-      top: 15%;
-      right: -10px;
+    .badge-orders {
+      top: 10%;
+      right: -20px;
       animation: floatY 3s ease-in-out infinite;
     }
-
-    .float-badge.badge-track {
-      bottom: 20%;
-      left: -20px;
-      animation: floatY 3.5s ease-in-out .5s infinite;
-    }
-
-    .float-badge.badge-free {
+    .badge-free {
       top: 50%;
       right: -15px;
       animation: floatY 4s ease-in-out 1s infinite;
     }
+    .badge-track {
+      bottom: 20%;
+      left: -25px;
+      animation: floatY 3.5s ease-in-out 0.5s infinite;
+    }
+    @keyframes floatY {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
 
-    /* ─── TRUST BAR ──────────────────────────────────────── */
+    /* Trust bar */
     .trust-bar {
       background: var(--green-dark);
-      padding: 1rem 0;
+      padding: 0.8rem 0;
       overflow: hidden;
     }
-
     .trust-scroll {
       display: flex;
-      gap: 3rem;
-      animation: scrollLeft 20s linear infinite;
+      gap: 2.5rem;
+      animation: scrollLeft 22s linear infinite;
       white-space: nowrap;
     }
-
     .trust-item {
       display: inline-flex;
       align-items: center;
-      gap: .5rem;
+      gap: 0.4rem;
       color: #bbf7d0;
-      font-size: .85rem;
+      font-size: 0.8rem;
       font-weight: 500;
     }
-
-    .trust-item i { color: var(--green-mid); }
-
-    /* ─── HOW IT WORKS ───────────────────────────────────── */
-    .section-label {
-      font-size: .8rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 2px;
-      color: var(--green);
-      margin-bottom: .6rem;
+    .trust-item i {
+      color: var(--green-bright);
+    }
+    @keyframes scrollLeft {
+      from { transform: translateX(0); }
+      to { transform: translateX(-50%); }
     }
 
+    /* Section styling */
+    .section-pad {
+      padding: 4rem 0;
+    }
+    .section-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--green-primary);
+      margin-bottom: 0.5rem;
+    }
     .section-title {
-      font-size: clamp(1.8rem, 4vw, 2.6rem);
+      font-size: clamp(1.6rem, 4vw, 2.2rem);
       font-weight: 800;
-      letter-spacing: -1px;
       color: var(--green-dark);
       margin-bottom: 1rem;
     }
-
     .step-card {
-      position: relative;
-      padding: 2rem;
-      border-radius: 16px;
-      border: 1.5px solid var(--border);
-      background: var(--white);
-      transition: all .25s;
+      background: var(--card-white);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
       height: 100%;
+      border: 1px solid var(--border-light);
+      transition: all 0.2s;
     }
     .step-card:hover {
-      border-color: var(--green-mid);
-      box-shadow: 0 12px 40px var(--green-glow);
       transform: translateY(-4px);
+      box-shadow: var(--shadow-md);
+      border-color: var(--green-bright);
     }
-
     .step-number {
-      font-family: 'Raleway', sans-serif;
-      font-size: 3.5rem;
+      font-size: 2.5rem;
       font-weight: 800;
-      color: var(--green-light);
+      color: var(--green-soft);
       line-height: 1;
-      margin-bottom: .5rem;
+      margin-bottom: 0.5rem;
     }
-
     .step-icon {
-      width: 48px; height: 48px;
-      background: var(--green-light);
-      border-radius: 12px;
+      width: 48px;
+      height: 48px;
+      background: var(--green-soft);
+      border-radius: 16px;
       display: flex;
       align-items: center;
       justify-content: center;
-      color: var(--green);
+      color: var(--green-primary);
       font-size: 1.3rem;
       margin-bottom: 1rem;
     }
-
     .step-card h5 {
-      font-family: 'Raleway', sans-serif;
       font-weight: 700;
-      font-size: 1.05rem;
-      color: var(--green-dark);
-      margin-bottom: .5rem;
+      font-size: 1rem;
+      margin-bottom: 0.5rem;
     }
-
     .step-card p {
+      font-size: 0.85rem;
       color: var(--text-muted);
-      font-size: .9rem;
-      line-height: 1.6;
+      line-height: 1.5;
       margin: 0;
     }
 
-    /* ─── FEATURES ───────────────────────────────────────── */
+    /* Feature rows */
     .features-section {
-      background: var(--off-white);
+      background: var(--gray-bg);
     }
-
     .feature-row {
-      border-radius: 20px;
-      overflow: hidden;
-      border: 1.5px solid var(--border);
-      background: white;
-      margin-bottom: 1.5rem;
-      transition: box-shadow .25s;
+      background: var(--card-white);
+      border-radius: var(--radius-lg);
+      padding: 1.2rem;
+      border: 1px solid var(--border-light);
+      transition: all 0.2s;
+      margin-bottom: 1rem;
     }
-    .feature-row:hover { box-shadow: 0 12px 40px var(--green-glow); }
-
+    .feature-row:hover {
+      box-shadow: var(--shadow-md);
+      border-color: var(--green-bright);
+    }
     .feature-icon-box {
-      width: 64px; height: 64px;
-      background: var(--green-light);
-      border-radius: 16px;
+      width: 56px;
+      height: 56px;
+      background: var(--green-soft);
+      border-radius: 14px;
       display: flex;
       align-items: center;
       justify-content: center;
-      color: var(--green);
-      font-size: 1.6rem;
+      color: var(--green-primary);
+      font-size: 1.4rem;
       flex-shrink: 0;
     }
-
     .feature-row h5 {
-      font-family: 'Raleway', sans-serif;
       font-weight: 700;
-      color: var(--green-dark);
-      margin-bottom: .3rem;
+      font-size: 1rem;
+      margin-bottom: 0.25rem;
     }
-
     .feature-row p {
+      font-size: 0.85rem;
       color: var(--text-muted);
-      font-size: .9rem;
       margin: 0;
     }
 
-    /* ─── SOCIAL PROOF ───────────────────────────────────── */
+    /* Reviews */
     .review-card {
-      background: white;
-      border: 1.5px solid var(--border);
-      border-radius: 16px;
-      padding: 1.5rem;
+      background: var(--card-white);
+      border-radius: var(--radius-lg);
+      padding: 1.2rem;
+      border: 1px solid var(--border-light);
+      transition: all 0.2s;
       height: 100%;
-      transition: all .25s;
     }
-    .review-card:hover { box-shadow: 0 8px 30px var(--green-glow); transform: translateY(-3px); }
-
-    .review-stars { color: #f59e0b; font-size: .85rem; margin-bottom: .75rem; }
-
+    .review-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-md);
+    }
+    .review-stars {
+      color: #f59e0b;
+      font-size: 0.8rem;
+      margin-bottom: 0.5rem;
+    }
     .review-text {
-      font-size: .9rem;
-      color: var(--text);
-      line-height: 1.65;
+      font-size: 0.85rem;
+      line-height: 1.5;
+      color: var(--text-dark);
       margin-bottom: 1rem;
     }
-
     .reviewer-name {
-      font-weight: 600;
-      font-size: .85rem;
-      color: var(--green-dark);
+      font-weight: 700;
+      font-size: 0.8rem;
+      margin-bottom: 0.1rem;
     }
-
     .reviewer-location {
-      font-size: .78rem;
+      font-size: 0.7rem;
       color: var(--text-muted);
     }
 
-    /* ─── CTA SECTION ────────────────────────────────────── */
+    /* CTA */
     .cta-section {
       background: var(--green-dark);
       position: relative;
       overflow: hidden;
     }
-
     .cta-section::before {
       content: '';
       position: absolute;
-      top: -80px; right: -80px;
-      width: 320px; height: 320px;
-      background: radial-gradient(circle, rgba(34,197,94,.2) 0%, transparent 70%);
+      top: -80px;
+      right: -80px;
+      width: 300px;
+      height: 300px;
+      background: radial-gradient(circle, rgba(34,197,94,0.2), transparent 70%);
       border-radius: 50%;
     }
-
-    .cta-section::after {
-      content: '';
-      position: absolute;
-      bottom: -60px; left: -60px;
-      width: 240px; height: 240px;
-      background: radial-gradient(circle, rgba(34,197,94,.15) 0%, transparent 70%);
-      border-radius: 50%;
-    }
-
     .cta-section h2 {
       color: white;
     }
-
     .cta-section p {
       color: #bbf7d0;
     }
-
     .btn-cta-white {
       background: white;
       color: var(--green-dark);
       border: none;
-      padding: .9rem 2.2rem;
-      border-radius: 10px;
-      font-family: 'Open Sans', sans-serif;
+      padding: 0.9rem 2rem;
+      border-radius: 40px;
       font-weight: 700;
-      font-size: 1rem;
+      font-size: 0.9rem;
       text-decoration: none;
-      transition: all .2s;
       display: inline-flex;
       align-items: center;
-      gap: .5rem;
+      gap: 0.5rem;
+      transition: all 0.2s;
     }
-    .btn-cta-white:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.2); color: var(--green-dark); }
+    .btn-cta-white:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+      color: var(--green-dark);
+    }
 
-    /* ─── FOOTER ─────────────────────────────────────────── */
+    /* Footer */
     .mv-footer {
-      background: #0a120a;
+      background: #0f1a0a;
       color: #6b8f6b;
-      padding: 2.5rem 0;
+      padding: 2rem 0;
     }
-
-    .mv-footer .footer-logo {
+    .footer-logo {
       font-family: 'Raleway', sans-serif;
       font-weight: 800;
       font-size: 1.2rem;
-      color: white;
-      margin-bottom: .4rem;
+      background: linear-gradient(135deg, white, var(--green-bright));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
     }
-
-    .mv-footer .footer-logo span { color: var(--green-mid); }
-
     .mv-footer a {
-      color: #6b8f6b;
+      color: #8baa83;
       text-decoration: none;
-      font-size: .85rem;
-      transition: color .2s;
+      font-size: 0.8rem;
+      transition: color 0.2s;
     }
-    .mv-footer a:hover { color: var(--green-mid); }
-
-    .footer-disclaimer {
-      font-size: .78rem;
-      color: #3d5c3d;
-      border-top: 1px solid #1a2e1a;
-      margin-top: 1.5rem;
-      padding-top: 1.5rem;
+    .mv-footer a:hover {
+      color: var(--green-bright);
     }
 
-    /* ─── ANIMATIONS ─────────────────────────────────────── */
-    @keyframes fadeSlideDown {
-      from { opacity: 0; transform: translateY(-16px); }
-      to   { opacity: 1; transform: translateY(0); }
+    /* Utility */
+    .hidden {
+      display: none !important;
     }
-
-    @keyframes fadeSlideUp {
-      from { opacity: 0; transform: translateY(24px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-
-    @keyframes floatY {
-      0%, 100% { transform: translateY(0); }
-      50%       { transform: translateY(-8px); }
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50%       { opacity: .5; transform: scale(.8); }
-    }
-
-    @keyframes scrollLeft {
-      from { transform: translateX(0); }
-      to   { transform: translateX(-50%); }
-    }
-
-    /* ─── UTILITIES ──────────────────────────────────────── */
-    .bg-green-light { background: var(--green-light); }
-    .text-green     { color: var(--green) !important; }
-    .text-green-dark { color: var(--green-dark) !important; }
-    .section-pad    { padding: 5rem 0; }
 
     @media (max-width: 768px) {
-      .hero-section { padding: 3rem 0 2rem; min-height: auto; }
-      .phone-frame  { width: 200px; }
-      .float-badge  { display: none; }
-      .section-pad  { padding: 3.5rem 0; }
+      .hero-section {
+        padding: 2rem 0;
+      }
+      .float-badge {
+        display: none;
+      }
+      .phone-frame {
+        width: 220px;
+      }
+      .section-pad {
+        padding: 2.5rem 0;
+      }
     }
   </style>
 </head>
 <body>
 
-  <!-- ─── NAVBAR ──────────────────────────────────────────── -->
-  <nav class="mv-nav">
-    <div class="container d-flex align-items-center justify-content-between">
-      <a href="/" class="mv-logo">my<span>vendor</span></a>
-      <div class="d-flex align-items-center gap-3">
-        <a href="/dashboard/" class="d-none d-sm-inline text-green-dark fw-600 text-decoration-none" style="font-size:.9rem;font-weight:600;">Login</a>
-        <a href="/dashboard/" class="btn-nav-cta">Get Started Free</a>
-      </div>
-    </div>
-  </nav>
+<a href="#main-content" class="skip-link">Skip to main content</a>
 
-  <!-- ─── HERO ────────────────────────────────────────────── -->
+<nav class="mv-nav" aria-label="Main navigation">
+  <div class="container d-flex justify-content-between align-items-center">
+    <a href="/" class="mv-logo">my<span>vendor</span></a>
+    <div>
+      <a href="/dashboard/" class="btn-nav-cta">Get Started Free</a>
+    </div>
+  </div>
+</nav>
+
+<main id="main-content">
+  <!-- Hero -->
   <section class="hero-section">
     <div class="container">
       <div class="row align-items-center gy-5">
-
-        <!-- Left: Text -->
         <div class="col-lg-6">
           <div class="hero-badge">
             <span class="dot"></span>
             Built for Lagos vendors
           </div>
           <h1 class="hero-headline">
-            Your WhatsApp<br/>
-            shop, now <span class="accent">beautiful</span>
+            Your WhatsApp shop,<br/>now <span class="accent">beautiful</span>
           </h1>
           <p class="hero-sub">
             Create a stunning product catalog, share clean links on WhatsApp, and let customers track their orders — all for free. No tech knowledge needed.
           </p>
           <div class="hero-actions">
             <a href="/dashboard/" class="btn-primary-mv">
-              <i class="bi bi-shop"></i>
-              Create Your Store
+              <i class="bi bi-shop"></i> Create Your Store
             </a>
             <a href="#how-it-works" class="btn-outline-mv">
-              <i class="bi bi-play-circle"></i>
-              See How It Works
+              <i class="bi bi-play-circle"></i> How It Works
             </a>
           </div>
-          <p class="mt-3 text-muted" style="font-size:.82rem;">
+          <p class="mt-3 text-muted" style="font-size:0.8rem;">
             <i class="bi bi-check-circle-fill text-green me-1"></i>
             Free to start &nbsp;·&nbsp;
             <i class="bi bi-check-circle-fill text-green me-1"></i>
@@ -698,93 +688,77 @@
             Works on any phone
           </p>
         </div>
-
-        <!-- Right: Phone mockup -->
-        <div class="col-lg-6 d-flex justify-content-center hero-visual">
-          <div style="position:relative; width:fit-content;">
-
-            <!-- Floating badges -->
-            <div class="float-badge badge-orders">
-              <i class="bi bi-bag-check-fill text-green"></i>
-              <span>12 orders today</span>
+        <div class="col-lg-6 d-flex justify-content-center">
+          <div style="position:relative;">
+            <div class="float-badge badge-orders" aria-hidden="true">
+              <i class="bi bi-bag-check-fill text-green"></i> 12 orders today
             </div>
-            <div class="float-badge badge-free">
-              <i class="bi bi-star-fill" style="color:#f59e0b;"></i>
-              <span>4.9 rating</span>
+            <div class="float-badge badge-free" aria-hidden="true">
+              <i class="bi bi-star-fill" style="color:#f59e0b;"></i> 4.9 rating
             </div>
-            <div class="float-badge badge-track">
-              <i class="bi bi-truck text-green"></i>
-              <span>Order tracked</span>
+            <div class="float-badge badge-track" aria-hidden="true">
+              <i class="bi bi-truck text-green"></i> Order tracked
             </div>
-
-            <!-- Phone -->
             <div class="phone-frame">
-              <div class="phone-notch"></div>
+              <div class="phone-notch" aria-hidden="true"></div>
               <div class="phone-screen">
-                <!-- Store header -->
                 <div class="store-header">
-                  <div class="store-avatar">
-                    <i class="bi bi-bag-heart-fill"></i>
-                  </div>
+                  <div class="store-avatar" aria-hidden="true"><i class="bi bi-bag-heart-fill"></i></div>
                   <h6>GlamStore NG</h6>
                   <small>Lekki, Lagos · ⭐ 4.9</small>
                 </div>
-                <!-- Products grid -->
                 <div class="phone-products">
                   <div class="phone-product-card">
-                    <div class="product-img-placeholder" style="background:#fef9c3;">👗</div>
+                    <div class="product-img-placeholder" aria-hidden="true">👗</div>
                     <div class="card-body-mini">
                       <div class="item-name">Silk Blouse</div>
                       <div class="item-price">₦8,500</div>
                     </div>
                   </div>
                   <div class="phone-product-card">
-                    <div class="product-img-placeholder" style="background:#fce7f3;">👠</div>
+                    <div class="product-img-placeholder" aria-hidden="true">👠</div>
                     <div class="card-body-mini">
                       <div class="item-name">Block Heels</div>
                       <div class="item-price">₦12,000</div>
                     </div>
                   </div>
                   <div class="phone-product-card">
-                    <div class="product-img-placeholder" style="background:#dcfce7;">👜</div>
+                    <div class="product-img-placeholder" aria-hidden="true">👜</div>
                     <div class="card-body-mini">
                       <div class="item-name">Mini Bag</div>
                       <div class="item-price">₦6,200</div>
                     </div>
                   </div>
                   <div class="phone-product-card">
-                    <div class="product-img-placeholder" style="background:#ede9fe;">💄</div>
+                    <div class="product-img-placeholder" aria-hidden="true">💄</div>
                     <div class="card-body-mini">
                       <div class="item-name">Lip Kit</div>
                       <div class="item-price">₦3,800</div>
                     </div>
                   </div>
                 </div>
-                <!-- WhatsApp button -->
-                <button class="phone-wa-btn">
-                  <i class="bi bi-whatsapp"></i>
-                  Order on WhatsApp
+                <button class="phone-wa-btn" aria-label="Order on WhatsApp" disabled>
+                  <i class="bi bi-whatsapp"></i> Order on WhatsApp
                 </button>
               </div>
             </div>
           </div>
         </div>
-
       </div>
     </div>
   </section>
 
-  <!-- ─── TRUST BAR ────────────────────────────────────────── -->
-  <div class="trust-bar">
+  <!-- Trust Bar (decorative, but text is readable) -->
+  <div class="trust-bar" aria-hidden="true">
     <div style="overflow:hidden;">
       <div class="trust-scroll">
-        <!-- Duplicated for seamless loop -->
         <span class="trust-item"><i class="bi bi-shield-check-fill"></i>No buyer accounts required</span>
         <span class="trust-item"><i class="bi bi-whatsapp"></i>Payments stay on WhatsApp</span>
         <span class="trust-item"><i class="bi bi-lightning-fill"></i>Live in under 10 minutes</span>
         <span class="trust-item"><i class="bi bi-phone-fill"></i>Works on any phone</span>
         <span class="trust-item"><i class="bi bi-wifi-off"></i>Lightweight for low data</span>
         <span class="trust-item"><i class="bi bi-gift-fill"></i>Free to start</span>
+        <!-- duplicate for seamless loop -->
         <span class="trust-item"><i class="bi bi-shield-check-fill"></i>No buyer accounts required</span>
         <span class="trust-item"><i class="bi bi-whatsapp"></i>Payments stay on WhatsApp</span>
         <span class="trust-item"><i class="bi bi-lightning-fill"></i>Live in under 10 minutes</span>
@@ -795,15 +769,14 @@
     </div>
   </div>
 
-  <!-- ─── HOW IT WORKS ─────────────────────────────────────── -->
+  <!-- How It Works -->
   <section class="section-pad" id="how-it-works">
     <div class="container">
       <div class="text-center mb-5">
         <div class="section-label">Simple Process</div>
         <h2 class="section-title">Up and running in 3 steps</h2>
-        <p class="text-muted" style="max-width:480px;margin:0 auto;">No tech skills needed. If you can use WhatsApp, you can use myvendor.</p>
+        <p class="text-muted" style="max-width: 480px; margin:0 auto;">No tech skills needed. If you can use WhatsApp, you can use myvendor.</p>
       </div>
-
       <div class="row g-4">
         <div class="col-md-4">
           <div class="step-card">
@@ -833,17 +806,16 @@
     </div>
   </section>
 
-  <!-- ─── FEATURES ─────────────────────────────────────────── -->
+  <!-- Features -->
   <section class="section-pad features-section">
     <div class="container">
       <div class="text-center mb-5">
         <div class="section-label">Features</div>
         <h2 class="section-title">Everything your buyers need,<br/>nothing they don't</h2>
       </div>
-
       <div class="row g-0">
         <div class="col-lg-6 p-2">
-          <div class="feature-row p-4 d-flex align-items-start gap-3">
+          <div class="feature-row d-flex align-items-start gap-3">
             <div class="feature-icon-box"><i class="bi bi-whatsapp"></i></div>
             <div>
               <h5>Smart WhatsApp Button</h5>
@@ -851,9 +823,8 @@
             </div>
           </div>
         </div>
-
         <div class="col-lg-6 p-2">
-          <div class="feature-row p-4 d-flex align-items-start gap-3">
+          <div class="feature-row d-flex align-items-start gap-3">
             <div class="feature-icon-box"><i class="bi bi-truck"></i></div>
             <div>
               <h5>Public Order Tracking</h5>
@@ -861,9 +832,8 @@
             </div>
           </div>
         </div>
-
         <div class="col-lg-6 p-2">
-          <div class="feature-row p-4 d-flex align-items-start gap-3">
+          <div class="feature-row d-flex align-items-start gap-3">
             <div class="feature-icon-box"><i class="bi bi-images"></i></div>
             <div>
               <h5>Beautiful Product Catalogs</h5>
@@ -871,9 +841,8 @@
             </div>
           </div>
         </div>
-
         <div class="col-lg-6 p-2">
-          <div class="feature-row p-4 d-flex align-items-start gap-3">
+          <div class="feature-row d-flex align-items-start gap-3">
             <div class="feature-icon-box"><i class="bi bi-star-fill"></i></div>
             <div>
               <h5>Verified Reviews</h5>
@@ -881,9 +850,8 @@
             </div>
           </div>
         </div>
-
         <div class="col-lg-6 p-2">
-          <div class="feature-row p-4 d-flex align-items-start gap-3">
+          <div class="feature-row d-flex align-items-start gap-3">
             <div class="feature-icon-box"><i class="bi bi-incognito"></i></div>
             <div>
               <h5>Zero Buyer Sign-ups</h5>
@@ -891,9 +859,8 @@
             </div>
           </div>
         </div>
-
         <div class="col-lg-6 p-2">
-          <div class="feature-row p-4 d-flex align-items-start gap-3">
+          <div class="feature-row d-flex align-items-start gap-3">
             <div class="feature-icon-box"><i class="bi bi-link-45deg"></i></div>
             <div>
               <h5>Shareable Clean Links</h5>
@@ -905,7 +872,7 @@
     </div>
   </section>
 
-  <!-- ─── REVIEWS ───────────────────────────────────────────── -->
+  <!-- Reviews -->
   <section class="section-pad">
     <div class="container">
       <div class="text-center mb-5">
@@ -941,91 +908,84 @@
     </div>
   </section>
 
-  <!-- ─── DISCLAIMER BAR ────────────────────────────────────── -->
-  <div style="background:var(--green-light); border-top:1px solid var(--border); border-bottom:1px solid var(--border); padding:.8rem 0;">
-    <div class="container text-center" style="font-size:.82rem; color:var(--green-dark);">
+  <!-- Disclaimer -->
+  <div style="background: var(--green-soft); border-top:1px solid var(--border-light); border-bottom:1px solid var(--border-light); padding:0.6rem 0;">
+    <div class="container text-center" style="font-size:0.75rem; color:var(--green-dark);">
       <i class="bi bi-info-circle me-1"></i>
       <strong>Note:</strong> All transactions, payments, and negotiations happen directly on WhatsApp. myvendor only provides discovery and order tracking.
     </div>
   </div>
 
-  <!-- ─── FINAL CTA ─────────────────────────────────────────── -->
+  <!-- CTA -->
   <section class="cta-section section-pad">
-    <div class="container text-center" style="position:relative;z-index:1;">
+    <div class="container text-center">
       <div class="section-label" style="color:#86efac;">Start Today</div>
-      <h2 class="section-title" style="font-size:clamp(2rem,5vw,3rem);">Your store is one click away</h2>
+      <h2 class="section-title" style="color:white;">Your store is one click away</h2>
       <p class="mb-4" style="max-width:440px;margin:0 auto 2rem;">Join vendors across Lagos who are selling smarter — with beautiful catalogs, zero buyer friction, and real order tracking.</p>
       <a href="/dashboard/" class="btn-cta-white">
-        <i class="bi bi-shop-window"></i>
-        Create Your Free Store
+        <i class="bi bi-shop-window"></i> Create Your Free Store
       </a>
-      <p class="mt-3" style="font-size:.8rem; color:#6ee7b7;">No credit card · No downloads · Live in 10 minutes</p>
+      <p class="mt-3" style="font-size:0.75rem; color:#6ee7b7;">No credit card · No downloads · Live in 10 minutes</p>
     </div>
   </section>
+</main>
 
-  <!-- ─── FOOTER ────────────────────────────────────────────── -->
-  <footer class="mv-footer">
-    <div class="container">
-      <div class="row align-items-start gy-4">
-        <div class="col-md-4">
-          <div class="footer-logo">my<span>vendor</span></div>
-          <p style="font-size:.82rem; line-height:1.6; margin-top:.4rem;">
-            Lightweight catalogs and order tracking for WhatsApp vendors in Nigeria.
-          </p>
-        </div>
-        <div class="col-md-4">
-          <p style="font-size:.8rem; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:#3d5c3d; margin-bottom:.75rem;">Links</p>
-          <div class="d-flex flex-column gap-2">
-            <a href="/dashboard/">Vendor Login</a>
-            <a href="/dashboard/">Create Store</a>
-            <a href="#how-it-works">How It Works</a>
-            <a href="/terms.html">Terms & Conditions</a>
-            <a href="/privacy.html">Privacy Policy</a>
-          </div>
-        </div>
-        <div class="col-md-4">
-          <p style="font-size:.8rem; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:#3d5c3d; margin-bottom:.75rem;">theosnnetwork</p>
-          <p style="font-size:.82rem; line-height:1.6;">
-            Built with ❤️ for Nigerian vendors.<br/>
-            <a href="/cdn-cgi/l/email-protection#5f373a3333301f3226293a313b302d713138" class="text-decoration-none"><span class="__cf_email__" data-cfemail="7018151c1c1f301d0906151e141f025e1e17">[email&#160;protected]</span></a>
-          </p>
+<footer class="mv-footer">
+  <div class="container">
+    <div class="row gy-4">
+      <div class="col-md-4">
+        <div class="footer-logo">my<span>vendor</span></div>
+        <p style="font-size:0.75rem; margin-top:0.4rem;">Lightweight catalogs and order tracking for WhatsApp vendors in Nigeria.</p>
+      </div>
+      <div class="col-md-4">
+        <p style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:#3d5c3d;">Links</p>
+        <div class="d-flex flex-column gap-2">
+          <a href="/dashboard/">Vendor Login</a>
+          <a href="/dashboard/">Create Store</a>
+          <a href="#how-it-works">How It Works</a>
+          <a href="/terms.html">Terms & Conditions</a>
+          <a href="/privacy.html">Privacy Policy</a>
         </div>
       </div>
-      <div class="footer-disclaimer text-center">
-        © 2026 myvendor · theosnnetwork · All transactions occur on WhatsApp. myvendor is not responsible for payments between buyers and vendors.
+      <div class="col-md-4">
+        <p style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:#3d5c3d;">theosnnetwork</p>
+        <p style="font-size:0.75rem;">Built with ❤️ for Nigerian vendors.<br/><a href="/cdn-cgi/l/email-protection#325a575e5e5d725f4b44575c565d401c5c55" class="text-decoration-none"><span class="__cf_email__" data-cfemail="1179747d7d7e517c6867707b717a672f7f76">[email&#160;protected]</span></a></p>
       </div>
     </div>
-  </footer>
+    <div class="footer-disclaimer text-center mt-3 pt-3" style="border-top:1px solid #1a2e1a; font-size:0.7rem;">
+      © 2026 myvendor · theosnnetwork · All transactions occur on WhatsApp. myvendor is not responsible for payments between buyers and vendors.
+    </div>
+  </div>
+</footer>
 
-  <!-- Bootstrap JS -->
-  <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
-  <script>
-    // Smooth scroll for anchor links
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-      anchor.addEventListener('click', function(e) {
-        e.preventDefault();
-        const target = document.querySelector(this.getAttribute('href'));
-        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      });
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  // smooth scroll
+  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function(e) {
+      e.preventDefault();
+      const target = document.querySelector(this.getAttribute('href'));
+      if (target) target.scrollIntoView({ behavior: 'smooth' });
     });
+  });
 
-    // Scroll-reveal for step cards and feature rows
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.style.opacity = '1';
-          entry.target.style.transform = 'translateY(0)';
-        }
-      });
-    }, { threshold: 0.1 });
-
-     document.querySelectorAll('.step-card, .feature-row, .review-card').forEach(el => {
-      el.style.opacity = '0';
-      el.style.transform = 'translateY(20px)';
-      el.style.transition = 'all 0.6s ease-out';
-      observer.observe(el);
+  // fade-in on scroll
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.style.opacity = '1';
+        entry.target.style.transform = 'translateY(0)';
+      }
     });
-  </script>
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.step-card, .feature-row, .review-card').forEach(el => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(20px)';
+    el.style.transition = 'all 0.5s ease-out';
+    observer.observe(el);
+  });
+</script>
 </body>
 </html>
