@@ -88,44 +88,8 @@
             z-index: 1;
         }
 
-        /* ─── BRAND HEADER ─── */
-        .brand {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.55rem;
-            margin-bottom: 2.2rem;
-            animation: fadeDown 0.5s ease both;
-        }
 
-        .brand-mark {
-            width: 32px;
-            height: 32px;
-            background: var(--forest);
-            border-radius: 9px;
-            display: grid;
-            place-items: center;
-        }
-
-        .brand-mark svg {
-            width: 16px;
-            height: 16px;
-            fill: none;
-            stroke: var(--sage);
-            stroke-width: 1.8;
-            stroke-linecap: round;
-            stroke-linejoin: round;
-        }
-
-        .brand-name {
-            font-family: 'Cormorant Garamond', serif;
-            font-weight: 700;
-            font-size: 1.25rem;
-            color: var(--forest);
-            letter-spacing: 0.02em;
-        }
-
-        /* ─── MAIN CARD ─── */
+/* ─── MAIN CARD ─── */
         .card {
             background: var(--chalk);
             border-radius: var(--r-xl);
@@ -500,17 +464,8 @@
         .state-card.danger-card { border-color: rgba(192, 57, 43, 0.15); }
         .state-card.danger-card .state-title { color: var(--danger); }
 
-        /* ─── FOOTER ─── */
-        .page-footer {
-            text-align: center;
-            margin-top: 1.4rem;
-            font-size: 0.7rem;
-            color: var(--slate);
-            opacity: 0.6;
-            animation: fadeUp 0.5s ease both 0.2s;
-        }
 
-        /* ─── UTILS ─── */
+/* ─── UTILS ─── */
         .hidden { display: none !important; }
 
         @keyframes fadeUp {
@@ -535,15 +490,8 @@
 
 <div class="page-wrap">
 
-    <!-- Brand -->
-    <div class="brand">
-        <div class="brand-mark">
-            <svg viewBox="0 0 24 24"><path d="M12 3L4 7v5c0 5.5 3.8 10.7 8 12 4.2-1.3 8-6.5 8-12V7L12 3z"/></svg>
-        </div>
-        <span class="brand-name">myvendor</span>
-    </div>
 
-    <!-- Loading State -->
+<!-- Loading State -->
     <div id="loadingState" class="state-card">
         <div class="spinner"></div>
         <p class="state-desc">Fetching your order details&hellip;</p>
@@ -641,7 +589,7 @@
         </div>
     </div>
 
-    <div class="page-footer">Secured by myvendor &mdash; All rights reserved</div>
+
 
 </div>
 
