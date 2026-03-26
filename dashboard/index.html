@@ -363,8 +363,9 @@
       window.setLoading('signup', false)
 
       if (profileError) {
-        window.showMessage('signupMsg', 'Account created but failed to save profile. Please contact support.', 'error')
-        setTimeout(() => window.location.href = '/dashboard/home.html', 2000)
+        // This will print the EXACT error from Supabase to your screen
+        window.showMessage('signupMsg', 'DB Error: ' + profileError.message, 'error')
+        console.error("Full Profile Error:", profileError);
       } else {
         window.showMessage('signupMsg', '🎉 Store created! Redirecting to your dashboard...', 'success')
         setTimeout(() => window.location.href = '/dashboard/home.html', 1500)
