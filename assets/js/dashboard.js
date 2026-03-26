@@ -64,9 +64,9 @@ function injectUpgradeModal() {
             <p class="text-center fw-bold text-danger" id="premiumLockReason" style="font-size: 0.85rem;"></p>
             <ul style="list-style: none; padding: 0; margin-bottom: 1.5rem; font-size: 0.9rem; color: #4a6741;">
                 <li style="margin-bottom: 0.5rem;"><i class="bi bi-check-circle-fill text-success me-2"></i> Add <b>Unlimited</b> Products</li>
+                <li style="margin-bottom: 0.5rem;"><i class="bi bi-check-circle-fill text-success me-2"></i> Multiple Gallery Images</li>
                 <li style="margin-bottom: 0.5rem;"><i class="bi bi-check-circle-fill text-success me-2"></i> Branded Web Receipts</li>
                 <li style="margin-bottom: 0.5rem;"><i class="bi bi-check-circle-fill text-success me-2"></i> Remove 'myvendor' Watermark</li>
-                <li style="margin-bottom: 0.5rem;"><i class="bi bi-check-circle-fill text-success me-2"></i> Priority Support</li>
             </ul>
             <button class="w-100" style="background: #0f6e3f; color: white; padding: 0.9rem; border: none; border-radius: 12px; font-weight: 700;" onclick="alert('Payment Gateway Integration Coming Soon!')">
                 Upgrade Now - ₦3,000/mo
@@ -80,7 +80,13 @@ function injectUpgradeModal() {
 
 window.showPremiumModal = function(reasonText) {
     document.getElementById('premiumLockReason').innerText = reasonText;
-    new bootstrap.Modal(document.getElementById('premiumModal')).show();
+    const modalEl = document.getElementById('premiumModal');
+    if (modalEl) {
+        const modalInstance = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+        modalInstance.show();
+    } else {
+        alert(reasonText + "\n\nUpgrade to Premium to unlock this feature.");
+    }
 };
 
 // ─── 3. HOME DASHBOARD LOGIC ──────────────────────────────────────
@@ -226,7 +232,7 @@ window.loadProducts = async function() {
 
 window.saveProduct = async function(e) {
     e.preventDefault();
-    const btn = document.getElementById('saveBtn');
+    const btn = document.getElementById('btnSave') || document.getElementById('saveBtn');
     if(btn) btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving...';
 
     // 🌟 PREMIUM LOCK: Check Free Tier Limits before creating a NEW product
@@ -237,19 +243,50 @@ window.saveProduct = async function(e) {
         return;
     }
 
-    const statusVal = document.getElementById('productStatus') ? document.getElementById('productStatus').value : 'active';
-    const qtyVal = document.getElementById('productQty') ? document.getElementById('productQty').value : '';
+    // 🌟 UPLOAD EXTRA IMAGES TO CLOUDINARY (Premium)
+    let uploadedExtraImages = [];
+    const extraFilesInput = document.getElementById('extraFilesInput');
+    
+    if (extraFilesInput && extraFilesInput.files.length > 0) {
+        if(btn) btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Uploading Gallery...';
+        
+        const uploadPromises = Array.from(extraFilesInput.files).map(file => {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('upload_preset', 'ml_default'); 
+            
+            return fetch('https://api.cloudinary.com/v1_1/dws2n3pza/image/upload', {
+                method: 'POST', body: formData
+            })
+            .then(res => res.json())
+            .then(data => data.secure_url);
+        });
+
+        try {
+            uploadedExtraImages = await Promise.all(uploadPromises);
+        } catch (err) {
+            console.error("Gallery upload failed", err);
+            alert("Some gallery images failed to upload.");
+        }
+    }
+
+    const statusVal = document.getElementById('prodStatus') ? document.getElementById('prodStatus').value : 'active';
+    const qtyVal = document.getElementById('prodQty') ? document.getElementById('prodQty').value : '';
 
     const productData = {
         vendor_id: currentUser.id,
-        title: document.getElementById('productTitle').value,
-        price: document.getElementById('productPrice').value,
-        description: document.getElementById('productDesc').value,
+        title: document.getElementById('prodTitle').value,
+        price: document.getElementById('prodPrice').value,
+        description: document.getElementById('prodDesc').value,
         image_url: document.getElementById('imageUrl') ? document.getElementById('imageUrl').value : null,
-        
-        category: document.getElementById('productCategory') ? document.getElementById('productCategory').value : 'Other',
-        colors: document.getElementById('productColors') ? document.getElementById('productColors').value : null,
-        sizes: document.getElementById('productSizes') ? document.getElementById('productSizes').value : null,
+        extra_images: uploadedExtraImages, 
+        category: document.getElementById('prodCategory') ? document.getElementById('prodCategory').value : 'Other',
+        colors: document.getElementById('prodColors') ? document.getElementById('prodColors').value : null,
+        sizes: document.getElementById('prodSizes') ? document.getElementById('prodSizes').value : null,
+        material: document.getElementById('prodMaterial') ? document.getElementById('prodMaterial').value : null,
+        weight: document.getElementById('prodWeight') ? document.getElementById('prodWeight').value : null,
+        dimensions: document.getElementById('prodDimensions') ? document.getElementById('prodDimensions').value : null,
+        tags: document.getElementById('prodTags') ? document.getElementById('prodTags').value : null,
         status: statusVal,
         quantity: qtyVal !== '' ? parseInt(qtyVal) : null,
         in_stock: statusVal !== 'out_of_stock'
@@ -286,6 +323,7 @@ window.loadEditProduct = async function(id) {
     if(document.getElementById('editProdDimensions')) document.getElementById('editProdDimensions').value = p.dimensions || '';
     if(document.getElementById('editProdTags')) document.getElementById('editProdTags').value = p.tags || '';
 
+    // Load Primary Image
     if (p.image_url) {
         const preview = document.getElementById('editImagePreview');
         const wrapper = document.getElementById('imagePreviewWrapper');
@@ -296,6 +334,28 @@ window.loadEditProduct = async function(id) {
             wrapper.style.display = 'block';
             if (removeBtn) removeBtn.classList.remove('hidden');
             preview.setAttribute('data-original-url', p.image_url);
+        }
+    }
+
+    // 🌟 Load Extra Images Gallery
+    if (p.extra_images && p.extra_images.length > 0) {
+        const container = document.getElementById('extraImagesContainer');
+        if (container) {
+            container.setAttribute('data-existing-images', JSON.stringify(p.extra_images));
+            
+            p.extra_images.forEach(url => {
+                const imgBox = document.createElement('div');
+                imgBox.style.width = '75px'; imgBox.style.height = '75px';
+                imgBox.style.borderRadius = 'var(--radius-sm)'; imgBox.style.overflow = 'hidden';
+                imgBox.style.border = '1px solid var(--border-light)';
+                
+                const img = document.createElement('img');
+                img.src = url;
+                img.style.width = '100%'; img.style.height = '100%'; img.style.objectFit = 'cover';
+                
+                imgBox.appendChild(img);
+                container.insertBefore(imgBox, container.lastElementChild);
+            });
         }
     }
 
@@ -313,10 +373,10 @@ window.updateProduct = async function(e) {
     const urlParams = new URLSearchParams(window.location.search);
     const productId = urlParams.get('id');
 
+    // Handle Primary Image
     const preview = document.getElementById('editImagePreview');
     const wrapper = document.getElementById('imagePreviewWrapper');
     const fileInput = document.getElementById('editFileInput');
-    
     let finalImageUrl = preview.getAttribute('data-original-url') || null;
 
     if (wrapper.style.display === 'none') finalImageUrl = null;
@@ -334,8 +394,39 @@ window.updateProduct = async function(e) {
             const data = await res.json();
             if (data.secure_url) finalImageUrl = data.secure_url;
         } catch (err) {
-            console.error("Cloudinary upload failed", err);
-            alert("Image upload failed, preserving old image.");
+            console.error("Primary upload failed", err);
+        }
+    }
+
+    // 🌟 Handle Extra Images (Merge existing + new)
+    let finalExtraImages = [];
+    const container = document.getElementById('extraImagesContainer');
+    if (container) {
+        const existing = JSON.parse(container.getAttribute('data-existing-images') || '[]');
+        finalExtraImages = [...existing];
+    }
+
+    const extraFilesInput = document.getElementById('extraFilesInput');
+    if (extraFilesInput && extraFilesInput.files.length > 0) {
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Updating Gallery...';
+        
+        const uploadPromises = Array.from(extraFilesInput.files).map(file => {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('upload_preset', 'ml_default');
+            
+            return fetch('https://api.cloudinary.com/v1_1/dws2n3pza/image/upload', {
+                method: 'POST', body: formData
+            })
+            .then(res => res.json())
+            .then(data => data.secure_url);
+        });
+
+        try {
+            const newUploadedImages = await Promise.all(uploadPromises);
+            finalExtraImages = [...finalExtraImages, ...newUploadedImages];
+        } catch (err) {
+            console.error("Gallery upload failed", err);
         }
     }
 
@@ -356,7 +447,8 @@ window.updateProduct = async function(e) {
         tags: document.getElementById('editProdTags').value || null,
         description: document.getElementById('editProdDesc').value || null,
         in_stock: statusVal !== 'out_of_stock',
-        image_url: finalImageUrl
+        image_url: finalImageUrl,
+        extra_images: finalExtraImages
     };
 
     const { error } = await supabase.from('products').update(productData).eq('id', productId);
@@ -578,8 +670,10 @@ window.openStatusModal = function(id, status) {
     currentOrderId = id;
     const select = document.getElementById('statusSelect');
     
+    // Reset all options
     Array.from(select.options).forEach(opt => opt.disabled = false);
 
+    // Forward-only logic
     if (status === 'processing') {
         select.querySelector('option[value="new"]').disabled = true;
     } else if (status === 'shipped') {
@@ -670,21 +764,4 @@ window.loadAnalytics = async function() {
         topProductsList.innerHTML = sortedProducts.map((prod, index) => `
             <div class="top-product-item">
                 <div class="product-rank">${index + 1}</div>
-                <div class="product-info">
-                    <div class="product-name">${prod[0]}</div>
-                    <div class="product-sales">${prod[1].count} order${prod[1].count !== 1 ? 's' : ''}</div>
-                </div>
-                <div class="product-revenue">₦${prod[1].revenue.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0})}</div>
-            </div>
-        `).join('');
-    }
-};
-
-// ─── 7. UTILS & LOGOUT ───────────────────────────────────────────
-window.logout = async function() {
-    await supabase.auth.signOut();
-    window.location.href = '/login.html';
-};
-
-// Ignite!
-initDashboard();
+                <div class
