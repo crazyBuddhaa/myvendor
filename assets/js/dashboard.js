@@ -356,34 +356,100 @@ window.clearEditImage = function(e) {
 // ─── 5. ORDER MANAGEMENT LOGIC ────────────────────────────────────
 window.loadOrders = async function() {
     const list = document.getElementById('orderList');
-    const { data: orders } = await supabase.from('orders').select('*').eq('vendor_id', currentUser.id).order('created_at', { ascending: false });
+    if (!list) return;
+
+    const { data: orders } = await supabase
+        .from('orders')
+        .select('*')
+        .eq('vendor_id', currentUser.id)
+        .order('created_at', { ascending: false });
+
+    const emptyState = document.getElementById('emptyState');
 
     if (!orders || orders.length === 0) {
-        document.getElementById('emptyState').classList.remove('hidden');
+        if(emptyState) emptyState.classList.remove('hidden');
         list.innerHTML = '';
         return;
     }
 
-    document.getElementById('emptyState').classList.add('hidden');
-    list.innerHTML = orders.map(o => `
-        <div class="order-card p-3 bg-white rounded-4 border mb-3" data-status="${o.status}">
-            <div class="d-flex justify-content-between mb-2">
+    if(emptyState) emptyState.classList.add('hidden');
+
+    list.innerHTML = orders.map(o => {
+        const date = new Date(o.created_at).toLocaleDateString('en-NG', { 
+            day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' 
+        });
+
+        // Conditionally render rider info if it exists
+        const riderHtml = o.rider_name ? `
+            <div class="rider-info-modern">
+                <div class="rider-title"><i class="bi bi-bicycle"></i> Dispatch Details</div>
+                <div class="rider-details">${o.rider_name} • <a href="tel:${o.rider_phone}">${o.rider_phone}</a></div>
+            </div>` : '';
+
+        return `
+        <div class="order-card-modern" data-status="${o.status}">
+            <div class="order-header-modern">
                 <div>
-                    <div class="fw-bold" style="font-size: 0.9rem;">${o.id}</div>
-                    <div class="text-muted" style="font-size: 0.75rem;">${new Date(o.created_at).toLocaleDateString()}</div>
+                    <div class="order-id-modern">${o.id}</div>
+                    <div class="order-date-modern">${date}</div>
                 </div>
-                <div class="text-end">
-                    <div class="fw-bold text-success" style="font-size: 0.9rem;">₦${parseFloat(o.total_amount).toLocaleString()}</div>
-                    <span class="badge-status status-${o.status}" style="font-size: 0.65rem; padding: 0.2rem 0.5rem; border-radius: 4px; text-transform: uppercase;">${o.status}</span>
+                <div style="text-align: right;">
+                    <div class="order-amount-modern">₦${parseFloat(o.total_amount).toLocaleString()}</div>
+                    <span class="status-badge-modern status-${o.status}">${o.status.replace('_', ' ')}</span>
                 </div>
             </div>
-            <div class="small mb-2" style="font-size: 0.85rem;"><strong>${o.customer_name}</strong>: <span class="text-muted">${o.items}</span></div>
-            ${o.rider_name ? `<div class="rider-info mt-2" style="background:#f0fdf4;padding:8px;border-radius:8px;font-size:0.8rem; border:1px dashed #bbf7d0;"><strong>Rider:</strong> ${o.rider_name} (${o.rider_phone})</div>` : ''}
-            <div class="d-flex gap-2 mt-3">
-                <button class="btn btn-sm btn-success flex-grow-1" style="font-size: 0.8rem; font-weight: 600;" onclick="openStatusModal('${o.id}', '${o.status}')">Update Status</button>
-                <button class="btn btn-sm btn-outline-success" style="font-size: 0.8rem; font-weight: 600;" onclick="copyTracking('${o.id}')">Copy Link</button>
+            
+            <div class="customer-info-modern">
+                <div class="customer-name-modern">
+                    <i class="bi bi-person-circle text-success" style="opacity: 0.8;"></i> ${o.customer_name}
+                </div>
+                <div class="item-summary-modern">
+                    ${o.items}
+                </div>
             </div>
-        </div>`).join('');
+            
+            ${riderHtml}
+            
+            <div class="order-actions-modern">
+                <button class="btn-action-modern btn-update" onclick="openStatusModal('${o.id}', '${o.status}')">
+                    <i class="bi bi-pencil-square"></i> Update Status
+                </button>
+                <button class="btn-action-modern btn-chat" onclick="alert('To chat, copy the tracking link and send it to the customer on WhatsApp!')">
+                    <i class="bi bi-whatsapp"></i> Chat
+                </button>
+                <button class="btn-action-modern btn-track" onclick="copyTracking('${o.id}')">
+                    <i class="bi bi-link-45deg"></i> Copy Tracking Link
+                </button>
+            </div>
+        </div>`;
+    }).join('');
+};
+
+window.filterOrders = function(status, pillElement) {
+    // Update active pill styling
+    document.querySelectorAll('.filter-pill-modern').forEach(p => p.classList.remove('active'));
+    if(pillElement) pillElement.classList.add('active');
+
+    // Filter the cards
+    const cards = document.querySelectorAll('.order-card-modern');
+    let visibleCount = 0;
+    
+    cards.forEach(card => {
+        if (status === 'all' || card.dataset.status === status) {
+            card.style.display = 'block';
+            visibleCount++;
+        } else {
+            card.style.display = 'none';
+        }
+    });
+
+    // Handle empty state dynamically during filtering
+    const emptyState = document.getElementById('emptyState');
+    if (visibleCount === 0 && cards.length > 0) {
+        if(emptyState) emptyState.classList.remove('hidden');
+    } else if (cards.length > 0) {
+        if(emptyState) emptyState.classList.add('hidden');
+    }
 };
 
 window.openCreateOrderModal = function() {
@@ -391,6 +457,7 @@ window.openCreateOrderModal = function() {
     new bootstrap.Modal(document.getElementById('createOrderModal')).show();
 };
 
+window.handleCreateOrderOriginal = window.handleCreateOrder; // Store original if needed
 window.handleCreateOrder = async function(e) {
     e.preventDefault();
 
@@ -416,12 +483,12 @@ window.handleCreateOrder = async function(e) {
         if(document.getElementById('createOrderModal')) {
             bootstrap.Modal.getInstance(document.getElementById('createOrderModal')).hide();
         }
-        window.loadOrders();
+        window.loadOrders(); // Refresh the beautiful new list
         navigator.clipboard.writeText(`https://myvendor.qzz.io/track/?id=${id}`);
 
         const toast = document.getElementById('toastMsg');
         if (toast) {
-            toast.innerText = "Order Created & Link Copied!";
+            toast.innerText = "Order Created & Tracking Link Copied!";
             toast.classList.add('show');
             setTimeout(() => toast.classList.remove('show'), 3000);
         } else {
@@ -448,20 +515,17 @@ window.copyTracking = function(id) {
     }
 };
 
-window.filterOrders = function(status, pill) {
-    document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
-    pill.classList.add('active');
-    document.querySelectorAll('.order-card').forEach(card => {
-        card.style.display = (status === 'all' || card.dataset.status === status) ? 'block' : 'none';
-    });
-};
-
 let currentOrderId = null;
 window.openStatusModal = function(id, status) {
     currentOrderId = id;
     document.getElementById('statusSelect').value = status;
+    
+    // Toggle rider inputs based on current status
     const riderGroup = document.getElementById('riderDetailsGroup');
-    if(riderGroup) riderGroup.style.display = status === 'shipped' ? 'block' : 'none';
+    if(riderGroup) {
+        riderGroup.style.display = (status === 'shipped') ? 'block' : 'none';
+    }
+    
     new bootstrap.Modal(document.getElementById('statusModal')).show();
 };
 
@@ -470,11 +534,17 @@ window.saveStatus = async function() {
     const riderName = document.getElementById('riderName') ? document.getElementById('riderName').value : null;
     const riderPhone = document.getElementById('riderPhone') ? document.getElementById('riderPhone').value : null;
 
-    await supabase.from('orders').update({ status, rider_name: riderName, rider_phone: riderPhone }).eq('id', currentOrderId);
+    await supabase.from('orders').update({ 
+        status, 
+        rider_name: riderName, 
+        rider_phone: riderPhone 
+    }).eq('id', currentOrderId);
+    
     bootstrap.Modal.getInstance(document.getElementById('statusModal')).hide();
     window.loadOrders();
 };
 
+// Listen for status changes in the modal to reveal Rider details
 const statusSelect = document.getElementById('statusSelect');
 if (statusSelect) {
     statusSelect.addEventListener('change', (e) => {
