@@ -156,6 +156,7 @@ window.loadHomeDashboard = async function() {
 };
 
 // ─── 4. PRODUCT & INVENTORY LOGIC ─────────────────────────────────
+
 window.loadProducts = async function() {
     const list = document.getElementById('productGrid');
     if (!list) return;
@@ -227,10 +228,42 @@ window.loadProducts = async function() {
     }).join('');
 };
 
+window.loadEditProduct = async function(id) {
+    // Change UI text to reflect edit mode
+    const header = document.getElementById('pageHeader');
+    const btn = document.getElementById('saveBtn');
+    if(header) header.innerText = "Edit Product";
+    if(btn) btn.innerText = "Update Product";
+
+    const { data: p } = await supabase.from('products').select('*').eq('id', id).single();
+    if (p) {
+        if(document.getElementById('productTitle')) document.getElementById('productTitle').value = p.title || '';
+        if(document.getElementById('productPrice')) document.getElementById('productPrice').value = p.price || '';
+        if(document.getElementById('productDesc')) document.getElementById('productDesc').value = p.description || '';
+        
+        // Load the new diverse product tags
+        if(document.getElementById('productCategory')) document.getElementById('productCategory').value = p.category || 'Other';
+        if(document.getElementById('productColors')) document.getElementById('productColors').value = p.colors || '';
+        if(document.getElementById('productSizes')) document.getElementById('productSizes').value = p.sizes || '';
+        if(document.getElementById('productStatus')) document.getElementById('productStatus').value = p.status || 'active';
+        if(document.getElementById('productQty')) document.getElementById('productQty').value = p.quantity !== null ? p.quantity : '';
+
+        // Load image preview from Cloudinary
+        if (p.image_url) {
+            if(document.getElementById('imageUrl')) document.getElementById('imageUrl').value = p.image_url;
+            const preview = document.getElementById('imagePreview');
+            if(preview) {
+                preview.src = p.image_url;
+                preview.classList.remove('d-none');
+            }
+        }
+    }
+};
+
 window.saveProduct = async function(e) {
     e.preventDefault();
     const btn = document.getElementById('saveBtn');
-    if(btn) btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Saving...';
+    if(btn) btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving...';
 
     const urlParams = new URLSearchParams(window.location.search);
     const productId = urlParams.get('id');
@@ -246,20 +279,31 @@ window.saveProduct = async function(e) {
         }
     }
 
-    const title = document.getElementById('productTitle').value;
-    const price = document.getElementById('productPrice').value;
-    const desc = document.getElementById('productDesc').value;
-    const inStock = document.getElementById('inStockToggle').checked;
-    const imgUrl = document.getElementById('imageUrl').value || null;
+    // Gather all fields safely
+    const titleVal = document.getElementById('productTitle') ? document.getElementById('productTitle').value : '';
+    const priceVal = document.getElementById('productPrice') ? document.getElementById('productPrice').value : 0;
+    const descVal = document.getElementById('productDesc') ? document.getElementById('productDesc').value : '';
+    const imgUrlVal = document.getElementById('imageUrl') ? document.getElementById('imageUrl').value : null;
+    
+    // Gather new tags safely
+    const statusVal = document.getElementById('productStatus') ? document.getElementById('productStatus').value : 'active';
+    const qtyVal = document.getElementById('productQty') ? document.getElementById('productQty').value : '';
+    const categoryVal = document.getElementById('productCategory') ? document.getElementById('productCategory').value : 'Other';
+    const colorsVal = document.getElementById('productColors') ? document.getElementById('productColors').value : null;
+    const sizesVal = document.getElementById('productSizes') ? document.getElementById('productSizes').value : null;
 
     const productData = {
         vendor_id: currentUser.id,
-        title: title,
-        price: price,
-        description: desc,
-        in_stock: inStock,
-        image_url: imgUrl,
-        status: inStock ? 'active' : 'out_of_stock' 
+        title: titleVal,
+        price: priceVal,
+        description: descVal,
+        image_url: imgUrlVal || null,
+        category: categoryVal,
+        colors: colorsVal,
+        sizes: sizesVal,
+        status: statusVal,
+        quantity: qtyVal !== '' ? parseInt(qtyVal) : null,
+        in_stock: statusVal !== 'out_of_stock' // Backward compatibility for your storefront UI
     };
 
     let error;
@@ -297,6 +341,7 @@ window.copyProductLink = function(id) {
         alert("Product link copied!");
     }
 };
+
 
 // ─── 5. ORDER MANAGEMENT LOGIC ────────────────────────────────────
 window.loadOrders = async function() {
