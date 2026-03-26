@@ -88,8 +88,27 @@
             z-index: 1;
         }
 
+        /* ─── ANIMATIONS ─── */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
 
-/* ─── MAIN CARD ─── */
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50%       { opacity: 0.3; }
+        }
+
+        @keyframes spin { 
+            to { transform: rotate(360deg); } 
+        }
+
+        @keyframes pulse-ring {
+            0%, 100% { box-shadow: 0 0 0 4px rgba(42, 138, 90, 0.15), 0 0 0 7px rgba(42, 138, 90, 0.07); }
+            50%       { box-shadow: 0 0 0 5px rgba(42, 138, 90, 0.2),  0 0 0 10px rgba(42, 138, 90, 0.05); }
+        }
+
+        /* ─── MAIN CARD ─── */
         .card {
             background: var(--chalk);
             border-radius: var(--r-xl);
@@ -241,6 +260,9 @@
             gap: 1rem;
             padding-bottom: 1.75rem;
             position: relative;
+            /* Will be animated by JS */
+            opacity: 0;
+            transform: translateY(10px); 
         }
 
         .tl-item:last-child {
@@ -340,11 +362,6 @@
             animation: pulse-ring 2s ease infinite;
         }
 
-        @keyframes pulse-ring {
-            0%, 100% { box-shadow: 0 0 0 4px rgba(42, 138, 90, 0.15), 0 0 0 7px rgba(42, 138, 90, 0.07); }
-            50%       { box-shadow: 0 0 0 5px rgba(42, 138, 90, 0.2),  0 0 0 10px rgba(42, 138, 90, 0.05); }
-        }
-
         /* Status chip on current step */
         .status-chip {
             display: inline-flex;
@@ -367,11 +384,6 @@
             border-radius: 50%;
             background: var(--jade);
             animation: blink 1.6s ease infinite;
-        }
-
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50%       { opacity: 0.3; }
         }
 
         /* Rider badge */
@@ -411,8 +423,6 @@
             margin: 0 auto 1.25rem;
             animation: spin 0.75s linear infinite;
         }
-
-        @keyframes spin { to { transform: rotate(360deg); } }
 
         .state-icon {
             font-size: 2.5rem;
@@ -464,25 +474,15 @@
         .state-card.danger-card { border-color: rgba(192, 57, 43, 0.15); }
         .state-card.danger-card .state-title { color: var(--danger); }
 
-
-/* ─── UTILS ─── */
+        /* ─── UTILS ─── */
         .hidden { display: none !important; }
-
-        @keyframes fadeUp {
-            from { opacity: 0; transform: translateY(14px); }
-            to   { opacity: 1; transform: translateY(0); }
-        }
-
-        @keyframes fadeDown {
-            from { opacity: 0; transform: translateY(-10px); }
-            to   { opacity: 1; transform: translateY(0); }
-        }
 
         /* ─── RESPONSIVE ─── */
         @media (max-width: 480px) {
-            .card-header-strip { padding: 1.25rem 1.25rem; }
+            .card-header-strip { padding: 1.25rem; }
             .card-body { padding: 1.25rem; }
             .strip-title { font-size: 1.3rem; }
+            .page-wrap { max-width: 100%; }
         }
     </style>
 </head>
@@ -490,14 +490,11 @@
 
 <div class="page-wrap">
 
-
-<!-- Loading State -->
     <div id="loadingState" class="state-card">
         <div class="spinner"></div>
         <p class="state-desc">Fetching your order details&hellip;</p>
     </div>
 
-    <!-- Error State -->
     <div id="errorState" class="state-card hidden">
         <span class="state-icon">🔍</span>
         <h2 id="errorTitle" class="state-title">Order Not Found</h2>
@@ -505,7 +502,6 @@
         <a href="/" class="btn-home"><i class="bi bi-arrow-left"></i> Back to Store</a>
     </div>
 
-    <!-- Cancelled State -->
     <div id="cancelledState" class="state-card danger-card hidden">
         <span class="state-icon danger"><i class="bi bi-x-circle-fill"></i></span>
         <h2 class="state-title">Order Cancelled</h2>
@@ -513,7 +509,6 @@
         <a href="/" class="btn-home"><i class="bi bi-arrow-left"></i> Back to Store</a>
     </div>
 
-    <!-- Main Tracking Card -->
     <div id="trackCard" class="card hidden">
 
         <div class="card-header-strip">
@@ -526,8 +521,6 @@
         </div>
 
         <div class="card-body">
-
-            <!-- Items -->
             <div class="items-box">
                 <div class="items-box-icon"><i class="bi bi-bag"></i></div>
                 <div>
@@ -536,7 +529,6 @@
                 </div>
             </div>
 
-            <!-- Timeline -->
             <div class="section-label">Delivery Progress</div>
 
             <div class="timeline">
@@ -589,13 +581,12 @@
         </div>
     </div>
 
-
-
 </div>
 
 <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
+    // SUPABASE CREDENTIALS
     const SUPABASE_URL      = 'https://sotdghhayztnpwnrzjzu.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_OcOKwSDnoCGm_rt725Bi-g_rV6tjGlK';
     const supabase          = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -614,6 +605,7 @@
 
             document.querySelector('#orderIdDisplay span').innerText = orderId;
 
+            // Fetch order from Supabase
             const { data: order, error } = await supabase
                 .from('orders')
                 .select('*')
@@ -638,27 +630,26 @@
 
             const currentIndex = STATUS_FLOW.indexOf(order.status || 'new');
 
+            // Set active states
             STATUS_FLOW.forEach((status, index) => {
                 const el = document.getElementById(`step-${status}`);
                 if (!el) return;
+                
                 if (index <= currentIndex) {
                     el.classList.add('active');
                     if (index === currentIndex) el.classList.add('current');
                 }
             });
 
-            // Animate timeline items in sequence
+            // Animate timeline items
             document.querySelectorAll('.tl-item').forEach((el, i) => {
-                el.style.opacity = '0';
-                el.style.transform = 'translateY(10px)';
-                el.style.transition = `opacity 0.4s ease ${i * 0.1}s, transform 0.4s ease ${i * 0.1}s`;
-                requestAnimationFrame(() => {
+                setTimeout(() => {
                     el.style.opacity = '1';
                     el.style.transform = 'translateY(0)';
-                });
+                }, i * 150); // Staggered animation
             });
 
-            // Status chip on the current (last active) step
+            // Add pulsing status chip
             const currentEl = document.getElementById(`step-${order.status}`);
             if (currentEl && order.status !== 'delivered') {
                 const chip = document.createElement('div');
@@ -667,14 +658,16 @@
                 currentEl.querySelector('.tl-content').appendChild(chip);
             }
 
-            // Rider info on shipped / delivered
+            // Inject Rider info if dispatched
             if ((order.status === 'shipped' || order.status === 'delivered') && (order.rider_name || order.rider_phone)) {
                 const riderNote = document.getElementById('riderNote');
                 let html = `<div class="rider-badge"><i class="bi bi-bicycle"></i>`;
+                
                 if (order.rider_name)  html += `<span>${order.rider_name}</span>`;
                 if (order.rider_phone) html += `<span style="opacity:.65">·</span><span>${order.rider_phone}</span>`;
+                
                 html += `</div>`;
-                riderNote.innerHTML = `Package is on its way to you ${html}`;
+                riderNote.innerHTML = `Package is on its way to you<br>${html}`;
             }
 
         } catch (err) {
@@ -697,6 +690,7 @@
     function show(id) { document.getElementById(id).classList.remove('hidden'); }
     function hide(id) { document.getElementById(id).classList.add('hidden'); }
 
+    // Initialize the tracking script
     initTracking();
 </script>
 </body>
