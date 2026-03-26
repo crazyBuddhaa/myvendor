@@ -81,7 +81,7 @@
     .form-control-modern:focus { border-color: var(--green-bright); background: white; outline: none; box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1); }
     
     .toggle-password { position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); background: transparent; border: none; color: var(--text-muted); cursor: pointer; padding: 0; }
-    .forgot-link { font-size: 0.7rem; color: var(--green-primary); text-decoration: none; font-weight: 600; }
+    .forgot-link { font-size: 0.7rem; color: var(--green-primary); text-decoration: none; font-weight: 600; transition: all 0.2s; }
     
     .slug-preview { background: var(--gray-bg); border-radius: var(--radius-sm); padding: 0.5rem 0.8rem; font-size: 0.7rem; color: var(--text-muted); margin-top: 0.4rem; display: flex; align-items: center; gap: 0.4rem; }
     .slug-preview span { font-weight: 700; color: var(--green-dark); }
@@ -414,19 +414,33 @@
     }
   }
 
-  // 🌟 THE FIX: This function now tells Supabase where to redirect the user from the email!
   window.handleForgotPassword = async (e) => {
     e.preventDefault()
     const email = document.getElementById('loginEmail').value.trim()
+    
     if (!email) {
       window.showMessage('loginMsg', 'Enter your email address first.', 'error')
       return
     }
     
+    // Grab the link element that was clicked
+    const forgotLink = e.target;
+    const originalText = forgotLink.innerText;
+    
+    // Set loading state
+    forgotLink.innerText = 'Sending...';
+    forgotLink.style.pointerEvents = 'none'; // Prevent double-clicking
+    forgotLink.style.opacity = '0.6';
+    
     // Pass the redirectTo option linking to your new reset-password page
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: window.location.origin + '/reset-password.html'
     })
+    
+    // Revert loading state
+    forgotLink.innerText = originalText;
+    forgotLink.style.pointerEvents = 'auto';
+    forgotLink.style.opacity = '1';
     
     if (error) {
       window.showMessage('loginMsg', error.message, 'error')
