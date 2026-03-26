@@ -42,9 +42,9 @@ async function initDashboard() {
     if (document.getElementById('orderList')) await window.loadOrders();
     if (document.getElementById('totalRevenue')) await window.loadAnalytics();
     
-    // If on add/edit product page
+    // Check for edit product form
     const urlParams = new URLSearchParams(window.location.search);
-    if (document.getElementById('productTitle') && urlParams.has('id')) {
+    if (document.getElementById('editProductForm') && urlParams.has('id')) {
         await window.loadEditProduct(urlParams.get('id'));
     }
 }
@@ -103,7 +103,7 @@ window.loadHomeDashboard = async function() {
         waShareBtn.href = `https://wa.me/?text=${shareText}`;
     }
 
-    // Fetch Top-Level Stats (Using fast 'head' queries to save bandwidth)
+    // Fetch Top-Level Stats (Using fast 'head' queries)
     const { count: prodCount } = await supabase
         .from('products')
         .select('*', { count: 'exact', head: true })
@@ -156,7 +156,6 @@ window.loadHomeDashboard = async function() {
 };
 
 // ─── 4. PRODUCT & INVENTORY LOGIC ─────────────────────────────────
-
 window.loadProducts = async function() {
     const list = document.getElementById('productGrid');
     if (!list) return;
@@ -169,14 +168,11 @@ window.loadProducts = async function() {
 
     const emptyState = document.getElementById('emptyState');
     
-    // Track count for Free Tier limits
     window.currentProductsCount = prods ? prods.length : 0;
 
     if (!prods || prods.length === 0) { 
         if(emptyState) {
             emptyState.classList.remove('hidden');
-            emptyState.querySelector('h3').innerText = 'Your inventory is empty';
-            emptyState.querySelector('p').innerText = 'Add your first product to start selling.';
             const addBtn = emptyState.querySelector('.btn-add-modern');
             if (addBtn) addBtn.classList.remove('hidden');
         }
@@ -213,7 +209,7 @@ window.loadProducts = async function() {
                 <div class="stock-badge ${badgeClass}">${badgeText}</div>
                 
                 <div class="product-actions">
-                    <a href="/dashboard/add-product.html?id=${p.id}" class="action-btn">
+                    <a href="/dashboard/edit-product.html?id=${p.id}" class="action-btn">
                         <i class="bi bi-pencil"></i> Edit
                     </a>
                     <button class="action-btn" onclick="copyProductLink('${p.id}')">
@@ -228,96 +224,147 @@ window.loadProducts = async function() {
     }).join('');
 };
 
-window.loadEditProduct = async function(id) {
-    // Change UI text to reflect edit mode
-    const header = document.getElementById('pageHeader');
-    const btn = document.getElementById('saveBtn');
-    if(header) header.innerText = "Edit Product";
-    if(btn) btn.innerText = "Update Product";
-
-    const { data: p } = await supabase.from('products').select('*').eq('id', id).single();
-    if (p) {
-        if(document.getElementById('productTitle')) document.getElementById('productTitle').value = p.title || '';
-        if(document.getElementById('productPrice')) document.getElementById('productPrice').value = p.price || '';
-        if(document.getElementById('productDesc')) document.getElementById('productDesc').value = p.description || '';
-        
-        // Load the new diverse product tags
-        if(document.getElementById('productCategory')) document.getElementById('productCategory').value = p.category || 'Other';
-        if(document.getElementById('productColors')) document.getElementById('productColors').value = p.colors || '';
-        if(document.getElementById('productSizes')) document.getElementById('productSizes').value = p.sizes || '';
-        if(document.getElementById('productStatus')) document.getElementById('productStatus').value = p.status || 'active';
-        if(document.getElementById('productQty')) document.getElementById('productQty').value = p.quantity !== null ? p.quantity : '';
-
-        // Load image preview from Cloudinary
-        if (p.image_url) {
-            if(document.getElementById('imageUrl')) document.getElementById('imageUrl').value = p.image_url;
-            const preview = document.getElementById('imagePreview');
-            if(preview) {
-                preview.src = p.image_url;
-                preview.classList.remove('d-none');
-            }
-        }
-    }
-};
-
 window.saveProduct = async function(e) {
     e.preventDefault();
     const btn = document.getElementById('saveBtn');
     if(btn) btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving...';
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const productId = urlParams.get('id');
-
     // 🌟 PREMIUM LOCK: Check Free Tier Limits before creating a NEW product
-    if (!productId) {
-        const { count } = await supabase.from('products').select('*', { count: 'exact', head: true }).eq('vendor_id', currentUser.id);
-        
-        if (currentUser.tier !== 'premium' && count >= FREE_PRODUCT_LIMIT) {
-            if(btn) btn.innerHTML = 'Save Product';
-            window.showPremiumModal(`You have reached the free limit of ${FREE_PRODUCT_LIMIT} products.`);
-            return;
-        }
+    const { count } = await supabase.from('products').select('*', { count: 'exact', head: true }).eq('vendor_id', currentUser.id);
+    if (currentUser.tier !== 'premium' && count >= FREE_PRODUCT_LIMIT) {
+        if(btn) btn.innerHTML = 'Save Product';
+        window.showPremiumModal(`You have reached the free limit of ${FREE_PRODUCT_LIMIT} products.`);
+        return;
     }
 
-    // Gather all fields safely
-    const titleVal = document.getElementById('productTitle') ? document.getElementById('productTitle').value : '';
-    const priceVal = document.getElementById('productPrice') ? document.getElementById('productPrice').value : 0;
-    const descVal = document.getElementById('productDesc') ? document.getElementById('productDesc').value : '';
-    const imgUrlVal = document.getElementById('imageUrl') ? document.getElementById('imageUrl').value : null;
-    
-    // Gather new tags safely
     const statusVal = document.getElementById('productStatus') ? document.getElementById('productStatus').value : 'active';
     const qtyVal = document.getElementById('productQty') ? document.getElementById('productQty').value : '';
-    const categoryVal = document.getElementById('productCategory') ? document.getElementById('productCategory').value : 'Other';
-    const colorsVal = document.getElementById('productColors') ? document.getElementById('productColors').value : null;
-    const sizesVal = document.getElementById('productSizes') ? document.getElementById('productSizes').value : null;
 
     const productData = {
         vendor_id: currentUser.id,
-        title: titleVal,
-        price: priceVal,
-        description: descVal,
-        image_url: imgUrlVal || null,
-        category: categoryVal,
-        colors: colorsVal,
-        sizes: sizesVal,
+        title: document.getElementById('productTitle').value,
+        price: document.getElementById('productPrice').value,
+        description: document.getElementById('productDesc').value,
+        image_url: document.getElementById('imageUrl') ? document.getElementById('imageUrl').value : null,
+        
+        category: document.getElementById('productCategory') ? document.getElementById('productCategory').value : 'Other',
+        colors: document.getElementById('productColors') ? document.getElementById('productColors').value : null,
+        sizes: document.getElementById('productSizes') ? document.getElementById('productSizes').value : null,
         status: statusVal,
         quantity: qtyVal !== '' ? parseInt(qtyVal) : null,
-        in_stock: statusVal !== 'out_of_stock' // Backward compatibility for your storefront UI
+        in_stock: statusVal !== 'out_of_stock'
     };
 
-    let error;
-    if (productId) {
-        const { error: updateErr } = await supabase.from('products').update(productData).eq('id', productId);
-        error = updateErr;
-    } else {
-        const { error: insertErr } = await supabase.from('products').insert([productData]);
-        error = insertErr;
-    }
+    const { error } = await supabase.from('products').insert([productData]);
 
     if (error) {
         alert("Error saving product: " + error.message);
         if(btn) btn.innerHTML = 'Save Product';
+    } else {
+        window.location.href = '/dashboard/products.html';
+    }
+};
+
+window.loadEditProduct = async function(id) {
+    const { data: p, error } = await supabase.from('products').select('*').eq('id', id).single();
+    if (error || !p) {
+        alert("Product not found.");
+        window.location.href = '/dashboard/products.html';
+        return;
+    }
+
+    if(document.getElementById('editProdTitle')) document.getElementById('editProdTitle').value = p.title || '';
+    if(document.getElementById('editProdPrice')) document.getElementById('editProdPrice').value = p.price || '';
+    if(document.getElementById('editProdDesc')) document.getElementById('editProdDesc').value = p.description || '';
+    if(document.getElementById('editProdCategory')) document.getElementById('editProdCategory').value = p.category || 'Other';
+    if(document.getElementById('editProdStatus')) document.getElementById('editProdStatus').value = p.status || 'in_stock';
+    if(document.getElementById('editProdQty')) document.getElementById('editProdQty').value = p.quantity !== null ? p.quantity : '';
+    if(document.getElementById('editProdColors')) document.getElementById('editProdColors').value = p.colors || '';
+    if(document.getElementById('editProdSizes')) document.getElementById('editProdSizes').value = p.sizes || '';
+    if(document.getElementById('editProdMaterial')) document.getElementById('editProdMaterial').value = p.material || '';
+    if(document.getElementById('editProdWeight')) document.getElementById('editProdWeight').value = p.weight || '';
+    if(document.getElementById('editProdDimensions')) document.getElementById('editProdDimensions').value = p.dimensions || '';
+    if(document.getElementById('editProdTags')) document.getElementById('editProdTags').value = p.tags || '';
+
+    if (p.image_url) {
+        const preview = document.getElementById('editImagePreview');
+        const wrapper = document.getElementById('imagePreviewWrapper');
+        const removeBtn = document.getElementById('editRemoveImgBtn');
+        if (preview && wrapper) {
+            preview.src = p.image_url;
+            preview.style.display = 'block';
+            wrapper.style.display = 'block';
+            if (removeBtn) removeBtn.classList.remove('hidden');
+            preview.setAttribute('data-original-url', p.image_url);
+        }
+    }
+
+    document.getElementById('loadingState').classList.add('hidden');
+    document.getElementById('editProductForm').classList.remove('hidden');
+};
+
+window.updateProduct = async function(e) {
+    e.preventDefault();
+    const btn = document.getElementById('btnUpdate');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Updating...';
+    btn.disabled = true;
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const productId = urlParams.get('id');
+
+    const preview = document.getElementById('editImagePreview');
+    const wrapper = document.getElementById('imagePreviewWrapper');
+    const fileInput = document.getElementById('editFileInput');
+    
+    let finalImageUrl = preview.getAttribute('data-original-url') || null;
+
+    if (wrapper.style.display === 'none') finalImageUrl = null;
+
+    if (fileInput && fileInput.files.length > 0) {
+        const file = fileInput.files[0];
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('upload_preset', 'ml_default'); 
+        
+        try {
+            const res = await fetch('https://api.cloudinary.com/v1_1/dws2n3pza/image/upload', {
+                method: 'POST', body: formData
+            });
+            const data = await res.json();
+            if (data.secure_url) finalImageUrl = data.secure_url;
+        } catch (err) {
+            console.error("Cloudinary upload failed", err);
+            alert("Image upload failed, preserving old image.");
+        }
+    }
+
+    const statusVal = document.getElementById('editProdStatus').value;
+    const qtyVal = document.getElementById('editProdQty').value;
+
+    const productData = {
+        title: document.getElementById('editProdTitle').value,
+        price: document.getElementById('editProdPrice').value,
+        category: document.getElementById('editProdCategory').value,
+        status: statusVal,
+        quantity: qtyVal !== '' ? parseInt(qtyVal) : null,
+        colors: document.getElementById('editProdColors').value || null,
+        sizes: document.getElementById('editProdSizes').value || null,
+        material: document.getElementById('editProdMaterial').value || null,
+        weight: document.getElementById('editProdWeight').value || null,
+        dimensions: document.getElementById('editProdDimensions').value || null,
+        tags: document.getElementById('editProdTags').value || null,
+        description: document.getElementById('editProdDesc').value || null,
+        in_stock: statusVal !== 'out_of_stock',
+        image_url: finalImageUrl
+    };
+
+    const { error } = await supabase.from('products').update(productData).eq('id', productId);
+
+    if (error) {
+        alert("Error updating product: " + error.message);
+        btn.innerHTML = originalText;
+        btn.disabled = false;
     } else {
         window.location.href = '/dashboard/products.html';
     }
@@ -342,7 +389,6 @@ window.copyProductLink = function(id) {
     }
 };
 
-
 // ─── 5. ORDER MANAGEMENT LOGIC ────────────────────────────────────
 window.loadOrders = async function() {
     const list = document.getElementById('orderList');
@@ -365,10 +411,8 @@ window.loadOrders = async function() {
     if(emptyState) emptyState.classList.add('hidden');
 
     list.innerHTML = orders.map(o => {
-        // Format the date and time
         const dateStr = new Date(o.created_at).toLocaleDateString('en-NG', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
         
-        // 1. Build Rider & Delivery HTML based on status
         let riderHtml = '';
         if (o.status === 'delivered') {
             riderHtml = `
@@ -384,15 +428,10 @@ window.loadOrders = async function() {
             </div>`;
         }
 
-        // 2. Build Action Buttons based on status (IMMUTABILITY LOGIC)
         let actionsHtml = '';
-        
         if (o.status === 'cancelled') {
-            // Cancelled: Completely Immutable. No buttons.
             actionsHtml = ''; 
-            
         } else if (o.status === 'delivered') {
-            // Delivered: Immutable. Only Receipt and Link.
             actionsHtml = `
             <div class="order-actions-modern" style="grid-template-columns: 1fr 1fr;">
                 <button class="btn-action-modern btn-track" onclick="copyTracking('${o.id}')">
@@ -402,9 +441,7 @@ window.loadOrders = async function() {
                     <i class="bi bi-receipt"></i> Receipt <i class="bi bi-lock-fill small ms-1"></i>
                 </button>
             </div>`;
-            
         } else {
-            // Active Order: Full controls
             actionsHtml = `
             <div class="order-actions-modern" style="grid-template-columns: 1fr 1fr;">
                 <button class="btn-action-modern btn-update" onclick="openStatusModal('${o.id}', '${o.status}')">
@@ -445,10 +482,8 @@ window.loadOrders = async function() {
                 <div class="customer-name-modern"><i class="bi bi-person-circle text-success" style="opacity: 0.8;"></i> ${o.customer_name}</div>
                 <div class="item-summary-modern">${o.items}</div>
             </div>
-            
             ${riderHtml}
             ${actionsHtml}
-            
         </div>`;
     }).join('');
 };
@@ -539,16 +574,12 @@ window.copyTracking = function(id) {
 };
 
 window.currentOrderId = null;
-
-// 🌟 FORWARD-ONLY PROGRESSION LOGIC 🌟
 window.openStatusModal = function(id, status) {
     currentOrderId = id;
     const select = document.getElementById('statusSelect');
     
-    // First, reset all options to be enabled
     Array.from(select.options).forEach(opt => opt.disabled = false);
 
-    // Then, disable backwards progression based on current status
     if (status === 'processing') {
         select.querySelector('option[value="new"]').disabled = true;
     } else if (status === 'shipped') {
@@ -558,7 +589,6 @@ window.openStatusModal = function(id, status) {
 
     select.value = status;
     
-    // Ensure rider details are visible if they are marking it shipped or delivered
     const riderGroup = document.getElementById('riderDetailsGroup');
     if(riderGroup) riderGroup.style.display = (status === 'shipped' || status === 'delivered') ? 'block' : 'none';
     
@@ -579,7 +609,6 @@ const statusSelect = document.getElementById('statusSelect');
 if (statusSelect) {
     statusSelect.addEventListener('change', (e) => {
         const riderGroup = document.getElementById('riderDetailsGroup');
-        // Keep rider details visible if they move to shipped OR delivered
         if(riderGroup) riderGroup.style.display = (e.target.value === 'shipped' || e.target.value === 'delivered') ? 'block' : 'none';
     });
 }
