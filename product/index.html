@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Product Details - myvendor</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -10,6 +10,12 @@
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         :root {
             --forest:    #0d3320;
             --green:     #1a6b3c;
@@ -23,18 +29,21 @@
             --text-soft: #6b8f72;
             --border:    #dde8de;
             --wa-green:  #25D366;
+            --shadow-sm: 0 8px 20px rgba(0, 32, 0, 0.04);
+            --shadow-md: 0 12px 28px rgba(0, 20, 0, 0.08);
+            --radius-lg: 28px;
+            --radius-md: 18px;
+            --radius-sm: 12px;
         }
-
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
             font-family: 'DM Sans', sans-serif;
             background: var(--cream);
             color: var(--text-main);
-            padding-bottom: 90px;
+            padding-bottom: 0;
         }
 
-        /* grain overlay */
+        /* subtle grain overlay */
         body::before {
             content: '';
             position: fixed;
@@ -46,407 +55,664 @@
             background-size: 180px;
         }
 
-        /* ── PAGE WRAPPER ── */
-        #productContent {
-            max-width: 620px;
+        /* main container */
+        .product-container {
+            max-width: 640px;
             margin: 0 auto;
             background: var(--warm-white);
             min-height: 100vh;
+            position: relative;
+            border-radius: 0;
+            box-shadow: 0 0 0 1px rgba(0,0,0,0.02);
         }
 
-        /* ── HERO IMAGE ── */
-        .prod-hero {
-            width: 100%;
-            aspect-ratio: 1/1;
-            background: var(--cream-dark);
+        /* image section */
+        .product-media {
             position: relative;
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            background: var(--cream-dark);
+            overflow: hidden;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 4rem;
-            overflow: hidden;
         }
-        .prod-hero img {
-            width: 100%; height: 100%;
+        .product-media img {
+            width: 100%;
+            height: 100%;
             object-fit: cover;
             display: block;
-            position: absolute;
-            inset: 0;
-            z-index: 0;
         }
-        .prod-hero::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(to bottom, rgba(13,51,32,0.08) 0%, rgba(13,51,32,0.35) 100%);
-            pointer-events: none;
-            z-index: 1;
+        .placeholder-icon {
+            font-size: 4rem;
+            color: var(--text-soft);
+            opacity: 0.5;
         }
-
-        /* ── BACK BUTTON ── */
-        .btn-back {
+        .back-button {
             position: absolute;
-            top: 15px;
-            left: 15px;
-            background: rgba(13, 51, 32, 0.65);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            color: #fff;
+            top: 20px;
+            left: 20px;
+            background: rgba(13, 51, 32, 0.7);
+            backdrop-filter: blur(8px);
             padding: 8px 16px;
-            border-radius: 50px;
-            font-weight: 600;
-            font-size: 0.82rem;
+            border-radius: 40px;
+            color: white;
             text-decoration: none;
+            font-size: 0.8rem;
+            font-weight: 600;
             display: flex;
             align-items: center;
             gap: 6px;
-            z-index: 10;
-            border: 1px solid rgba(255,255,255,0.18);
+            border: 1px solid rgba(255,255,255,0.2);
+            transition: all 0.2s;
+            z-index: 2;
+        }
+        .back-button:hover {
+            background: rgba(13, 51, 32, 0.9);
+            color: var(--sage);
+        }
+
+        /* content card */
+        .product-content {
+            background: var(--warm-white);
+            border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+            margin-top: -24px;
+            position: relative;
+            z-index: 2;
+            padding: 1.8rem 1.5rem 1.5rem;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.02);
+        }
+
+        /* badges row */
+        .badge-row {
+            display: flex;
+            gap: 0.6rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+        .badge {
+            padding: 0.3rem 0.9rem;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .badge-category {
+            background: #e4f5e9;
+            color: var(--green);
+        }
+        .badge-outstock {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+        .badge-preorder {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        /* title & price */
+        .product-title {
+            font-family: 'Playfair Display', serif;
+            font-weight: 900;
+            font-size: clamp(1.5rem, 5vw, 2rem);
+            color: var(--forest);
+            line-height: 1.2;
+            margin-bottom: 0.5rem;
+        }
+        .price-row {
+            display: flex;
+            align-items: baseline;
+            gap: 0.5rem;
+            margin-bottom: 1.2rem;
+        }
+        .product-price {
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+            font-size: 1.8rem;
+            color: var(--green);
+        }
+
+        /* attributes chips */
+        .attributes-row {
+            display: flex;
+            gap: 0.6rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.5rem;
+        }
+        .attr-chip {
+            background: var(--cream-dark);
+            border: 1px solid var(--border);
+            padding: 0.4rem 0.9rem;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-mid);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* divider */
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            margin: 1rem 0;
+        }
+        .divider-line {
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+        .divider-icon {
+            width: 28px;
+            height: 28px;
+            background: #e4f5e9;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--green);
+            font-size: 0.7rem;
+        }
+
+        /* description */
+        .section-label {
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: var(--forest);
+            margin-bottom: 0.5rem;
+        }
+        .product-description {
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: var(--text-mid);
+            white-space: pre-line;
+        }
+
+        /* store link */
+        .store-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--cream-dark);
+            border: 1px solid var(--border);
+            border-radius: 60px;
+            padding: 0.5rem 1rem 0.5rem 0.7rem;
+            text-decoration: none;
+            margin-top: 1.5rem;
             transition: background 0.2s;
         }
-        .btn-back:hover { background: rgba(13, 51, 32, 0.85); color: var(--sage); }
-
-        /* ── PULL-UP BODY ── */
-        .prod-body {
-            background: var(--warm-white);
-            border-radius: 22px 22px 0 0;
-            margin-top: -22px;
-            position: relative;
-            z-index: 5;
-            padding: 1.75rem 1.5rem 1.5rem;
-            box-shadow: 0 -6px 24px rgba(13,51,32,0.06);
+        .store-link:hover {
+            background: #e4ede5;
+        }
+        .store-icon {
+            width: 28px;
+            height: 28px;
+            background: linear-gradient(135deg, var(--green), var(--forest));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.7rem;
+        }
+        .store-text {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-mid);
+        }
+        .store-name {
+            font-weight: 700;
+            color: var(--forest);
         }
 
-        /* ── TOP META ROW (Badges) ── */
-        .meta-row {
+        /* action bar */
+        .action-bar {
+            position: sticky;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(250, 247, 240, 0.92);
+            backdrop-filter: blur(12px);
+            border-top: 1px solid var(--border);
+            padding: 0.8rem 1rem;
+            z-index: 100;
+        }
+        .action-bar .container {
+            max-width: 640px;
+            margin: 0 auto;
+        }
+        .btn-order {
+            width: 100%;
+            background: linear-gradient(135deg, var(--green), var(--forest));
+            border: none;
+            padding: 0.9rem;
+            border-radius: 60px;
+            font-weight: 700;
+            font-size: 1rem;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.6rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 12px rgba(13, 51, 32, 0.2);
+        }
+        .btn-order:active {
+            transform: scale(0.98);
+        }
+        .btn-order.disabled {
+            background: var(--border);
+            box-shadow: none;
+            pointer-events: none;
+            color: var(--text-soft);
+        }
+
+        /* loading & error states */
+        .loading-state, .error-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            text-align: center;
+            gap: 1rem;
+            padding: 2rem;
+        }
+        .loader {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border);
+            border-top-color: var(--green);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .error-state h3 {
+            font-family: 'Playfair Display', serif;
+            color: var(--forest);
+        }
+        .hidden {
+            display: none !important;
+        }
+
+        /* modal styling */
+        .modal-content {
+            border: none;
+            border-radius: var(--radius-lg);
+            background: var(--warm-white);
+            overflow: hidden;
+        }
+        .modal-header {
+            background: var(--forest);
+            padding: 1.2rem 1.5rem;
+            border-bottom: none;
+        }
+        .modal-title {
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+            color: white;
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            margin-bottom: 0.85rem;
-            flex-wrap: wrap;
         }
-        .badge-category {
-            background: #dcfce7; color: var(--green); padding: 4px 12px; border-radius: 50px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+        .btn-close-modal {
+            background: rgba(255,255,255,0.15);
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 30px;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        .badge-out-of-stock {
-            background: #fee2e2; color: #dc2626; padding: 4px 12px; border-radius: 50px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+        .modal-body {
+            padding: 1.5rem;
         }
-        .badge-pre-order {
-            background: #fef3c7; color: #d97706; padding: 4px 12px; border-radius: 50px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+        .order-summary {
+            background: var(--cream-dark);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 0.8rem;
+            display: flex;
+            gap: 0.8rem;
+            margin-bottom: 1.2rem;
         }
-        .show-badge { display: inline-flex !important; align-items: center; gap: 4px; }
-
-        /* ── TITLE & PRICE ── */
-        .prod-title {
-            font-family: 'Playfair Display', serif; font-weight: 900; font-size: clamp(1.4rem, 5vw, 1.85rem); color: var(--forest); line-height: 1.15; margin-bottom: 0.6rem;
+        .order-summary-img {
+            width: 50px;
+            height: 50px;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        .price-row {
-            display: flex; align-items: baseline; gap: 0.5rem; margin-bottom: 1rem;
+        .order-summary-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
-        .prod-price {
-            font-family: 'Playfair Display', serif; font-weight: 700; font-size: 2rem; color: var(--green); line-height: 1;
+        .form-control-modern {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--warm-white);
+            transition: 0.2s;
         }
-
-        /* ── ATTRIBUTE CHIPS (Color/Qty) ── */
-        .attributes-row {
-            display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.4rem;
+        .form-control-modern:focus {
+            border-color: var(--green);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(26,107,60,0.1);
         }
-        .attr-chip {
-            background: var(--cream-dark); border: 1px solid var(--border); padding: 6px 12px; border-radius: 8px; font-size: 0.8rem; font-weight: 600; color: var(--text-mid); display: flex; align-items: center; gap: 6px;
+        .btn-wa {
+            width: 100%;
+            background: var(--wa-green);
+            border: none;
+            padding: 0.9rem;
+            border-radius: 60px;
+            font-weight: 700;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.6rem;
         }
-
-        /* ── DIVIDER ── */
-        .fancy-divider {
-            display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.2rem;
-        }
-        .fancy-divider-line { flex: 1; height: 1px; background: var(--border); }
-        .fancy-divider-leaf {
-            width: 22px; height: 22px; background: #dcfce7; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--green); font-size: 0.65rem;
-        }
-
-        /* ── DESCRIPTION ── */
-        .section-label { font-family: 'Playfair Display', serif; font-weight: 700; font-size: 0.95rem; color: var(--forest); margin-bottom: 0.55rem; }
-        .prod-desc { font-size: 0.9rem; color: var(--text-mid); line-height: 1.75; white-space: pre-line; }
-
-        /* ── STORE CHIP ── */
-        .store-chip {
-            display: inline-flex; align-items: center; gap: 0.5rem; background: var(--cream-dark); border: 1px solid var(--border); border-radius: 50px; padding: 6px 14px 6px 8px; text-decoration: none; margin-top: 1.5rem; transition: background 0.2s;
-        }
-        .store-chip:hover { background: #e4ede5; }
-        .store-chip-icon { width: 26px; height: 26px; border-radius: 8px; background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 0.7rem; }
-        .store-chip-text { font-size: 0.78rem; font-weight: 600; color: var(--text-mid); }
-        .store-chip-name { font-weight: 700; color: var(--forest); }
-
-        /* ── STICKY ACTION BAR ── */
-        .action-bar {
-            position: fixed; bottom: 0; left: 0; right: 0; background: rgba(250, 247, 240, 0.92); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); padding: 12px 16px; border-top: 1px solid var(--border); z-index: 100; display: flex; justify-content: center;
-        }
-        .btn-checkout {
-            background: linear-gradient(135deg, #1a6b3c 0%, #0d3320 100%); color: white; width: 100%; max-width: 590px; padding: 15px; border-radius: 14px; font-family: 'DM Sans', sans-serif; font-weight: 700; font-size: 1rem; border: none; box-shadow: 0 6px 20px rgba(13,51,32,0.3); transition: transform 0.15s, box-shadow 0.15s; display: flex; justify-content: center; align-items: center; gap: 8px;
-        }
-        .btn-checkout:hover { box-shadow: 0 8px 26px rgba(13,51,32,0.4); color: #fff; }
-        .btn-disabled { background: var(--border) !important; color: var(--text-soft) !important; pointer-events: none !important; box-shadow: none !important; }
-
-        /* ── OTHER UTILS & MODAL ── */
-        .hidden { display: none !important; }
-        #loadingState, #errorState { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; gap: 1rem; color: var(--text-soft); }
-        .loader-ring { width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: var(--green); border-radius: 50%; animation: spin 0.8s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        /* Modal styling (Truncated for brevity, matches previous exactly) */
-        .modal-content { border: none; border-radius: 22px; background: var(--warm-white); overflow: hidden; }
-        .modal-header { background: var(--forest); padding: 1.25rem 1.5rem; border-bottom: none; }
-        .modal-title { font-family: 'Playfair Display', serif; font-weight: 700; color: #fff; display: flex; gap: 0.5rem; align-items: center; }
-        .btn-close-modal { background: rgba(255,255,255,0.12); border: none; width: 30px; height: 30px; border-radius: 8px; color: #fff; display: flex; align-items: center; justify-content: center; }
-        .modal-body { padding: 1.5rem; }
-        .order-summary-strip { background: var(--cream-dark); border: 1px solid var(--border); border-radius: 12px; padding: 0.85rem 1rem; margin-bottom: 1.25rem; display: flex; gap: 0.75rem; align-items: center; }
-        .order-summary-img { width: 42px; height: 42px; border-radius: 10px; background: var(--border); overflow: hidden; display: flex; align-items: center; justify-content: center; }
-        .order-summary-img img { width: 100%; height: 100%; object-fit: cover; }
-        .form-control-mv { width: 100%; padding: 0.78rem 1rem; border: 1.5px solid var(--border); border-radius: 10px; background: var(--warm-white); outline: none; }
-        .form-control-mv:focus { border-color: var(--green); background: #fff; }
-        .btn-wa { width: 100%; padding: 14px; border-radius: 12px; border: none; background: var(--wa-green); color: #fff; font-weight: 700; display: flex; justify-content: center; align-items: center; gap: 8px; }
     </style>
 </head>
 <body>
 
-    <div id="loadingState" class="container"><div class="loader-ring"></div></div>
-    <div id="errorState" class="container hidden">
-        <div style="font-size:3rem; margin-bottom:1rem;">🛍️</div>
-        <h3 style="font-family: 'Playfair Display', serif; color: var(--forest);">Not Found</h3>
-        <p id="errorText">This product could not be found.</p>
-        <a href="/" id="errorBackBtn" class="btn btn-outline-success rounded-pill mt-2">Back to Store</a>
+<div id="loadingState" class="loading-state">
+    <div class="loader"></div>
+    <span>Loading product details...</span>
+</div>
+
+<div id="errorState" class="error-state hidden">
+    <i class="bi bi-shop" style="font-size: 3rem; color: var(--text-soft);"></i>
+    <h3>Something went wrong</h3>
+    <p id="errorText">Product not found.</p>
+    <a href="/" id="errorBackBtn" class="btn btn-outline-success rounded-pill">Back to store</a>
+</div>
+
+<div id="productContainer" class="product-container hidden">
+    <div class="product-media">
+        <img id="prodImage" src="" alt="Product image" class="hidden">
+        <div id="placeholderIcon" class="placeholder-icon hidden">📦</div>
+        <a href="#" id="backButton" class="back-button"><i class="bi bi-arrow-left"></i> Store</a>
     </div>
 
-    <div id="productContent" class="hidden">
-        <div class="prod-hero" id="imgContainer">
-            <img id="prodImage" src="" alt="Product" class="hidden">
-            <div id="noImgPlaceholder" style="font-size:4rem; position:relative; z-index:2;" class="hidden">📦</div>
-            <a href="#" id="backBtn" class="btn-back"><i class="bi bi-arrow-left"></i> Store</a>
+    <div class="product-content">
+        <div class="badge-row" id="badgeRow"></div>
+
+        <h1 class="product-title" id="prodTitle">Product Name</h1>
+
+        <div class="price-row">
+            <span class="product-price" id="prodPrice">₦0</span>
         </div>
 
-        <div class="prod-body">
-            <div class="meta-row">
-                <span id="prodCategory" class="badge-category hidden"></span>
-                <span id="stockBadge" class="badge-out-of-stock hidden"><i class="bi bi-x-circle"></i> Out of Stock</span>
-                <span id="preOrderBadge" class="badge-pre-order hidden"><i class="bi bi-clock-history"></i> Pre-Order</span>
-            </div>
+        <div class="attributes-row" id="attributesRow"></div>
 
-            <h1 class="prod-title" id="prodTitle">Product Name</h1>
-
-            <div class="price-row">
-                <span class="prod-price" id="prodPrice">₦0</span>
-            </div>
-
-            <div class="attributes-row" id="attributesContainer" class="hidden">
-                <div id="colorChip" class="attr-chip hidden">
-                    <i class="bi bi-palette text-muted"></i> <span id="prodColors"></span>
-                </div>
-                <div id="qtyChip" class="attr-chip hidden">
-                    <i class="bi bi-box-seam text-muted"></i> <span id="prodQty"></span>
-                </div>
-            </div>
-
-            <div class="fancy-divider"><div class="fancy-divider-line"></div><div class="fancy-divider-leaf"><i class="bi bi-leaf-fill"></i></div><div class="fancy-divider-line"></div></div>
-
-            <div class="section-label">About this product</div>
-            <p class="prod-desc" id="prodDesc">No description provided.</p>
-
-            <a href="#" id="navStoreLink" class="store-chip text-decoration-none">
-                <div class="store-chip-icon"><i class="bi bi-shop"></i></div>
-                <div class="store-chip-text">Sold by <span class="store-chip-name" id="navStoreName">Store</span></div>
-            </a>
+        <div class="divider">
+            <div class="divider-line"></div>
+            <div class="divider-icon"><i class="bi bi-leaf-fill"></i></div>
+            <div class="divider-line"></div>
         </div>
 
-        <div class="action-bar">
-            <button id="checkoutBtn" class="btn-checkout" data-bs-toggle="modal" data-bs-target="#checkoutModal">
+        <div class="section-label">About this product</div>
+        <p class="product-description" id="prodDesc">No description provided.</p>
+
+        <a href="#" id="storeLink" class="store-link">
+            <div class="store-icon"><i class="bi bi-shop"></i></div>
+            <div class="store-text">Sold by <span class="store-name" id="storeName">Store</span></div>
+        </a>
+    </div>
+
+    <div class="action-bar">
+        <div class="container px-0">
+            <button id="orderButton" class="btn-order" data-bs-toggle="modal" data-bs-target="#orderModal">
                 <i class="bi bi-cart-plus"></i> Proceed to Order
             </button>
         </div>
     </div>
+</div>
 
-    <div class="modal fade" id="checkoutModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered" style="max-width:480px; padding: 0 12px;">
-            <div class="modal-content">
-                <div class="modal-header d-flex justify-content-between align-items-center">
-                    <div class="modal-title"><div style="background:rgba(255,255,255,0.2); padding:4px 8px; border-radius:6px; margin-right:8px;"><i class="bi bi-cart-check"></i></div> Order Details</div>
-                    <button type="button" class="btn-close-modal" data-bs-dismiss="modal"><i class="bi bi-x"></i></button>
+<!-- Order Modal -->
+<div class="modal fade" id="orderModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 480px;">
+        <div class="modal-content">
+            <div class="modal-header d-flex justify-content-between">
+                <div class="modal-title">
+                    <i class="bi bi-cart-check"></i> Order Details
                 </div>
-                <div class="modal-body">
-                    <div class="order-summary-strip">
-                        <div class="order-summary-img" id="modalProductImg">📦</div>
-                        <div style="flex:1;">
-                            <div style="font-weight:600; font-size:0.85rem; color:var(--text-main);" id="modalProductName">—</div>
-                            <div style="font-family:'Playfair Display', serif; font-weight:700; color:var(--green);" id="modalProductPrice">₦0</div>
+                <button type="button" class="btn-close-modal" data-bs-dismiss="modal"><i class="bi bi-x-lg"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="order-summary">
+                    <div class="order-summary-img" id="modalImgPlaceholder">📦</div>
+                    <div>
+                        <div style="font-weight: 600;" id="modalProdName">—</div>
+                        <div style="font-weight: 700; color: var(--green);" id="modalProdPrice">₦0</div>
+                    </div>
+                </div>
+
+                <form onsubmit="window.sendOrderWhatsApp(event)">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-uppercase text-muted">Your name</label>
+                        <input type="text" id="buyerName" class="form-control-modern" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-uppercase text-muted">Phone number</label>
+                        <input type="tel" id="buyerPhone" class="form-control-modern" required>
+                    </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label class="form-label small fw-bold text-uppercase text-muted">Quantity</label>
+                            <input type="number" id="buyerQty" class="form-control-modern" value="1" min="1" required>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small fw-bold text-uppercase text-muted">Total</label>
+                            <div id="totalDisplay" class="form-control-modern" style="background: #e4f5e9; border-color: #c8e6d9;">₦0</div>
                         </div>
                     </div>
-
-                    <form onsubmit="window.sendToWhatsApp(event)">
-                        <div class="mb-3">
-                            <label style="font-size:0.75rem; font-weight:700; color:var(--text-soft); text-transform:uppercase;">Your Name</label>
-                            <input type="text" id="buyerName" class="form-control-mv" required>
-                        </div>
-                        <div class="mb-3">
-                            <label style="font-size:0.75rem; font-weight:700; color:var(--text-soft); text-transform:uppercase;">Phone Number</label>
-                            <input type="tel" id="buyerPhone" class="form-control-mv" required>
-                        </div>
-                        <div class="row g-2 mb-3">
-                            <div class="col-6">
-                                <label style="font-size:0.75rem; font-weight:700; color:var(--text-soft); text-transform:uppercase;">Quantity</label>
-                                <input type="number" id="buyerQty" class="form-control-mv" value="1" min="1" required>
-                            </div>
-                            <div class="col-6">
-                                <label style="font-size:0.75rem; font-weight:700; color:var(--text-soft); text-transform:uppercase;">Total</label>
-                                <div id="displayTotal" style="padding:0.78rem 1rem; border-radius:10px; background:#f0fdf4; border:1px solid #dcfce7; font-weight:700; color:var(--green);">₦0</div>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label style="font-size:0.75rem; font-weight:700; color:var(--text-soft); text-transform:uppercase;">Delivery Address</label>
-                            <textarea id="buyerAddress" class="form-control-mv" rows="2" required></textarea>
-                        </div>
-                        <div class="mb-4">
-                            <label style="font-size:0.75rem; font-weight:700; color:var(--text-soft); text-transform:uppercase;">Notes (Optional)</label>
-                            <input type="text" id="buyerNotes" class="form-control-mv" placeholder="Size, Color, etc.">
-                        </div>
-                        <button type="submit" class="btn-wa"><i class="bi bi-whatsapp"></i> Send Order via WhatsApp</button>
-                    </form>
-                </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-uppercase text-muted">Delivery address</label>
+                        <textarea id="buyerAddress" class="form-control-modern" rows="2" required></textarea>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label small fw-bold text-uppercase text-muted">Notes (optional)</label>
+                        <input type="text" id="buyerNotes" class="form-control-modern" placeholder="Size, color, etc.">
+                    </div>
+                    <button type="submit" class="btn-wa"><i class="bi bi-whatsapp"></i> Send via WhatsApp</button>
+                </form>
             </div>
         </div>
     </div>
+</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script type="module">
-        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
-        const SUPABASE_URL = 'https://sotdghhayztnpwnrzjzu.supabase.co';
-        const SUPABASE_ANON_KEY = 'sb_publishable_OcOKwSDnoCGm_rt725Bi-g_rV6tjGlK';
-        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const SUPABASE_URL = 'https://sotdghhayztnpwnrzjzu.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_OcOKwSDnoCGm_rt725Bi-g_rV6tjGlK';
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        window.currentVendor = null;
-        window.currentProduct = null;
+    let currentVendor = null;
+    let currentProduct = null;
 
-        function showError(msg, vendorSlug = null) {
-            document.getElementById('loadingState').classList.add('hidden');
-            document.getElementById('productContent').classList.add('hidden');
-            document.getElementById('errorState').classList.remove('hidden');
-            if(msg) document.getElementById('errorText').innerText = msg;
-            if(vendorSlug) document.getElementById('errorBackBtn').href = `/${vendorSlug}`;
+    function showError(message, vendorSlug = null) {
+        document.getElementById('loadingState').classList.add('hidden');
+        document.getElementById('productContainer').classList.add('hidden');
+        document.getElementById('errorState').classList.remove('hidden');
+        document.getElementById('errorText').innerText = message;
+        if (vendorSlug) {
+            document.getElementById('errorBackBtn').href = `/${vendorSlug}`;
+        }
+    }
+
+    async function loadProduct() {
+        const params = new URLSearchParams(window.location.search);
+        const vendorSlug = params.get('vendor');
+        const productId = params.get('id');
+
+        if (!vendorSlug || !productId) {
+            showError('Invalid product link.');
+            return;
         }
 
-        async function initProductPage() {
-            const params = new URLSearchParams(window.location.search);
-            const vendorSlug = params.get('vendor');
-            const productId = params.get('id');
+        // Fetch vendor
+        const { data: vendor, error: vendorErr } = await supabase
+            .from('vendor_profiles')
+            .select('*')
+            .eq('slug', vendorSlug)
+            .single();
 
-            if (!vendorSlug || !productId) { showError("Invalid link."); return; }
+        if (vendorErr || !vendor) {
+            showError('Store not found.', vendorSlug);
+            return;
+        }
+        currentVendor = vendor;
 
-            const { data: vendor, error: vError } = await supabase.from('vendor_profiles').select('*').eq('slug', vendorSlug).single();
-            if (vError || !vendor) { showError("Store not found."); return; }
-            window.currentVendor = vendor;
+        // Fetch product
+        const { data: product, error: prodErr } = await supabase
+            .from('products')
+            .select('*')
+            .eq('id', productId)
+            .single();
 
-            const { data: product, error: pError } = await supabase.from('products').select('*').eq('id', productId).single();
-            if (pError || !product) { showError("Product not available.", vendorSlug); return; }
-            window.currentProduct = product;
+        if (prodErr || !product) {
+            showError('Product not available.', vendorSlug);
+            return;
+        }
+        currentProduct = product;
 
-            document.title = `${product.title} - ${vendor.business_name}`;
+        // Update page title
+        document.title = `${product.title} - ${vendor.business_name}`;
 
-            document.getElementById('navStoreLink').href = `/${vendor.slug}`;
-            document.getElementById('navStoreName').innerText = vendor.business_name;
-            document.getElementById('backBtn').href = `/${vendor.slug}`;
+        // Back button and store link
+        document.getElementById('backButton').href = `/${vendorSlug}`;
+        document.getElementById('storeLink').href = `/${vendorSlug}`;
+        document.getElementById('storeName').innerText = vendor.business_name;
 
-            document.getElementById('prodTitle').innerText = product.title;
-            document.getElementById('prodPrice').innerText = `₦${parseFloat(product.price).toLocaleString()}`;
-            document.getElementById('prodDesc').innerText = product.description || "No description provided.";
+        // Product details
+        document.getElementById('prodTitle').innerText = product.title;
+        document.getElementById('prodPrice').innerText = `₦${parseFloat(product.price).toLocaleString()}`;
+        document.getElementById('prodDesc').innerText = product.description || 'No description provided.';
 
-            // 🌟 UPDATED: Handle Badges (Category & Status)
-            if (product.category && product.category !== 'Other') {
-                const catEl = document.getElementById('prodCategory');
-                catEl.innerText = product.category;
-                catEl.classList.remove('hidden');
-            }
+        // Badges
+        const badgeRow = document.getElementById('badgeRow');
+        badgeRow.innerHTML = '';
 
-            if (product.status === 'pre_order') {
-                document.getElementById('preOrderBadge').classList.add('show-badge');
-                document.getElementById('preOrderBadge').classList.remove('hidden');
-            } else if (product.status === 'out_of_stock' || !product.in_stock) {
-                document.getElementById('stockBadge').classList.add('show-badge');
-                document.getElementById('stockBadge').classList.remove('hidden');
-                
-                const btn = document.getElementById('checkoutBtn');
-                btn.disabled = true;
-                btn.innerHTML = '<i class="bi bi-x-circle"></i> Out of Stock';
-                btn.classList.add('btn-disabled');
-            }
-
-            // 🌟 NEW: Handle Attributes (Colors & Quantity)
-            let showAttributes = false;
-            if (product.colors && product.colors.trim() !== '') {
-                document.getElementById('prodColors').innerText = product.colors;
-                document.getElementById('colorChip').classList.remove('hidden');
-                showAttributes = true;
-            }
-            if (product.quantity !== null && product.quantity !== undefined) {
-                document.getElementById('prodQty').innerText = `${product.quantity} left`;
-                document.getElementById('qtyChip').classList.remove('hidden');
-                showAttributes = true;
-            }
-            if (showAttributes) {
-                document.getElementById('attributesContainer').classList.remove('hidden');
-            }
-
-            if (product.image_url) {
-                const imgEl = document.getElementById('prodImage');
-                imgEl.src = product.image_url;
-                imgEl.classList.remove('hidden');
-                document.getElementById('modalProductImg').innerHTML = `<img src="${product.image_url}" alt="${product.title}">`;
-            } else {
-                document.getElementById('noImgPlaceholder').classList.remove('hidden');
-            }
-
-            document.getElementById('modalProductName').innerText = product.title;
-            document.getElementById('modalProductPrice').innerText = `₦${parseFloat(product.price).toLocaleString()}`;
-
-            document.getElementById('loadingState').classList.add('hidden');
-            document.getElementById('productContent').classList.remove('hidden');
-
-            document.getElementById('buyerQty').addEventListener('input', updateTotal);
-            updateTotal();
-
-            supabase.from('analytics_events').insert([{ vendor_id: vendor.id, product_id: product.id, event_type: 'product_view' }]).then();
+        if (product.category && product.category !== 'Other') {
+            badgeRow.innerHTML += `<span class="badge badge-category"><i class="bi bi-tag"></i> ${product.category}</span>`;
         }
 
-        function updateTotal() {
-            const qty = parseInt(document.getElementById('buyerQty').value) || 1;
-            const total = parseFloat(window.currentProduct?.price || 0) * qty;
-            document.getElementById('displayTotal').innerText = `₦${total.toLocaleString()}`;
+        if (product.status === 'out_of_stock' || (product.in_stock === false)) {
+            badgeRow.innerHTML += `<span class="badge badge-outstock"><i class="bi bi-x-circle"></i> Out of Stock</span>`;
+            const orderBtn = document.getElementById('orderButton');
+            orderBtn.disabled = true;
+            orderBtn.innerHTML = '<i class="bi bi-x-circle"></i> Out of Stock';
+            orderBtn.classList.add('disabled');
+        } else if (product.status === 'pre_order') {
+            badgeRow.innerHTML += `<span class="badge badge-preorder"><i class="bi bi-clock-history"></i> Pre-order</span>`;
         }
 
-        window.sendToWhatsApp = function(e) {
-            e.preventDefault();
-            const name = document.getElementById('buyerName').value;
-            const phone = document.getElementById('buyerPhone').value;
-            const qty = document.getElementById('buyerQty').value;
-            const address = document.getElementById('buyerAddress').value;
-            const notes = document.getElementById('buyerNotes').value;
-            const total = parseFloat(window.currentProduct.price) * parseInt(qty);
+        // Attributes (colors, quantity)
+        const attrRow = document.getElementById('attributesRow');
+        attrRow.innerHTML = '';
+        if (product.colors && product.colors.trim() !== '') {
+            attrRow.innerHTML += `<div class="attr-chip"><i class="bi bi-palette"></i> ${product.colors}</div>`;
+        }
+        if (product.quantity !== null && product.quantity !== undefined) {
+            attrRow.innerHTML += `<div class="attr-chip"><i class="bi bi-box-seam"></i> ${product.quantity} left</div>`;
+        }
 
-            let msg = `Hello *${window.currentVendor.business_name}*, I'd like to place an order!\n\n`;
-            msg += `🛒 *Item:* ${window.currentProduct.title}\n`;
-            msg += `🔢 *Quantity:* ${qty}\n`;
-            msg += `💰 *Total:* ₦${total.toLocaleString()}\n`;
-            msg += `\n*── DETAILS ──*\n`;
-            msg += `👤 *Name:* ${name}\n📞 *Phone:* ${phone}\n📍 *Address:* ${address}\n`;
-            if (notes) msg += `📝 *Notes:* ${notes}\n`;
-            msg += `\n🔗 *Link:* ${window.location.href}`;
+        // Image
+        const imgEl = document.getElementById('prodImage');
+        const placeholderIcon = document.getElementById('placeholderIcon');
+        if (product.image_url) {
+            imgEl.src = product.image_url;
+            imgEl.classList.remove('hidden');
+            placeholderIcon.classList.add('hidden');
+            document.getElementById('modalImgPlaceholder').innerHTML = `<img src="${product.image_url}" alt="${product.title}">`;
+        } else {
+            imgEl.classList.add('hidden');
+            placeholderIcon.classList.remove('hidden');
+        }
 
-            supabase.from('analytics_events').insert([{ vendor_id: window.currentVendor.id, product_id: window.currentProduct.id, event_type: 'whatsapp_click' }]).then();
+        // Modal product details
+        document.getElementById('modalProdName').innerText = product.title;
+        document.getElementById('modalProdPrice').innerText = `₦${parseFloat(product.price).toLocaleString()}`;
 
-            const vendorPhone = window.currentVendor.whatsapp_number || window.currentVendor.phone || '';
-            window.open(`https://wa.me/${vendorPhone}?text=${encodeURIComponent(msg)}`, '_blank');
-            bootstrap.Modal.getInstance(document.getElementById('checkoutModal'))?.hide();
+        // Update total on quantity change
+        const qtyInput = document.getElementById('buyerQty');
+        const totalDisplay = document.getElementById('totalDisplay');
+        const updateTotal = () => {
+            const qty = parseInt(qtyInput.value) || 1;
+            const total = currentProduct.price * qty;
+            totalDisplay.innerText = `₦${total.toLocaleString()}`;
         };
+        qtyInput.addEventListener('input', updateTotal);
+        updateTotal();
 
-        initProductPage();
-    </script>
+        // Hide loading, show content
+        document.getElementById('loadingState').classList.add('hidden');
+        document.getElementById('productContainer').classList.remove('hidden');
+
+        // Track product view
+        supabase.from('analytics_events').insert([{
+            vendor_id: vendor.id,
+            product_id: product.id,
+            event_type: 'product_view'
+        }]).then();
+    }
+
+    // WhatsApp order handler
+    window.sendOrderWhatsApp = function(e) {
+        e.preventDefault();
+        const name = document.getElementById('buyerName').value;
+        const phone = document.getElementById('buyerPhone').value;
+        const qty = parseInt(document.getElementById('buyerQty').value);
+        const address = document.getElementById('buyerAddress').value;
+        const notes = document.getElementById('buyerNotes').value;
+        const total = currentProduct.price * qty;
+
+        const message = `Hello *${currentVendor.business_name}*, I'd like to place an order!
+
+🛒 *Item:* ${currentProduct.title}
+🔢 *Quantity:* ${qty}
+💰 *Total:* ₦${total.toLocaleString()}
+
+*── DETAILS ──*
+👤 *Name:* ${name}
+📞 *Phone:* ${phone}
+📍 *Address:* ${address}
+${notes ? `📝 *Notes:* ${notes}\n` : ''}
+🔗 *Link:* ${window.location.href}`;
+
+        const vendorWhatsApp = currentVendor.whatsapp_number || currentVendor.phone || '';
+        window.open(`https://wa.me/${vendorWhatsApp}?text=${encodeURIComponent(message)}`, '_blank');
+
+        // Track WhatsApp click
+        supabase.from('analytics_events').insert([{
+            vendor_id: currentVendor.id,
+            product_id: currentProduct.id,
+            event_type: 'whatsapp_click'
+        }]).then();
+
+        // Close modal
+        bootstrap.Modal.getInstance(document.getElementById('orderModal')).hide();
+    };
+
+    loadProduct();
+</script>
 </body>
 </html>
