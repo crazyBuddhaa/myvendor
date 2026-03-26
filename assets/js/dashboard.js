@@ -162,6 +162,7 @@ window.loadHomeDashboard = async function() {
 };
 
 // ─── 4. PRODUCT & INVENTORY LOGIC ─────────────────────────────────
+
 window.loadProducts = async function() {
     const list = document.getElementById('productGrid');
     if (!list) return;
@@ -230,12 +231,13 @@ window.loadProducts = async function() {
     }).join('');
 };
 
+// ─── ADD PRODUCT ───
 window.saveProduct = async function(e) {
     e.preventDefault();
     const btn = document.getElementById('btnSave') || document.getElementById('saveBtn');
     if(btn) btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving...';
 
-    // 🌟 PREMIUM LOCK: Check Free Tier Limits before creating a NEW product
+    // Premium Check
     const { count } = await supabase.from('products').select('*', { count: 'exact', head: true }).eq('vendor_id', currentUser.id);
     if (currentUser.tier !== 'premium' && count >= FREE_PRODUCT_LIMIT) {
         if(btn) btn.innerHTML = 'Save Product';
@@ -243,69 +245,30 @@ window.saveProduct = async function(e) {
         return;
     }
 
-    // 🌟 1. UPLOAD PRIMARY IMAGE TO CLOUDINARY
-    let finalImageUrl = null;
-    const fileInput = document.getElementById('fileInput');
-    
-    if (fileInput && fileInput.files.length > 0) {
-        if(btn) btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Uploading Image...';
-        const file = fileInput.files[0];
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('upload_preset', 'ml_default'); 
-        
-        try {
-            const res = await fetch('https://api.cloudinary.com/v1_1/dws2n3pza/image/upload', {
-                method: 'POST', body: formData
-            });
-            const data = await res.json();
-            if (data.secure_url) finalImageUrl = data.secure_url;
-        } catch (err) {
-            console.error("Primary upload failed", err);
-            alert("Image upload failed, saving without image.");
-        }
-    }
+    // Read URLs directly from the hidden inputs the Cloudinary Widget populated!
+    const imgInput = document.getElementById('imageUrl');
+    const finalImageUrl = (imgInput && imgInput.value !== '') ? imgInput.value : null;
 
-    // 🌟 2. UPLOAD EXTRA IMAGES TO CLOUDINARY (Premium)
-    let uploadedExtraImages = [];
-    const extraFilesInput = document.getElementById('extraFilesInput');
-    
-    if (extraFilesInput && extraFilesInput.files.length > 0) {
-        if(btn) btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Uploading Gallery...';
-        
-        const uploadPromises = Array.from(extraFilesInput.files).map(file => {
-            const formData = new FormData();
-            formData.append('file', file);
-            formData.append('upload_preset', 'ml_default'); 
-            
-            return fetch('https://api.cloudinary.com/v1_1/dws2n3pza/image/upload', {
-                method: 'POST', body: formData
-            })
-            .then(res => res.json())
-            .then(data => data.secure_url);
-        });
-
+    const extraInput = document.getElementById('extraImagesData');
+    let extraImagesArr = [];
+    if (extraInput && extraInput.value) {
         try {
-            uploadedExtraImages = await Promise.all(uploadPromises);
+            extraImagesArr = JSON.parse(extraInput.value);
         } catch (err) {
-            console.error("Gallery upload failed", err);
-            alert("Some gallery images failed to upload.");
+            extraImagesArr = [];
         }
     }
 
     const statusVal = document.getElementById('prodStatus') ? document.getElementById('prodStatus').value : 'active';
     const qtyVal = document.getElementById('prodQty') ? document.getElementById('prodQty').value : '';
 
-    // 3. SAVE EVERYTHING TO SUPABASE
-    if(btn) btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Finalizing...';
-    
     const productData = {
         vendor_id: currentUser.id,
         title: document.getElementById('prodTitle').value,
         price: document.getElementById('prodPrice').value,
         description: document.getElementById('prodDesc').value,
-        image_url: finalImageUrl, 
-        extra_images: uploadedExtraImages, 
+        image_url: finalImageUrl, // The Cloudinary URL
+        extra_images: extraImagesArr, // Array of premium gallery URLs
         category: document.getElementById('prodCategory') ? document.getElementById('prodCategory').value : 'Other',
         colors: document.getElementById('prodColors') ? document.getElementById('prodColors').value : null,
         sizes: document.getElementById('prodSizes') ? document.getElementById('prodSizes').value : null,
@@ -328,7 +291,14 @@ window.saveProduct = async function(e) {
     }
 };
 
+// ─── EDIT PRODUCT ───
 window.loadEditProduct = async function(id) {
+    const header = document.getElementById('pageHeader');
+    const saveBtn = document.getElementById('btnSave') || document.getElementById('btnUpdate');
+    
+    if (header) header.innerHTML = 'Edit Product <i class="bi bi-pencil-square text-success"></i>';
+    if (saveBtn) saveBtn.innerHTML = '<i class="bi bi-check-lg"></i> Update Product';
+
     const { data: p, error } = await supabase.from('products').select('*').eq('id', id).single();
     if (error || !p) {
         alert("Product not found.");
@@ -336,48 +306,57 @@ window.loadEditProduct = async function(id) {
         return;
     }
 
-    if(document.getElementById('editProdTitle')) document.getElementById('editProdTitle').value = p.title || '';
-    if(document.getElementById('editProdPrice')) document.getElementById('editProdPrice').value = p.price || '';
-    if(document.getElementById('editProdDesc')) document.getElementById('editProdDesc').value = p.description || '';
-    if(document.getElementById('editProdCategory')) document.getElementById('editProdCategory').value = p.category || 'Other';
-    if(document.getElementById('editProdStatus')) document.getElementById('editProdStatus').value = p.status || 'in_stock';
-    if(document.getElementById('editProdQty')) document.getElementById('editProdQty').value = p.quantity !== null ? p.quantity : '';
-    if(document.getElementById('editProdColors')) document.getElementById('editProdColors').value = p.colors || '';
-    if(document.getElementById('editProdSizes')) document.getElementById('editProdSizes').value = p.sizes || '';
-    if(document.getElementById('editProdMaterial')) document.getElementById('editProdMaterial').value = p.material || '';
-    if(document.getElementById('editProdWeight')) document.getElementById('editProdWeight').value = p.weight || '';
-    if(document.getElementById('editProdDimensions')) document.getElementById('editProdDimensions').value = p.dimensions || '';
-    if(document.getElementById('editProdTags')) document.getElementById('editProdTags').value = p.tags || '';
+    // Populate text inputs (Checking both add/edit ID patterns just in case)
+    const setVal = (id1, id2, val) => {
+        if(document.getElementById(id1)) document.getElementById(id1).value = val || '';
+        else if(document.getElementById(id2)) document.getElementById(id2).value = val || '';
+    };
 
-    // Load Primary Image
+    setVal('editProdTitle', 'prodTitle', p.title);
+    setVal('editProdPrice', 'prodPrice', p.price);
+    setVal('editProdDesc', 'prodDesc', p.description);
+    setVal('editProdCategory', 'prodCategory', p.category || 'Other');
+    setVal('editProdStatus', 'prodStatus', p.status || 'in_stock');
+    setVal('editProdQty', 'prodQty', p.quantity !== null ? p.quantity : '');
+    setVal('editProdColors', 'prodColors', p.colors);
+    setVal('editProdSizes', 'prodSizes', p.sizes);
+    setVal('editProdMaterial', 'prodMaterial', p.material);
+    setVal('editProdWeight', 'prodWeight', p.weight);
+    setVal('editProdDimensions', 'prodDimensions', p.dimensions);
+    setVal('editProdTags', 'prodTags', p.tags);
+
+    // Populate existing primary image into the hidden input so it doesn't get lost on update
     if (p.image_url) {
-        const preview = document.getElementById('editImagePreview');
+        if(document.getElementById('imageUrl')) document.getElementById('imageUrl').value = p.image_url;
+        
+        const preview = document.getElementById('imagePreview') || document.getElementById('editImagePreview');
         const wrapper = document.getElementById('imagePreviewWrapper');
-        const removeBtn = document.getElementById('editRemoveImgBtn');
+        const removeBtn = document.getElementById('removeImgBtn') || document.getElementById('editRemoveImgBtn');
+        
         if (preview && wrapper) {
             preview.src = p.image_url;
             preview.style.display = 'block';
             wrapper.style.display = 'block';
             if (removeBtn) removeBtn.classList.remove('hidden');
-            preview.setAttribute('data-original-url', p.image_url);
         }
     }
 
-    // 🌟 Load Extra Images Gallery
+    // Populate existing gallery images into the hidden input
     if (p.extra_images && p.extra_images.length > 0) {
+        if(document.getElementById('extraImagesData')) document.getElementById('extraImagesData').value = JSON.stringify(p.extra_images);
+        
+        // This array keeps track of current images so new ones can be appended via the widget
+        window.uploadedGalleryImages = [...p.extra_images]; 
+        
         const container = document.getElementById('extraImagesContainer');
         if (container) {
-            container.setAttribute('data-existing-images', JSON.stringify(p.extra_images));
-            
             p.extra_images.forEach(url => {
                 const imgBox = document.createElement('div');
-                imgBox.style.width = '75px'; imgBox.style.height = '75px';
-                imgBox.style.borderRadius = 'var(--radius-sm)'; imgBox.style.overflow = 'hidden';
-                imgBox.style.border = '1px solid var(--border-light)';
+                imgBox.style.cssText = "width:75px; height:75px; border-radius:12px; overflow:hidden; border:1px solid #e9eee5;";
                 
                 const img = document.createElement('img');
                 img.src = url;
-                img.style.width = '100%'; img.style.height = '100%'; img.style.objectFit = 'cover';
+                img.style.cssText = "width:100%; height:100%; object-fit:cover;";
                 
                 imgBox.appendChild(img);
                 container.insertBefore(imgBox, container.lastElementChild);
@@ -385,13 +364,16 @@ window.loadEditProduct = async function(id) {
         }
     }
 
-    document.getElementById('loadingState').classList.add('hidden');
-    document.getElementById('editProductForm').classList.remove('hidden');
+    const loader = document.getElementById('loadingState');
+    const form = document.getElementById('editProductForm') || document.getElementById('addProductForm');
+    
+    if (loader) loader.classList.add('hidden');
+    if (form) form.classList.remove('hidden');
 };
 
 window.updateProduct = async function(e) {
     e.preventDefault();
-    const btn = document.getElementById('btnUpdate');
+    const btn = document.getElementById('btnSave') || document.getElementById('btnUpdate');
     const originalText = btn.innerHTML;
     btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Updating...';
     btn.disabled = true;
@@ -399,84 +381,45 @@ window.updateProduct = async function(e) {
     const urlParams = new URLSearchParams(window.location.search);
     const productId = urlParams.get('id');
 
-    // Handle Primary Image
-    const preview = document.getElementById('editImagePreview');
-    const wrapper = document.getElementById('imagePreviewWrapper');
-    const fileInput = document.getElementById('editFileInput');
-    let finalImageUrl = preview.getAttribute('data-original-url') || null;
+    // Read URLs directly from hidden inputs
+    const imgInput = document.getElementById('imageUrl');
+    const finalImageUrl = (imgInput && imgInput.value !== '') ? imgInput.value : null;
 
-    if (wrapper.style.display === 'none') finalImageUrl = null;
-
-    if (fileInput && fileInput.files.length > 0) {
-        const file = fileInput.files[0];
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('upload_preset', 'ml_default'); 
-        
+    const extraInput = document.getElementById('extraImagesData');
+    let extraImagesArr = [];
+    if (extraInput && extraInput.value) {
         try {
-            const res = await fetch('https://api.cloudinary.com/v1_1/dws2n3pza/image/upload', {
-                method: 'POST', body: formData
-            });
-            const data = await res.json();
-            if (data.secure_url) finalImageUrl = data.secure_url;
-        } catch (err) {
-            console.error("Primary upload failed", err);
+            extraImagesArr = JSON.parse(extraInput.value);
+        } catch(err) {
+            extraImagesArr = [];
         }
     }
 
-    // 🌟 Handle Extra Images (Merge existing + new)
-    let finalExtraImages = [];
-    const container = document.getElementById('extraImagesContainer');
-    if (container) {
-        const existing = JSON.parse(container.getAttribute('data-existing-images') || '[]');
-        finalExtraImages = [...existing];
-    }
+    const getVal = (id1, id2) => {
+        const el1 = document.getElementById(id1);
+        const el2 = document.getElementById(id2);
+        return el1 ? el1.value : (el2 ? el2.value : null);
+    };
 
-    const extraFilesInput = document.getElementById('extraFilesInput');
-    if (extraFilesInput && extraFilesInput.files.length > 0) {
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Updating Gallery...';
-        
-        const uploadPromises = Array.from(extraFilesInput.files).map(file => {
-            const formData = new FormData();
-            formData.append('file', file);
-            formData.append('upload_preset', 'ml_default');
-            
-            return fetch('https://api.cloudinary.com/v1_1/dws2n3pza/image/upload', {
-                method: 'POST', body: formData
-            })
-            .then(res => res.json())
-            .then(data => data.secure_url);
-        });
-
-        try {
-            const newUploadedImages = await Promise.all(uploadPromises);
-            finalExtraImages = [...finalExtraImages, ...newUploadedImages];
-        } catch (err) {
-            console.error("Gallery upload failed", err);
-        }
-    }
-
-    const statusVal = document.getElementById('editProdStatus').value;
-    const qtyVal = document.getElementById('editProdQty').value;
-
-    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Finalizing...';
+    const statusVal = getVal('editProdStatus', 'prodStatus') || 'active';
+    const qtyVal = getVal('editProdQty', 'prodQty') || '';
 
     const productData = {
-        title: document.getElementById('editProdTitle').value,
-        price: document.getElementById('editProdPrice').value,
-        category: document.getElementById('editProdCategory').value,
+        title: getVal('editProdTitle', 'prodTitle'),
+        price: getVal('editProdPrice', 'prodPrice'),
+        description: getVal('editProdDesc', 'prodDesc'),
+        image_url: finalImageUrl, // Saving Cloudinary URL
+        extra_images: extraImagesArr,
+        category: getVal('editProdCategory', 'prodCategory') || 'Other',
+        colors: getVal('editProdColors', 'prodColors'),
+        sizes: getVal('editProdSizes', 'prodSizes'),
+        material: getVal('editProdMaterial', 'prodMaterial'),
+        weight: getVal('editProdWeight', 'prodWeight'),
+        dimensions: getVal('editProdDimensions', 'prodDimensions'),
+        tags: getVal('editProdTags', 'prodTags'),
         status: statusVal,
         quantity: qtyVal !== '' ? parseInt(qtyVal) : null,
-        colors: document.getElementById('editProdColors').value || null,
-        sizes: document.getElementById('editProdSizes').value || null,
-        material: document.getElementById('editProdMaterial').value || null,
-        weight: document.getElementById('editProdWeight').value || null,
-        dimensions: document.getElementById('editProdDimensions').value || null,
-        tags: document.getElementById('editProdTags').value || null,
-        description: document.getElementById('editProdDesc').value || null,
-        in_stock: statusVal !== 'out_of_stock',
-        image_url: finalImageUrl,
-        extra_images: finalExtraImages
+        in_stock: statusVal !== 'out_of_stock'
     };
 
     const { error } = await supabase.from('products').update(productData).eq('id', productId);
@@ -508,6 +451,7 @@ window.copyProductLink = function(id) {
         alert("Product link copied!");
     }
 };
+
 
 // ─── 5. ORDER MANAGEMENT LOGIC ────────────────────────────────────
 window.loadOrders = async function() {
