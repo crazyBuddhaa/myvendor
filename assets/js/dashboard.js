@@ -12,7 +12,7 @@ async function initDashboard() {
 
     if (profile) {
         window.vendorSlug = profile.slug;
-        const fullLink = `myvendor.qzz.io/${profile.slug}`; // Change to .ng when live
+        const fullLink = `myvendor.qzz.io/${profile.slug}`; 
 
         // Populate Home UI
         if (document.getElementById('welcomeName')) {
@@ -118,11 +118,24 @@ window.saveProduct = async function(event) {
         const fileInput = document.getElementById('fileInput');
         let imgUrl = null;
 
+        // 🌟 CLOUDINARY UPLOAD 🌟
         if (fileInput && fileInput.files.length > 0) {
             const file = fileInput.files[0];
-            const name = `${currentUser.id}-${Date.now()}.${file.name.split('.').pop()}`;
-            await supabase.storage.from('product-images').upload(name, file);
-            imgUrl = supabase.storage.from('product-images').getPublicUrl(name).data.publicUrl;
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('upload_preset', 'myvendor_uploads'); 
+            formData.append('folder', `myvendor/${currentUser.id}`);
+
+            const res = await fetch(`https://api.cloudinary.com/v1_1/dzxkxc7zu/image/upload`, {
+                method: 'POST',
+                body: formData
+            });
+            
+            const data = await res.json();
+            if (data.error) throw new Error(data.error.message);
+            
+            // Apply auto-optimization for fast loading
+            imgUrl = data.secure_url.replace('/upload/', '/upload/f_auto,q_auto/');
         }
 
         await supabase.from('products').insert([{ 
@@ -139,7 +152,7 @@ window.saveProduct = async function(event) {
         }]);
         window.location.href = '/dashboard/products.html';
     } catch (e) { 
-        alert(e.message); 
+        alert("Error saving product: " + e.message); 
         btn.disabled = false; 
         btn.innerText = "Save Product"; 
     }
@@ -157,7 +170,6 @@ window.loadProducts = async function() {
 
     document.getElementById('emptyState').classList.add('hidden');
     list.innerHTML = prods.map(p => {
-        // Badges setup
         let badgeClass = 'stock-in';
         let badgeText = 'In Stock';
 
@@ -169,7 +181,6 @@ window.loadProducts = async function() {
             badgeText = 'Sold Out';
         }
 
-        // Meta tags setup (Qty, Colors)
         let metaArr = [];
         if (p.category) metaArr.push(p.category);
         if (p.quantity) metaArr.push(`Qty: ${p.quantity}`);
@@ -248,20 +259,17 @@ window.loadEditProduct = async function() {
 
     document.getElementById('editProductForm').classList.remove('hidden');
 
-    // Fill basic details
     document.getElementById('editProdTitle').value = product.title || '';
     document.getElementById('editProdPrice').value = product.price || '';
     if(document.getElementById('editProdCategory')) document.getElementById('editProdCategory').value = product.category || 'Other';
     if(document.getElementById('editProdDesc')) document.getElementById('editProdDesc').value = product.description || '';
 
-    // Fill the new Tags/Inventory details
     if(document.getElementById('editProdStatus')) {
         document.getElementById('editProdStatus').value = product.status || (product.in_stock ? 'in_stock' : 'out_of_stock');
     }
     if(document.getElementById('editProdQty')) document.getElementById('editProdQty').value = product.quantity || '';
     if(document.getElementById('editProdColors')) document.getElementById('editProdColors').value = product.colors || '';
 
-    // Handle Image
     if (product.image_url) {
         currentExistingImageUrl = product.image_url;
         document.getElementById('editImagePreview').src = product.image_url;
@@ -280,11 +288,22 @@ window.updateProduct = async function(e) {
         let finalImgUrl = currentExistingImageUrl;
         const fileInput = document.getElementById('editFileInput');
 
+        // 🌟 CLOUDINARY UPLOAD 🌟
         if (fileInput && fileInput.files.length > 0) {
             const file = fileInput.files[0];
-            const name = `${currentUser.id}-${Date.now()}.${file.name.split('.').pop()}`;
-            await supabase.storage.from('product-images').upload(name, file);
-            finalImgUrl = supabase.storage.from('product-images').getPublicUrl(name).data.publicUrl;
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('upload_preset', 'myvendor_uploads'); 
+            formData.append('folder', `myvendor/${currentUser.id}`);
+
+            const res = await fetch(`https://api.cloudinary.com/v1_1/dzxkxc7zu/image/upload`, {
+                method: 'POST',
+                body: formData
+            });
+            const data = await res.json();
+            if (data.error) throw new Error(data.error.message);
+            
+            finalImgUrl = data.secure_url.replace('/upload/', '/upload/f_auto,q_auto/');
         }
 
         const newStatus = document.getElementById('editProdStatus').value;
@@ -484,17 +503,14 @@ window.clearImage = function(e) {
     document.getElementById('removeImgBtn').style.display = 'none';
 };
 
-
 // ─── 7. SETTINGS LOGIC ───────────────────────────────────────────
 window.loadSettings = async function(profile) {
-    // 1. Hide the loader and show the form
     const loader = document.getElementById('loadingState');
     const form = document.getElementById('settingsForm');
     
     if (loader) loader.classList.add('hidden');
     if (form) form.classList.remove('hidden');
 
-    // 2. Populate the fields
     if (document.getElementById('setBizName')) document.getElementById('setBizName').value = profile.business_name || '';
     if (document.getElementById('setSlug')) document.getElementById('setSlug').value = profile.slug || '';
     if (document.getElementById('setWaNumber')) document.getElementById('setWaNumber').value = profile.whatsapp_number || '';
@@ -510,7 +526,7 @@ window.updateSettings = async function(e) {
     try {
         const { error } = await supabase.from('vendor_profiles').update({
             business_name: document.getElementById('setBizName').value,
-            slug: document.getElementById('setSlug').value.toLowerCase().replace(/\s+/g, '-'), // Enforce valid slug format
+            slug: document.getElementById('setSlug').value.toLowerCase().replace(/\s+/g, '-'), 
             whatsapp_number: document.getElementById('setWaNumber').value,
             bio: document.getElementById('setBio').value
         }).eq('id', currentUser.id);
@@ -529,30 +545,79 @@ window.updateSettings = async function(e) {
 
 // ─── 8. ANALYTICS LOGIC ──────────────────────────────────────────
 window.loadAnalytics = async function() {
-    const { data: orders, error } = await supabase
+    // A. FETCH ORDERS (Revenue & Counts)
+    const { data: orders, error: oError } = await supabase
         .from('orders')
         .select('total_amount, status')
         .eq('vendor_id', currentUser.id);
 
-    if (error || !orders) return;
+    if (orders) {
+        let revenue = 0;
+        let pendingCount = 0;
 
-    let revenue = 0;
-    let pendingCount = 0;
+        orders.forEach(order => {
+            if (order.status === 'delivered') revenue += parseFloat(order.total_amount) || 0;
+            if (order.status === 'new' || order.status === 'processing') pendingCount++;
+        });
 
-    orders.forEach(order => {
-        // Only count 'delivered' orders toward total revenue
-        if (order.status === 'delivered') {
-            revenue += parseFloat(order.total_amount) || 0;
-        }
+        if(document.getElementById('totalRevenue')) document.getElementById('totalRevenue').innerText = `₦${revenue.toLocaleString()}`;
+        if(document.getElementById('totalOrders')) document.getElementById('totalOrders').innerText = orders.length;
+        if(document.getElementById('pendingOrders')) document.getElementById('pendingOrders').innerText = pendingCount;
+    }
+
+    // B. FETCH ANALYTICS EVENTS (Traffic & Clicks)
+    const { data: events, error: eError } = await supabase
+        .from('analytics_events')
+        .select('event_type, product_id, products(title)')
+        .eq('vendor_id', currentUser.id);
+
+    if (events) {
+        let storeViews = 0;
+        let productViews = 0;
+        let waClicks = 0;
+        let productStats = {}; 
+
+        events.forEach(ev => {
+            if (ev.event_type === 'store_view') storeViews++;
+            
+            if (ev.event_type === 'product_view') {
+                productViews++;
+                if(ev.product_id) {
+                    if(!productStats[ev.product_id]) productStats[ev.product_id] = { title: ev.products?.title || 'Unknown Item', views: 0, clicks: 0 };
+                    productStats[ev.product_id].views++;
+                }
+            }
+
+            if (ev.event_type === 'whatsapp_click') {
+                waClicks++;
+                if(ev.product_id) {
+                    if(!productStats[ev.product_id]) productStats[ev.product_id] = { title: ev.products?.title || 'Unknown Item', views: 0, clicks: 0 };
+                    productStats[ev.product_id].clicks++;
+                }
+            }
+        });
+
+        if(document.getElementById('statStoreViews')) document.getElementById('statStoreViews').innerText = storeViews;
+        if(document.getElementById('statProductViews')) document.getElementById('statProductViews').innerText = productViews;
+        if(document.getElementById('statWaClicks')) document.getElementById('statWaClicks').innerText = waClicks;
+
+        const topProductsHtml = Object.values(productStats)
+            .sort((a, b) => b.clicks - a.clicks || b.views - a.views) 
+            .slice(0, 5) 
+            .map(p => `
+                <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                    <div class="fw-bold small text-truncate" style="max-width: 60%;">${p.title}</div>
+                    <div class="text-end small">
+                        <span class="text-muted me-3" style="font-size:0.75rem;"><i class="bi bi-eye"></i> ${p.views}</span>
+                        <span class="text-success fw-bold" style="font-size:0.8rem;"><i class="bi bi-whatsapp"></i> ${p.clicks}</span>
+                    </div>
+                </div>
+            `).join('');
         
-        if (order.status === 'new' || order.status === 'processing') {
-            pendingCount++;
+        if(document.getElementById('topProductsList')) {
+            document.getElementById('topProductsList').innerHTML = topProductsHtml || '<p class="text-muted small py-3 text-center mb-0">No product traffic yet.</p>';
         }
-    });
-
-    document.getElementById('totalRevenue').innerText = `₦${revenue.toLocaleString()}`;
-    document.getElementById('totalOrders').innerText = orders.length;
-    document.getElementById('pendingOrders').innerText = pendingCount;
+    }
 };
 
 // ─── RUN THE APP ──────────────────────────────────────────────────
