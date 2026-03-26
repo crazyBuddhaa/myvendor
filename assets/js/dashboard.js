@@ -243,7 +243,30 @@ window.saveProduct = async function(e) {
         return;
     }
 
-    // 🌟 UPLOAD EXTRA IMAGES TO CLOUDINARY (Premium)
+    // 🌟 1. UPLOAD PRIMARY IMAGE TO CLOUDINARY
+    let finalImageUrl = null;
+    const fileInput = document.getElementById('fileInput');
+    
+    if (fileInput && fileInput.files.length > 0) {
+        if(btn) btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Uploading Image...';
+        const file = fileInput.files[0];
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('upload_preset', 'ml_default'); 
+        
+        try {
+            const res = await fetch('https://api.cloudinary.com/v1_1/dws2n3pza/image/upload', {
+                method: 'POST', body: formData
+            });
+            const data = await res.json();
+            if (data.secure_url) finalImageUrl = data.secure_url;
+        } catch (err) {
+            console.error("Primary upload failed", err);
+            alert("Image upload failed, saving without image.");
+        }
+    }
+
+    // 🌟 2. UPLOAD EXTRA IMAGES TO CLOUDINARY (Premium)
     let uploadedExtraImages = [];
     const extraFilesInput = document.getElementById('extraFilesInput');
     
@@ -273,12 +296,15 @@ window.saveProduct = async function(e) {
     const statusVal = document.getElementById('prodStatus') ? document.getElementById('prodStatus').value : 'active';
     const qtyVal = document.getElementById('prodQty') ? document.getElementById('prodQty').value : '';
 
+    // 3. SAVE EVERYTHING TO SUPABASE
+    if(btn) btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Finalizing...';
+    
     const productData = {
         vendor_id: currentUser.id,
         title: document.getElementById('prodTitle').value,
         price: document.getElementById('prodPrice').value,
         description: document.getElementById('prodDesc').value,
-        image_url: document.getElementById('imageUrl') ? document.getElementById('imageUrl').value : null,
+        image_url: finalImageUrl, 
         extra_images: uploadedExtraImages, 
         category: document.getElementById('prodCategory') ? document.getElementById('prodCategory').value : 'Other',
         colors: document.getElementById('prodColors') ? document.getElementById('prodColors').value : null,
@@ -432,6 +458,8 @@ window.updateProduct = async function(e) {
 
     const statusVal = document.getElementById('editProdStatus').value;
     const qtyVal = document.getElementById('editProdQty').value;
+
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Finalizing...';
 
     const productData = {
         title: document.getElementById('editProdTitle').value,
