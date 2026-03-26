@@ -5,385 +5,666 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Track Order | myvendor</title>
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=Playfair+Display:ital,wght@0,700;0,900;1,700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
-        * {
+        *, *::before, *::after {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
         :root {
-            --green-deep: #0b3b2a;
-            --green-primary: #1f6e43;
-            --green-bright: #2b9b5a;
-            --green-soft: #e4f5e9;
-            --cream-bg: #fefaf5;
-            --card-white: #ffffff;
-            --text-dark: #1c2a1f;
-            --text-muted: #5c6e5a;
-            --border-light: #e8e2d9;
-            --shadow-sm: 0 6px 14px rgba(0, 24, 8, 0.04);
-            --shadow-md: 0 12px 28px rgba(0, 32, 8, 0.08);
-            --shadow-lg: 0 20px 40px rgba(0, 32, 8, 0.12);
-            --radius-lg: 28px;
-            --radius-md: 18px;
-            --radius-sm: 12px;
-            --danger: #dc2626;
+            --forest:       #0a3020;
+            --emerald:      #1a6040;
+            --jade:         #2a8a5a;
+            --sage:         #5aaa7a;
+            --mist:         #e6f4ec;
+            --fog:          #f3faf6;
+            --parchment:    #faf8f4;
+            --ink:          #131a15;
+            --slate:        #4a5e50;
+            --chalk:        #ffffff;
+            --border:       rgba(26, 96, 64, 0.14);
+            --border-strong:rgba(26, 96, 64, 0.25);
+            --gold:         #b8974a;
+            --gold-light:   #f5edd9;
+            --danger:       #c0392b;
+            --danger-light: #fdf0ef;
+            --r-xl:         24px;
+            --r-lg:         18px;
+            --r-md:         12px;
+            --r-sm:         8px;
+            --shadow-xs:    0 1px 4px rgba(10, 48, 32, 0.06);
+            --shadow-sm:    0 4px 12px rgba(10, 48, 32, 0.08);
+            --shadow-md:    0 8px 24px rgba(10, 48, 32, 0.1);
+            --shadow-lg:    0 16px 48px rgba(10, 48, 32, 0.14);
         }
 
         body {
-            background: linear-gradient(145deg, #f6fcf5 0%, #f0f7ec 100%);
-            font-family: 'Inter', sans-serif;
-            color: var(--text-dark);
+            background-color: var(--parchment);
+            font-family: 'Outfit', sans-serif;
+            color: var(--ink);
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 1.5rem;
+            padding: 2rem 1.25rem;
+            position: relative;
+            overflow-x: hidden;
         }
 
-        /* grain texture */
-        body::before {
+        /* Subtle radial glow behind card */
+        body::after {
             content: '';
             position: fixed;
-            inset: 0;
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
-            background-size: 280px;
-            opacity: 0.025;
+            top: -10%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 900px;
+            height: 600px;
+            background: radial-gradient(ellipse at center, rgba(42, 138, 90, 0.07) 0%, transparent 65%);
             pointer-events: none;
             z-index: 0;
         }
 
-        .track-container {
-            max-width: 600px;
+        /* Noise grain */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+            background-size: 200px;
+            opacity: 0.022;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .page-wrap {
+            max-width: 560px;
             width: 100%;
-            margin: 0 auto;
             position: relative;
             z-index: 1;
         }
 
-        /* header */
-        .track-header {
-            text-align: center;
-            margin-bottom: 2rem;
+        /* ─── BRAND HEADER ─── */
+        .brand {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.55rem;
+            margin-bottom: 2.2rem;
+            animation: fadeDown 0.5s ease both;
         }
 
-        .track-header h1 {
-            font-family: 'Playfair Display', serif;
-            font-weight: 900;
-            font-size: 2rem;
-            background: linear-gradient(125deg, #14532d, #2b6e3c);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            margin-bottom: 0.5rem;
+        .brand-mark {
+            width: 32px;
+            height: 32px;
+            background: var(--forest);
+            border-radius: 9px;
+            display: grid;
+            place-items: center;
         }
 
-        .order-id-badge {
+        .brand-mark svg {
+            width: 16px;
+            height: 16px;
+            fill: none;
+            stroke: var(--sage);
+            stroke-width: 1.8;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .brand-name {
+            font-family: 'Cormorant Garamond', serif;
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: var(--forest);
+            letter-spacing: 0.02em;
+        }
+
+        /* ─── MAIN CARD ─── */
+        .card {
+            background: var(--chalk);
+            border-radius: var(--r-xl);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-md);
+            overflow: hidden;
+            animation: fadeUp 0.55s ease both 0.08s;
+        }
+
+        /* card header strip */
+        .card-header-strip {
+            background: var(--forest);
+            padding: 1.5rem 1.8rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-header-strip::after {
+            content: '';
+            position: absolute;
+            right: -60px;
+            top: -60px;
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            border: 40px solid rgba(255,255,255,0.04);
+            pointer-events: none;
+        }
+
+        .card-header-strip::before {
+            content: '';
+            position: absolute;
+            right: 20px;
+            bottom: -80px;
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            border: 30px solid rgba(255,255,255,0.03);
+            pointer-events: none;
+        }
+
+        .strip-eyebrow {
+            font-size: 0.65rem;
+            font-weight: 600;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--sage);
+            margin-bottom: 0.35rem;
+        }
+
+        .strip-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-weight: 600;
+            font-size: 1.55rem;
+            color: var(--chalk);
+            letter-spacing: 0.01em;
+            margin-bottom: 0.8rem;
+        }
+
+        .order-pill {
             display: inline-flex;
             align-items: center;
             gap: 0.4rem;
-            background: var(--green-soft);
-            padding: 0.3rem 0.9rem;
-            border-radius: 40px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: var(--green-primary);
-            border: 1px solid var(--border-light);
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.14);
+            border-radius: 100px;
+            padding: 0.28rem 0.8rem;
+            font-size: 0.72rem;
+            font-weight: 500;
+            color: rgba(255,255,255,0.75);
+            backdrop-filter: blur(4px);
         }
 
-        /* card */
-        .track-card {
-            background: var(--card-white);
-            border-radius: var(--radius-lg);
-            padding: 1.8rem;
-            box-shadow: var(--shadow-md);
-            border: 1px solid var(--border-light);
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-        .track-card:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-lg);
+        .order-pill i { font-size: 0.7rem; }
+
+        .card-body {
+            padding: 1.6rem 1.8rem;
         }
 
-        /* order summary */
-        .order-summary {
-            background: linear-gradient(115deg, var(--green-soft), #ffffff);
-            border-radius: var(--radius-md);
-            padding: 1.2rem;
+        /* ─── ORDER ITEMS BOX ─── */
+        .items-box {
+            border: 1px solid var(--border);
+            border-radius: var(--r-lg);
+            padding: 1rem 1.15rem;
             margin-bottom: 2rem;
-            border-left: 4px solid var(--green-primary);
-            box-shadow: var(--shadow-sm);
-        }
-
-        .order-summary-label {
-            font-size: 0.7rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: var(--green-primary);
-            margin-bottom: 0.5rem;
+            background: var(--fog);
             display: flex;
-            align-items: center;
-            gap: 0.4rem;
+            gap: 0.8rem;
+            align-items: flex-start;
         }
 
-        .order-summary-items {
+        .items-box-icon {
+            width: 34px;
+            height: 34px;
+            min-width: 34px;
+            background: var(--mist);
+            border: 1px solid var(--border);
+            border-radius: var(--r-sm);
+            display: grid;
+            place-items: center;
+            color: var(--emerald);
+            font-size: 0.9rem;
+            margin-top: 2px;
+        }
+
+        .items-label {
+            font-size: 0.65rem;
             font-weight: 600;
-            font-size: 0.95rem;
-            color: var(--text-dark);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--jade);
+            margin-bottom: 0.3rem;
+        }
+
+        .items-text {
+            font-size: 0.88rem;
+            font-weight: 500;
+            color: var(--ink);
             line-height: 1.5;
         }
 
-        /* timeline */
+        /* ─── SECTION DIVIDER LABEL ─── */
+        .section-label {
+            font-size: 0.62rem;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--slate);
+            margin-bottom: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .section-label::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        /* ─── TIMELINE ─── */
         .timeline {
             position: relative;
-            margin-top: 0.5rem;
         }
 
-        .timeline-item {
+        .tl-item {
+            display: flex;
+            gap: 1rem;
+            padding-bottom: 1.75rem;
             position: relative;
-            padding-left: 2.2rem;
-            padding-bottom: 1.8rem;
         }
 
-        .timeline-item:last-child {
+        .tl-item:last-child {
             padding-bottom: 0;
         }
 
-        .timeline-item::before {
-            content: '';
-            position: absolute;
-            left: 6px;
-            top: 14px;
-            width: 2px;
-            height: calc(100% - 14px);
-            background: var(--border-light);
-            transition: background 0.3s;
+        .tl-left {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex-shrink: 0;
+            width: 20px;
         }
 
-        .timeline-item:last-child::before {
+        .tl-dot {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #e8ede9;
+            border: 2px solid #d4ddd5;
+            position: relative;
+            z-index: 2;
+            flex-shrink: 0;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .tl-dot-inner {
+            position: absolute;
+            inset: 3px;
+            border-radius: 50%;
+            background: transparent;
+            transition: background 0.3s ease;
+        }
+
+        .tl-line {
+            flex: 1;
+            width: 2px;
+            background: #e8ede9;
+            margin-top: 3px;
+            border-radius: 1px;
+            min-height: 20px;
+            transition: background 0.4s ease;
+        }
+
+        .tl-item:last-child .tl-line {
             display: none;
         }
 
-        .timeline-item.active::before {
-            background: var(--green-primary);
+        .tl-content {
+            flex: 1;
+            padding-top: 1px;
         }
 
-        .status-dot {
-            position: absolute;
-            left: 0;
-            top: 2px;
-            width: 14px;
-            height: 14px;
-            border-radius: 50%;
-            background: var(--border-light);
-            border: 2px solid var(--card-white);
-            box-shadow: 0 0 0 1px var(--border-light);
-            transition: all 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
-            z-index: 2;
+        .tl-title {
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: #a0b0a5;
+            margin-bottom: 0.2rem;
+            transition: color 0.3s ease;
         }
 
-        .timeline-item.active .status-dot {
-            background: var(--green-primary);
-            box-shadow: 0 0 0 3px rgba(31, 110, 67, 0.2);
-            transform: scale(1.2);
-        }
-
-        .timeline-title {
-            font-weight: 700;
-            font-size: 0.9rem;
-            margin-bottom: 0.25rem;
-            color: var(--text-dark);
-        }
-
-        .timeline-desc {
+        .tl-desc {
             font-size: 0.75rem;
-            color: var(--text-muted);
-            line-height: 1.4;
+            color: #b8c8bc;
+            line-height: 1.45;
+            transition: color 0.3s ease;
         }
 
-        .rider-info {
-            margin-top: 0.5rem;
+        /* Active state */
+        .tl-item.active .tl-dot {
+            background: var(--chalk);
+            border-color: var(--jade);
+            box-shadow: 0 0 0 4px rgba(42, 138, 90, 0.12);
+            transform: scale(1.15);
+        }
+
+        .tl-item.active .tl-dot-inner {
+            background: var(--jade);
+        }
+
+        .tl-item.active + .tl-item .tl-line,
+        .tl-item.active .tl-line {
+            background: var(--jade);
+        }
+
+        .tl-item.active .tl-title {
+            color: var(--ink);
+        }
+
+        .tl-item.active .tl-desc {
+            color: var(--slate);
+        }
+
+        /* Current (last active) step pulse */
+        .tl-item.current .tl-dot {
+            box-shadow: 0 0 0 4px rgba(42, 138, 90, 0.15), 0 0 0 7px rgba(42, 138, 90, 0.07);
+            animation: pulse-ring 2s ease infinite;
+        }
+
+        @keyframes pulse-ring {
+            0%, 100% { box-shadow: 0 0 0 4px rgba(42, 138, 90, 0.15), 0 0 0 7px rgba(42, 138, 90, 0.07); }
+            50%       { box-shadow: 0 0 0 5px rgba(42, 138, 90, 0.2),  0 0 0 10px rgba(42, 138, 90, 0.05); }
+        }
+
+        /* Status chip on current step */
+        .status-chip {
             display: inline-flex;
             align-items: center;
-            gap: 0.5rem;
-            background: var(--green-soft);
-            padding: 0.3rem 0.8rem;
-            border-radius: 40px;
-            font-size: 0.7rem;
+            gap: 0.35rem;
+            background: var(--mist);
+            border: 1px solid var(--border-strong);
+            border-radius: 100px;
+            padding: 0.22rem 0.7rem;
+            font-size: 0.67rem;
             font-weight: 600;
-            color: var(--green-primary);
-            border: 1px solid var(--border-light);
+            color: var(--emerald);
+            margin-top: 0.45rem;
+            letter-spacing: 0.02em;
         }
 
-        /* loading & error */
-        .loading-state, .error-state {
-            background: var(--card-white);
-            border-radius: var(--radius-lg);
-            padding: 2.5rem;
-            text-align: center;
-            box-shadow: var(--shadow-md);
-            border: 1px solid var(--border-light);
-        }
-
-        .loader {
-            width: 44px;
-            height: 44px;
-            border: 3px solid var(--border-light);
-            border-top-color: var(--green-bright);
+        .status-chip-dot {
+            width: 6px;
+            height: 6px;
             border-radius: 50%;
-            margin: 0 auto 1rem;
-            animation: spin 0.8s linear infinite;
+            background: var(--jade);
+            animation: blink 1.6s ease infinite;
         }
 
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50%       { opacity: 0.3; }
         }
 
-        .error-icon {
-            font-size: 3rem;
-            color: var(--text-muted);
-            opacity: 0.5;
-            margin-bottom: 1rem;
-        }
-
-        .btn-back-home {
+        /* Rider badge */
+        .rider-badge {
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
-            background: var(--green-primary);
-            color: white;
-            padding: 0.6rem 1.2rem;
-            border-radius: 40px;
-            text-decoration: none;
+            background: var(--gold-light);
+            border: 1px solid rgba(184, 151, 74, 0.2);
+            border-radius: var(--r-sm);
+            padding: 0.4rem 0.75rem;
+            font-size: 0.73rem;
+            font-weight: 500;
+            color: #7a5e2a;
+            margin-top: 0.5rem;
+        }
+
+        .rider-badge i { color: var(--gold); font-size: 0.8rem; }
+
+        /* ─── LOADING STATE ─── */
+        .state-card {
+            background: var(--chalk);
+            border-radius: var(--r-xl);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-md);
+            padding: 3rem 2rem;
+            text-align: center;
+            animation: fadeUp 0.5s ease both 0.08s;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 2.5px solid var(--border);
+            border-top-color: var(--jade);
+            border-radius: 50%;
+            margin: 0 auto 1.25rem;
+            animation: spin 0.75s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .state-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .state-title {
+            font-family: 'Cormorant Garamond', serif;
             font-weight: 600;
-            font-size: 0.85rem;
-            margin-top: 1rem;
-            transition: all 0.2s;
+            font-size: 1.3rem;
+            color: var(--ink);
+            margin-bottom: 0.4rem;
+        }
+
+        .state-desc {
+            font-size: 0.82rem;
+            color: var(--slate);
+            line-height: 1.5;
+            max-width: 280px;
+            margin: 0 auto;
+        }
+
+        .btn-home {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            background: var(--forest);
+            color: var(--chalk);
+            padding: 0.6rem 1.3rem;
+            border-radius: 100px;
+            text-decoration: none;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-top: 1.4rem;
+            transition: background 0.2s, transform 0.2s;
             border: none;
+            cursor: pointer;
         }
-        .btn-back-home:hover {
-            background: var(--green-deep);
+
+        .btn-home:hover {
+            background: var(--emerald);
             transform: translateY(-1px);
-            color: white;
+            color: var(--chalk);
         }
 
-        .hidden {
-            display: none !important;
+        /* danger variant */
+        .state-icon.danger { color: var(--danger); }
+        .state-card.danger-card { border-color: rgba(192, 57, 43, 0.15); }
+        .state-card.danger-card .state-title { color: var(--danger); }
+
+        /* ─── FOOTER ─── */
+        .page-footer {
+            text-align: center;
+            margin-top: 1.4rem;
+            font-size: 0.7rem;
+            color: var(--slate);
+            opacity: 0.6;
+            animation: fadeUp 0.5s ease both 0.2s;
         }
 
-        @media (max-width: 520px) {
-            .track-card {
-                padding: 1.2rem;
-            }
-            .timeline-item {
-                padding-left: 1.8rem;
-            }
-            .order-summary {
-                padding: 0.9rem;
-            }
-            .timeline-title {
-                font-size: 0.8rem;
-            }
-            .timeline-desc {
-                font-size: 0.7rem;
-            }
+        /* ─── UTILS ─── */
+        .hidden { display: none !important; }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(14px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ─── RESPONSIVE ─── */
+        @media (max-width: 480px) {
+            .card-header-strip { padding: 1.25rem 1.25rem; }
+            .card-body { padding: 1.25rem; }
+            .strip-title { font-size: 1.3rem; }
         }
     </style>
 </head>
 <body>
 
-<div class="track-container">
-    <div class="track-header">
-        <h1>Track Order</h1>
-        <div id="orderIdDisplay" class="order-id-badge">
-            <i class="bi bi-upc-scan"></i> <span>—</span>
+<div class="page-wrap">
+
+    <!-- Brand -->
+    <div class="brand">
+        <div class="brand-mark">
+            <svg viewBox="0 0 24 24"><path d="M12 3L4 7v5c0 5.5 3.8 10.7 8 12 4.2-1.3 8-6.5 8-12V7L12 3z"/></svg>
         </div>
+        <span class="brand-name">myvendor</span>
     </div>
 
     <!-- Loading State -->
-    <div id="loadingState" class="loading-state">
-        <div class="loader"></div>
-        <p class="text-muted">Fetching your order details...</p>
+    <div id="loadingState" class="state-card">
+        <div class="spinner"></div>
+        <p class="state-desc">Fetching your order details&hellip;</p>
     </div>
 
     <!-- Error State -->
-    <div id="errorState" class="error-state hidden">
-        <div class="error-icon"><i class="bi bi-search-heart"></i></div>
-        <h5 id="errorTitle" class="fw-bold">Order Not Found</h5>
-        <p id="errorDesc" class="text-muted small">Please check the link again or contact the vendor.</p>
-        <a href="/" class="btn-back-home"><i class="bi bi-arrow-left"></i> Back to Store</a>
-    </div>
-
-    <!-- Main Tracking Card -->
-    <div id="trackCard" class="track-card hidden">
-        <!-- Order Summary -->
-        <div class="order-summary">
-            <div class="order-summary-label">
-                <i class="bi bi-receipt"></i> Order Items
-            </div>
-            <div id="displayItems" class="order-summary-items">—</div>
-        </div>
-
-        <!-- Timeline -->
-        <div class="timeline">
-            <div class="timeline-item" id="step-new">
-                <div class="status-dot"></div>
-                <div class="timeline-title">Order Confirmed</div>
-                <div class="timeline-desc">Vendor has recorded your order</div>
-            </div>
-            <div class="timeline-item" id="step-processing">
-                <div class="status-dot"></div>
-                <div class="timeline-title">Processing</div>
-                <div class="timeline-desc">Your order is being prepared</div>
-            </div>
-            <div class="timeline-item" id="step-shipped">
-                <div class="status-dot"></div>
-                <div class="timeline-title">Shipped / Out for Delivery</div>
-                <div id="riderNote" class="timeline-desc">Package is on its way</div>
-            </div>
-            <div class="timeline-item" id="step-delivered">
-                <div class="status-dot"></div>
-                <div class="timeline-title">Delivered</div>
-                <div class="timeline-desc">Order received successfully</div>
-            </div>
-        </div>
+    <div id="errorState" class="state-card hidden">
+        <span class="state-icon">🔍</span>
+        <h2 id="errorTitle" class="state-title">Order Not Found</h2>
+        <p id="errorDesc" class="state-desc">Please check the link or contact your vendor.</p>
+        <a href="/" class="btn-home"><i class="bi bi-arrow-left"></i> Back to Store</a>
     </div>
 
     <!-- Cancelled State -->
-    <div id="cancelledState" class="error-state hidden">
-        <div class="error-icon"><i class="bi bi-x-circle" style="color: var(--danger);"></i></div>
-        <h5 class="fw-bold" style="color: var(--danger);">Order Cancelled</h5>
-        <p class="text-muted small">This order has been cancelled by the vendor.</p>
-        <a href="/" class="btn-back-home"><i class="bi bi-arrow-left"></i> Back to Store</a>
+    <div id="cancelledState" class="state-card danger-card hidden">
+        <span class="state-icon danger"><i class="bi bi-x-circle-fill"></i></span>
+        <h2 class="state-title">Order Cancelled</h2>
+        <p class="state-desc">This order has been cancelled by the vendor.</p>
+        <a href="/" class="btn-home"><i class="bi bi-arrow-left"></i> Back to Store</a>
     </div>
+
+    <!-- Main Tracking Card -->
+    <div id="trackCard" class="card hidden">
+
+        <div class="card-header-strip">
+            <div class="strip-eyebrow">Live Tracking</div>
+            <div class="strip-title">Order Status</div>
+            <div class="order-pill" id="orderIdDisplay">
+                <i class="bi bi-hash"></i>
+                <span>—</span>
+            </div>
+        </div>
+
+        <div class="card-body">
+
+            <!-- Items -->
+            <div class="items-box">
+                <div class="items-box-icon"><i class="bi bi-bag"></i></div>
+                <div>
+                    <div class="items-label">Order Items</div>
+                    <div id="displayItems" class="items-text">—</div>
+                </div>
+            </div>
+
+            <!-- Timeline -->
+            <div class="section-label">Delivery Progress</div>
+
+            <div class="timeline">
+
+                <div class="tl-item" id="step-new">
+                    <div class="tl-left">
+                        <div class="tl-dot"><div class="tl-dot-inner"></div></div>
+                        <div class="tl-line"></div>
+                    </div>
+                    <div class="tl-content">
+                        <div class="tl-title">Order Confirmed</div>
+                        <div class="tl-desc">Vendor has recorded your order</div>
+                    </div>
+                </div>
+
+                <div class="tl-item" id="step-processing">
+                    <div class="tl-left">
+                        <div class="tl-dot"><div class="tl-dot-inner"></div></div>
+                        <div class="tl-line"></div>
+                    </div>
+                    <div class="tl-content">
+                        <div class="tl-title">Processing</div>
+                        <div class="tl-desc">Your order is being prepared</div>
+                    </div>
+                </div>
+
+                <div class="tl-item" id="step-shipped">
+                    <div class="tl-left">
+                        <div class="tl-dot"><div class="tl-dot-inner"></div></div>
+                        <div class="tl-line"></div>
+                    </div>
+                    <div class="tl-content">
+                        <div class="tl-title">Out for Delivery</div>
+                        <div id="riderNote" class="tl-desc">Package is on its way to you</div>
+                    </div>
+                </div>
+
+                <div class="tl-item" id="step-delivered">
+                    <div class="tl-left">
+                        <div class="tl-dot"><div class="tl-dot-inner"></div></div>
+                        <div class="tl-line"></div>
+                    </div>
+                    <div class="tl-content">
+                        <div class="tl-title">Delivered</div>
+                        <div class="tl-desc">Order received successfully</div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="page-footer">Secured by myvendor &mdash; All rights reserved</div>
+
 </div>
 
 <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-    // Supabase configuration
-    const SUPABASE_URL = 'https://sotdghhayztnpwnrzjzu.supabase.co';
+    const SUPABASE_URL      = 'https://sotdghhayztnpwnrzjzu.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_OcOKwSDnoCGm_rt725Bi-g_rV6tjGlK';
-    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const supabase          = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const STATUS_FLOW = ['new', 'processing', 'shipped', 'delivered'];
 
     async function initTracking() {
         try {
-            const params = new URLSearchParams(window.location.search);
+            const params  = new URLSearchParams(window.location.search);
             const orderId = params.get('id');
 
             if (!orderId) {
-                showError('Invalid Tracking Link', 'No order ID provided in the link.');
+                showError('Invalid Link', 'No order ID was found in the URL.');
                 return;
             }
 
-            const orderIdSpan = document.querySelector('#orderIdDisplay span');
-            if (orderIdSpan) orderIdSpan.innerText = orderId;
+            document.querySelector('#orderIdDisplay span').innerText = orderId;
 
             const { data: order, error } = await supabase
                 .from('orders')
@@ -392,59 +673,81 @@
                 .single();
 
             if (error || !order) {
-                showError('Order Not Found', 'We couldn\'t find an order with this ID. It may have been deleted or never existed.');
+                showError('Order Not Found', "We couldn't find an order with this ID. It may have been removed or the link may be incorrect.");
                 return;
             }
 
-            document.getElementById('loadingState').classList.add('hidden');
-            document.getElementById('trackCard').classList.remove('hidden');
+            hide('loadingState');
 
             if (order.status === 'cancelled') {
-                document.getElementById('trackCard').classList.add('hidden');
-                document.getElementById('cancelledState').classList.remove('hidden');
+                show('cancelledState');
                 return;
             }
+
+            show('trackCard');
 
             document.getElementById('displayItems').innerText = order.items || 'No items listed';
 
-            const statusFlow = ['new', 'processing', 'shipped', 'delivered'];
-            const currentStatus = order.status || 'new';
-            const currentIndex = statusFlow.indexOf(currentStatus);
+            const currentIndex = STATUS_FLOW.indexOf(order.status || 'new');
 
-            statusFlow.forEach((status, index) => {
-                const stepElement = document.getElementById(`step-${status}`);
-                if (stepElement) {
-                    if (index <= currentIndex) {
-                        stepElement.classList.add('active');
-                    } else {
-                        stepElement.classList.remove('active');
-                    }
+            STATUS_FLOW.forEach((status, index) => {
+                const el = document.getElementById(`step-${status}`);
+                if (!el) return;
+                if (index <= currentIndex) {
+                    el.classList.add('active');
+                    if (index === currentIndex) el.classList.add('current');
                 }
             });
 
+            // Animate timeline items in sequence
+            document.querySelectorAll('.tl-item').forEach((el, i) => {
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(10px)';
+                el.style.transition = `opacity 0.4s ease ${i * 0.1}s, transform 0.4s ease ${i * 0.1}s`;
+                requestAnimationFrame(() => {
+                    el.style.opacity = '1';
+                    el.style.transform = 'translateY(0)';
+                });
+            });
+
+            // Status chip on the current (last active) step
+            const currentEl = document.getElementById(`step-${order.status}`);
+            if (currentEl && order.status !== 'delivered') {
+                const chip = document.createElement('div');
+                chip.className = 'status-chip';
+                chip.innerHTML = `<div class="status-chip-dot"></div> ${statusLabel(order.status)}`;
+                currentEl.querySelector('.tl-content').appendChild(chip);
+            }
+
+            // Rider info on shipped / delivered
             if ((order.status === 'shipped' || order.status === 'delivered') && (order.rider_name || order.rider_phone)) {
                 const riderNote = document.getElementById('riderNote');
-                let riderHtml = '';
-                if (order.rider_name) riderHtml += `👤 ${order.rider_name}`;
-                if (order.rider_phone) riderHtml += ` ${riderHtml ? '·' : ''} 📞 ${order.rider_phone}`;
-                if (riderHtml) {
-                    riderNote.innerHTML = `<div class="rider-info"><i class="bi bi-bicycle"></i> ${riderHtml}</div>`;
-                }
+                let html = `<div class="rider-badge"><i class="bi bi-bicycle"></i>`;
+                if (order.rider_name)  html += `<span>${order.rider_name}</span>`;
+                if (order.rider_phone) html += `<span style="opacity:.65">·</span><span>${order.rider_phone}</span>`;
+                html += `</div>`;
+                riderNote.innerHTML = `Package is on its way to you ${html}`;
             }
+
         } catch (err) {
             console.error(err);
-            showError('Connection Error', 'Unable to connect to the tracking service. Please check your internet connection.');
+            showError('Connection Error', 'Unable to reach the tracking service. Please check your internet connection.');
         }
     }
 
-    function showError(title, message) {
-        document.getElementById('loadingState').classList.add('hidden');
-        document.getElementById('errorState').classList.remove('hidden');
-        document.getElementById('errorTitle').innerText = title;
-        document.getElementById('errorDesc').innerText = message;
-        const orderIdSpan = document.querySelector('#orderIdDisplay span');
-        if (orderIdSpan) orderIdSpan.innerText = '';
+    function statusLabel(status) {
+        return { new: 'Order Confirmed', processing: 'In Progress', shipped: 'On the Way' }[status] || status;
     }
+
+    function showError(title, msg) {
+        hide('loadingState');
+        show('errorState');
+        document.getElementById('errorTitle').innerText = title;
+        document.getElementById('errorDesc').innerText = msg;
+    }
+
+    function show(id) { document.getElementById(id).classList.remove('hidden'); }
+    function hide(id) { document.getElementById(id).classList.add('hidden'); }
 
     initTracking();
 </script>
