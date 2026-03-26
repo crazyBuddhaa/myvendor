@@ -476,6 +476,11 @@
         grid-column: span 1;
       }
     }
+
+    /* ── UTILS ── */
+    .hidden { 
+      display: none !important; 
+    }
   </style>
 </head>
 <body>
@@ -484,8 +489,8 @@
   <div class="nav-container">
     <a href="/dashboard/home.html" class="mv-logo-modern">my<span>vendor</span></a>
     <div class="nav-actions-modern">
-      <a href="/dashboard/home.html" class="active"><i class="bi bi-house-door"></i><span class="visually-hidden">Home</span></a>
-      <a href="/dashboard/orders.html"><i class="bi bi-box-seam"></i><span class="visually-hidden">Orders</span></a>
+      <a href="/dashboard/home.html"><i class="bi bi-house-door"></i><span class="visually-hidden">Home</span></a>
+      <a href="/dashboard/orders.html" class="active"><i class="bi bi-box-seam"></i><span class="visually-hidden">Orders</span></a>
       <a href="/dashboard/products.html"><i class="bi bi-grid"></i><span class="visually-hidden">Products</span></a>
     </div>
   </div>
@@ -499,7 +504,6 @@
     </button>
   </div>
 
-  <!-- Filter pills -->
   <div class="filter-scroll-modern" id="orderFilters">
     <div class="filter-pill-modern active" data-status="all" onclick="filterOrders('all', this)">All</div>
     <div class="filter-pill-modern" data-status="new" onclick="filterOrders('new', this)">New</div>
@@ -508,12 +512,9 @@
     <div class="filter-pill-modern" data-status="delivered" onclick="filterOrders('delivered', this)">Delivered</div>
   </div>
 
-  <!-- Orders list container -->
   <div class="order-list" id="orderList">
-    <!-- Dynamic content injected by dashboard.js -->
-  </div>
+    </div>
 
-  <!-- Empty state (hidden by default, shown when no orders) -->
   <div id="emptyState" class="empty-state-modern hidden">
     <i class="bi bi-inbox"></i>
     <h3 style="font-size: 1rem; font-weight: 800;">No orders found</h3>
@@ -525,10 +526,8 @@
   © 2026 myvendor &nbsp;·&nbsp; <a href="#" style="color: var(--green-primary); text-decoration: none;">Help Center</a> &nbsp;·&nbsp; <a href="/terms.html" style="color: var(--green-primary); text-decoration: none;">Terms</a>
 </footer>
 
-<!-- Toast message -->
 <div id="toastMsg" class="toast-modern">Notification</div>
 
-<!-- Modals -->
 <div class="modal fade" id="createOrderModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content modal-content-modern">
