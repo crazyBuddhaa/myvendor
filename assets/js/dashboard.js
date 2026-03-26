@@ -1,5 +1,6 @@
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
+// ⚠️ IMPORTANT: Verify your actual Supabase URL and Anon Key here
 const SUPABASE_URL = 'https://sotdghhayztnpwnrzjzu.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_OcOKwSDnoCGm_rt725Bi-g_rV6tjGlK';
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -32,10 +33,11 @@ async function initDashboard() {
     window.currentUser = profile;
     window.vendorSlug = profile.slug;
 
-    // Inject the Premium Upgrade Modal into the page
+    // Inject the Premium Upgrade Modal into the page globally
     injectUpgradeModal();
 
-    // Check which page we are on and load appropriate data
+    // Route controller: Load appropriate data based on which page we are on
+    if (document.getElementById('recentOrdersList')) await window.loadHomeDashboard();
     if (document.getElementById('productGrid')) await window.loadProducts();
     if (document.getElementById('orderList')) await window.loadOrders();
     if (document.getElementById('totalRevenue')) await window.loadAnalytics();
@@ -81,7 +83,79 @@ window.showPremiumModal = function(reasonText) {
     new bootstrap.Modal(document.getElementById('premiumModal')).show();
 };
 
-// ─── 3. PRODUCT & INVENTORY LOGIC ─────────────────────────────────
+// ─── 3. HOME DASHBOARD LOGIC ──────────────────────────────────────
+window.loadHomeDashboard = async function() {
+    if (!document.getElementById('recentOrdersList')) return;
+
+    // Populate Greeting & Store Link
+    const firstName = window.currentUser.business_name.split(' ')[0] || 'Vendor';
+    const welcomeEl = document.getElementById('welcomeName');
+    if (welcomeEl) welcomeEl.innerHTML = `Welcome back, ${firstName} 👋`;
+
+    const storeUrl = `myvendor.qzz.io/${window.vendorSlug}`;
+    const storeLinkEl = document.getElementById('storeLink');
+    if (storeLinkEl) storeLinkEl.innerText = storeUrl;
+
+    // Set up WhatsApp Share Button
+    const waShareBtn = document.getElementById('waShareBtn');
+    if (waShareBtn) {
+        const shareText = encodeURIComponent(`Shop our latest collection online! Browse products and place orders directly here: https://${storeUrl}`);
+        waShareBtn.href = `https://wa.me/?text=${shareText}`;
+    }
+
+    // Fetch Top-Level Stats (Using fast 'head' queries to save bandwidth)
+    const { count: prodCount } = await supabase
+        .from('products')
+        .select('*', { count: 'exact', head: true })
+        .eq('vendor_id', window.currentUser.id);
+        
+    const { count: orderCount } = await supabase
+        .from('orders')
+        .select('*', { count: 'exact', head: true })
+        .eq('vendor_id', window.currentUser.id);
+
+    if (document.getElementById('statProducts')) document.getElementById('statProducts').innerText = prodCount || 0;
+    if (document.getElementById('statOrders')) document.getElementById('statOrders').innerText = orderCount || 0;
+
+    // Fetch & Render Recent Orders (Top 4)
+    const { data: recentOrders } = await supabase
+        .from('orders')
+        .select('*')
+        .eq('vendor_id', window.currentUser.id)
+        .order('created_at', { ascending: false })
+        .limit(4);
+
+    const ordersListEl = document.getElementById('recentOrdersList');
+    
+    if (!recentOrders || recentOrders.length === 0) {
+        ordersListEl.innerHTML = `<div class="empty-orders"><i class="bi bi-inbox fs-2 mb-2 d-block"></i>No orders yet. Share your link to get started!</div>`;
+        return;
+    }
+
+    ordersListEl.innerHTML = recentOrders.map(o => {
+        const date = new Date(o.created_at).toLocaleDateString('en-NG', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+        
+        let statusClass = 'status-new';
+        if (o.status === 'processing') statusClass = 'status-processing';
+        if (o.status === 'shipped') statusClass = 'status-shipped';
+        if (o.status === 'delivered') statusClass = 'status-delivered';
+        if (o.status === 'cancelled') statusClass = 'status-cancelled';
+
+        return `
+        <div class="order-row">
+          <div class="order-info">
+            <span class="order-id">${o.id}</span>
+            <span class="order-date">${date} • <strong style="color:var(--text-dark);">${o.customer_name}</strong></span>
+          </div>
+          <div class="order-right">
+            <div class="order-amount">₦${parseFloat(o.total_amount).toLocaleString()}</div>
+            <div class="badge-status ${statusClass}">${o.status.replace('_', ' ')}</div>
+          </div>
+        </div>`;
+    }).join('');
+};
+
+// ─── 4. PRODUCT & INVENTORY LOGIC ─────────────────────────────────
 window.loadProducts = async function() {
     const list = document.getElementById('productGrid');
     if (!list) return;
@@ -100,6 +174,8 @@ window.loadProducts = async function() {
     if (!prods || prods.length === 0) { 
         if(emptyState) {
             emptyState.classList.remove('hidden');
+            emptyState.querySelector('h3').innerText = 'Your inventory is empty';
+            emptyState.querySelector('p').innerText = 'Add your first product to start selling.';
             const addBtn = emptyState.querySelector('.btn-add-modern');
             if (addBtn) addBtn.classList.remove('hidden');
         }
@@ -161,7 +237,6 @@ window.saveProduct = async function(e) {
 
     // 🌟 PREMIUM LOCK: Check Free Tier Limits before creating a NEW product
     if (!productId) {
-        // We need to fetch count dynamically just to be safe if they didn't load inventory first
         const { count } = await supabase.from('products').select('*', { count: 'exact', head: true }).eq('vendor_id', currentUser.id);
         
         if (currentUser.tier !== 'premium' && count >= FREE_PRODUCT_LIMIT) {
@@ -184,7 +259,6 @@ window.saveProduct = async function(e) {
         description: desc,
         in_stock: inStock,
         image_url: imgUrl,
-        // (You can add Category, Colors, etc. here based on your add-product.html fields)
         status: inStock ? 'active' : 'out_of_stock' 
     };
 
@@ -214,10 +288,17 @@ window.deleteProduct = async function(id) {
 
 window.copyProductLink = function(id) {
     navigator.clipboard.writeText(`https://myvendor.qzz.io/product/?vendor=${window.vendorSlug}&id=${id}`);
-    alert("Product link copied!");
+    const toast = document.getElementById('toastMsg');
+    if (toast) {
+        toast.innerText = "Product link copied!";
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 2500);
+    } else {
+        alert("Product link copied!");
+    }
 };
 
-// ─── 4. ORDER MANAGEMENT LOGIC ────────────────────────────────────
+// ─── 5. ORDER MANAGEMENT LOGIC ────────────────────────────────────
 window.loadOrders = async function() {
     const list = document.getElementById('orderList');
     if (!list) return;
@@ -284,7 +365,7 @@ window.generateReceipt = function(orderId) {
         window.showPremiumModal("Custom Branded Receipts are a Premium feature.");
         return;
     }
-    // Logic to generate PDF receipt goes here (Feature coming soon)
+    // Logic to generate PDF receipt goes here
     alert("Receipt generator opening for Order: " + orderId);
 };
 
@@ -336,7 +417,15 @@ window.handleCreateOrder = async function(e) {
         }
         window.loadOrders(); 
         navigator.clipboard.writeText(`https://myvendor.qzz.io/track/?id=${id}`);
-        alert('Order Created & Link Copied!');
+        
+        const toast = document.getElementById('toastMsg');
+        if (toast) {
+            toast.innerText = "Order Created & Tracking Link Copied!";
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        } else {
+            alert('Order Created & Link Copied!');
+        }
     } catch (error) {
         alert("Error creating order: " + error.message);
     } finally {
@@ -347,7 +436,14 @@ window.handleCreateOrder = async function(e) {
 
 window.copyTracking = function(id) {
     navigator.clipboard.writeText(`https://myvendor.qzz.io/track/?id=${id}`);
-    alert("Tracking link copied!");
+    const toast = document.getElementById('toastMsg');
+    if (toast) {
+        toast.innerText = "Tracking link copied!";
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 2500);
+    } else {
+        alert("Tracking link copied!");
+    }
 };
 
 window.currentOrderId = null;
@@ -377,7 +473,7 @@ if (statusSelect) {
     });
 }
 
-// ─── 5. ANALYTICS LOGIC ──────────────────────────────────────────
+// ─── 6. ANALYTICS LOGIC ──────────────────────────────────────────
 window.loadAnalytics = async function() {
     const revEl = document.getElementById('totalRevenue');
     if (!revEl) return;
@@ -429,7 +525,7 @@ window.loadAnalytics = async function() {
     const sortedProducts = Object.entries(productSales).sort((a, b) => b[1].revenue - a[1].revenue).slice(0, 5); 
 
     if (sortedProducts.length === 0) {
-        topProductsList.innerHTML = `<div class="empty-state">No delivered orders yet to calculate top products.</div>`;
+        topProductsList.innerHTML = `<div class="empty-state"><i class="bi bi-inbox text-muted" style="font-size: 2rem;"></i><br>No delivered orders yet to calculate top products.</div>`;
     } else {
         topProductsList.innerHTML = sortedProducts.map((prod, index) => `
             <div class="top-product-item">
@@ -444,6 +540,7 @@ window.loadAnalytics = async function() {
     }
 };
 
+// ─── 7. UTILS & LOGOUT ───────────────────────────────────────────
 window.logout = async function() {
     await supabase.auth.signOut();
     window.location.href = '/login.html';
