@@ -96,7 +96,7 @@
     .btn-submit:hover { transform: translateY(-2px); filter: brightness(1.03); }
     .btn-submit:disabled { opacity: 0.6; transform: none; cursor: not-allowed; }
 
-    /* message alerts (kept for simple form validation) */
+    /* message alerts */
     .auth-message { padding: 0.75rem 1rem; border-radius: var(--radius-sm); font-size: 0.8rem; margin-bottom: 1rem; display: none; }
     .auth-message.error { background: var(--error-bg); border: 1px solid #fecaca; color: var(--error); }
     .auth-message.success { background: var(--success-bg); border: 1px solid #bbf7d0; color: var(--green-dark); }
@@ -298,8 +298,8 @@
     setTimeout(() => msgDiv.classList.remove('show'), 5000)
   }
 
-  // 🌟 NEW: Trigger the beautiful popup Modal
-  window.showResultModal = function(type, title, message) {
+  // 🌟 MODIFIED: Now handles different actions for verify vs dashboard
+  window.showResultModal = function(type, title, message, action = 'dashboard') {
     const icon = document.getElementById('modalIcon');
     const titleEl = document.getElementById('modalTitle');
     const descEl = document.getElementById('modalDesc');
@@ -311,8 +311,19 @@
     if (type === 'success') {
       icon.innerHTML = '<i class="bi bi-check-circle-fill"></i>';
       icon.className = 'modal-icon success';
-      btn.innerHTML = 'Go to Dashboard <i class="bi bi-arrow-right"></i>';
-      btn.onclick = () => window.location.href = '/dashboard/home.html';
+      
+      if (action === 'verify') {
+        // Tells user to check email, then switches to login tab when clicked
+        btn.innerHTML = 'Got It';
+        btn.onclick = () => {
+          resultModalInstance.hide();
+          window.switchTab('login');
+        };
+      } else {
+        // Standard login success redirect
+        btn.innerHTML = 'Go to Dashboard <i class="bi bi-arrow-right"></i>';
+        btn.onclick = () => window.location.href = '/dashboard/home.html';
+      }
     } else {
       icon.innerHTML = '<i class="bi bi-x-circle-fill"></i>';
       icon.className = 'modal-icon error';
@@ -360,7 +371,12 @@
     window.setLoading('login', false)
     
     if (error) {
-      window.showResultModal('error', 'Login Failed', error.message)
+      // Supabase returns a specific error if the email isn't confirmed yet
+      if (error.message.includes("Email not confirmed")) {
+        window.showResultModal('error', 'Email Not Verified', 'Please check your inbox and verify your email address before logging in.')
+      } else {
+        window.showResultModal('error', 'Login Failed', error.message)
+      }
     } else {
       window.location.href = '/dashboard/home.html'
     }
@@ -375,13 +391,11 @@
     const terms = document.getElementById('termsCheckbox').checked
     const slug = document.getElementById('slugValue').textContent.trim()
 
-    // Minor validation shows inline text
     if (!name || !business || !wa || !email || !password || !terms) {
       window.showMessage('signupMsg', 'Please fill all fields and accept the terms.', 'error')
       return
     }
 
-    // Check if slug already exists
     const { data: existing } = await supabase.from('vendor_profiles').select('slug').eq('slug', slug).maybeSingle()
     if (existing) {
       window.showResultModal('error', 'Store Name Taken', 'That store link is already being used. Please choose another name.')
@@ -390,7 +404,6 @@
 
     window.setLoading('signup', true)
     
-    // Create the User in Auth (passing data for the database trigger to catch)
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email,
       password,
@@ -411,9 +424,9 @@
       return
     }
 
-    // Success! The database trigger handled the vendor_profiles insert.
+    // 🌟 MODIFIED: Triggers the new 'verify' action in the modal
     if (authData.user) {
-      window.showResultModal('success', 'Congratulations!', 'Your store has been created successfully. Welcome to myvendor!')
+      window.showResultModal('success', 'Check Your Email 📧', 'Your store is almost ready! We just sent a verification link to your email. Please click it to activate your account.', 'verify')
     }
   }
 
@@ -444,9 +457,9 @@
     if (error) {
       window.showResultModal('error', 'Reset Failed', error.message)
     } else {
-      window.showResultModal('success', 'Check Your Email', 'We have sent a password reset link to your inbox.')
+      window.showResultModal('success', 'Check Your Email', 'We have sent a password reset link to your inbox.', 'verify')
     }
   }
 </script>
 </body>
-</html> 
+</html>
