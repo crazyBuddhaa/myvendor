@@ -22,7 +22,7 @@
     },
     {
       "source": "/:vendor",
-      "destination": "/storefront/index.html?vendor=:vendor"
+      "destination": "/api/store?vendor=:vendor"
     }
   ]
 }
