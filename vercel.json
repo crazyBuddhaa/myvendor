@@ -13,12 +13,16 @@
       "destination": "/track/:match*"
     },
     {
-      "source": "/product/:match*",
-      "destination": "/product/:match*"
-    },
-    {
       "source": "/storefront/:match*",
       "destination": "/storefront/:match*"
+    },
+    {
+      "source": "/product/:id([^/.]+)", 
+      "destination": "/api/product?id=:id"
+    },
+    {
+      "source": "/product/:match*",
+      "destination": "/product/:match*"
     },
     {
       "source": "/:vendor",
