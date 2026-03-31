@@ -41,10 +41,10 @@ async function initDashboard() {
     if (document.getElementById('productGrid')) await window.loadProducts();
     if (document.getElementById('orderList')) await window.loadOrders();
     if (document.getElementById('totalRevenue')) await window.loadAnalytics();
-    
+
     // 🌟 NEW: Load Settings if we are on the settings page
     if (document.getElementById('settingsForm')) await window.loadSettings();
-    
+
     // Check for edit product form
     const urlParams = new URLSearchParams(window.location.search);
     if (document.getElementById('editProductForm') && urlParams.has('id')) {
@@ -117,7 +117,7 @@ window.loadHomeDashboard = async function() {
         .from('products')
         .select('*', { count: 'exact', head: true })
         .eq('vendor_id', window.currentUser.id);
-        
+
     const { count: orderCount } = await supabase
         .from('orders')
         .select('*', { count: 'exact', head: true })
@@ -135,7 +135,7 @@ window.loadHomeDashboard = async function() {
         .limit(4);
 
     const ordersListEl = document.getElementById('recentOrdersList');
-    
+
     if (!recentOrders || recentOrders.length === 0) {
         ordersListEl.innerHTML = `<div class="empty-orders"><i class="bi bi-inbox fs-2 mb-2 d-block"></i>No orders yet. Share your link to get started!</div>`;
         return;
@@ -143,7 +143,7 @@ window.loadHomeDashboard = async function() {
 
     ordersListEl.innerHTML = recentOrders.map(o => {
         const date = new Date(o.created_at).toLocaleDateString('en-NG', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-        
+
         let statusClass = 'status-new';
         if (o.status === 'processing') statusClass = 'status-processing';
         if (o.status === 'shipped') statusClass = 'status-shipped';
@@ -177,7 +177,7 @@ window.loadProducts = async function() {
         .order('created_at', {ascending: false});
 
     const emptyState = document.getElementById('emptyState');
-    
+
     window.currentProductsCount = prods ? prods.length : 0;
 
     if (!prods || prods.length === 0) { 
@@ -191,7 +191,7 @@ window.loadProducts = async function() {
     }
 
     if(emptyState) emptyState.classList.add('hidden');
-    
+
     list.innerHTML = prods.map(p => {
         let badgeClass = 'stock-in';
         let badgeText = 'In Stock';
@@ -298,7 +298,7 @@ window.saveProduct = async function(e) {
 window.loadEditProduct = async function(id) {
     const header = document.getElementById('pageHeader');
     const saveBtn = document.getElementById('btnSave') || document.getElementById('btnUpdate');
-    
+
     if (header) header.innerHTML = 'Edit Product <i class="bi bi-pencil-square text-success"></i>';
     if (saveBtn) saveBtn.innerHTML = '<i class="bi bi-check-lg"></i> Update Product';
 
@@ -331,11 +331,11 @@ window.loadEditProduct = async function(id) {
     // Populate existing primary image into the hidden input so it doesn't get lost on update
     if (p.image_url) {
         if(document.getElementById('imageUrl')) document.getElementById('imageUrl').value = p.image_url;
-        
+
         const preview = document.getElementById('imagePreview') || document.getElementById('editImagePreview');
         const wrapper = document.getElementById('imagePreviewWrapper');
         const removeBtn = document.getElementById('removeImgBtn') || document.getElementById('editRemoveImgBtn');
-        
+
         if (preview && wrapper) {
             preview.src = p.image_url;
             preview.style.display = 'block';
@@ -347,20 +347,20 @@ window.loadEditProduct = async function(id) {
     // Populate existing gallery images into the hidden input
     if (p.extra_images && p.extra_images.length > 0) {
         if(document.getElementById('extraImagesData')) document.getElementById('extraImagesData').value = JSON.stringify(p.extra_images);
-        
+
         // This array keeps track of current images so new ones can be appended via the widget
         window.uploadedGalleryImages = [...p.extra_images]; 
-        
+
         const container = document.getElementById('extraImagesContainer');
         if (container) {
             p.extra_images.forEach(url => {
                 const imgBox = document.createElement('div');
                 imgBox.style.cssText = "width:75px; height:75px; border-radius:12px; overflow:hidden; border:1px solid #e9eee5;";
-                
+
                 const img = document.createElement('img');
                 img.src = url;
                 img.style.cssText = "width:100%; height:100%; object-fit:cover;";
-                
+
                 imgBox.appendChild(img);
                 container.insertBefore(imgBox, container.lastElementChild);
             });
@@ -369,7 +369,7 @@ window.loadEditProduct = async function(id) {
 
     const loader = document.getElementById('loadingState');
     const form = document.getElementById('editProductForm') || document.getElementById('addProductForm');
-    
+
     if (loader) loader.classList.add('hidden');
     if (form) form.classList.remove('hidden');
 };
@@ -444,7 +444,8 @@ window.deleteProduct = async function(id) {
 };
 
 window.copyProductLink = function(id) {
-    navigator.clipboard.writeText(`https://myvendor.qzz.io/product/?vendor=${window.vendorSlug}&id=${id}`);
+    // UPDATED: Now uses the clean path that matches vercel.json rewrite rules
+    navigator.clipboard.writeText(`https://myvendor.qzz.io/product/${id}`);
     const toast = document.getElementById('toastMsg');
     if (toast) {
         toast.innerText = "Product link copied!";
@@ -479,7 +480,7 @@ window.loadOrders = async function() {
 
     list.innerHTML = orders.map(o => {
         const dateStr = new Date(o.created_at).toLocaleDateString('en-NG', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-        
+
         let riderHtml = '';
         if (o.status === 'delivered') {
             riderHtml = `
@@ -569,7 +570,7 @@ window.filterOrders = function(status, pillElement) {
 
     const cards = document.querySelectorAll('.order-card-modern');
     let visibleCount = 0;
-    
+
     cards.forEach(card => {
         if (status === 'all' || card.dataset.status === status) {
             card.style.display = 'block';
@@ -611,7 +612,7 @@ window.handleCreateOrder = async function(e) {
         }
         window.loadOrders(); 
         navigator.clipboard.writeText(`https://myvendor.qzz.io/track/?id=${id}`);
-        
+
         const toast = document.getElementById('toastMsg');
         if (toast) {
             toast.innerText = "Order Created & Tracking Link Copied!";
@@ -644,7 +645,7 @@ window.currentOrderId = null;
 window.openStatusModal = function(id, status) {
     currentOrderId = id;
     const select = document.getElementById('statusSelect');
-    
+
     // Reset all options
     Array.from(select.options).forEach(opt => opt.disabled = false);
 
@@ -657,10 +658,10 @@ window.openStatusModal = function(id, status) {
     }
 
     select.value = status;
-    
+
     const riderGroup = document.getElementById('riderDetailsGroup');
     if(riderGroup) riderGroup.style.display = (status === 'shipped' || status === 'delivered') ? 'block' : 'none';
-    
+
     new bootstrap.Modal(document.getElementById('statusModal')).show();
 };
 
@@ -698,7 +699,7 @@ window.loadAnalytics = async function() {
             if (o.status === 'delivered') {
                 const orderTotal = parseFloat(o.total_amount || 0);
                 totalRev += orderTotal;
-                
+
                 const itemsArr = o.items.split(/,|\n/).map(i => i.trim()).filter(Boolean);
                 itemsArr.forEach(item => {
                     const cleanName = item.replace(/^\d+x\s*/i, '').trim();
@@ -752,7 +753,7 @@ window.loadAnalytics = async function() {
 // ─── 7. SETTINGS LOGIC ───────────────────────────────────────────
 window.loadSettings = async function() {
     if (!window.currentUser) return;
-    
+
     if (document.getElementById('setBizName')) {
         document.getElementById('setBizName').value = window.currentUser.business_name || '';
     }
@@ -794,7 +795,7 @@ window.updateSettings = async function(e) {
             .select('id')
             .eq('slug', newSlug)
             .single();
-            
+
         if (existingVendor) {
             alert("This Store Link is already taken. Please choose another one.");
             btn.innerHTML = originalText;
@@ -823,9 +824,9 @@ window.updateSettings = async function(e) {
         // Success! Update global state and UI instantly
         window.currentUser = { ...window.currentUser, ...updatedData };
         window.vendorSlug = updatedData.slug;
-        
+
         btn.innerHTML = '<i class="bi bi-check-lg"></i> Saved Successfully!';
-        
+
         setTimeout(() => {
             btn.innerHTML = originalText;
             btn.disabled = false;
