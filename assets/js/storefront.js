@@ -88,7 +88,7 @@ async function initStore() {
     // 🌟 GENERATE ARTISANAL CATEGORY PILLS 🌟
     if (filterContainer) {
         const categories = ['All', ...new Set(products.map(p => p.category).filter(c => c && c.trim() !== 'Other' && c.trim() !== ''))];
-        
+
         if (categories.length > 1) {
             filterContainer.style.display = 'flex';
             filterContainer.innerHTML = categories.map((cat, index) => `
@@ -99,7 +99,7 @@ async function initStore() {
         }
     }
 
-    // 🌟 RENDER NEW PRODUCT GRID (Matches your new HTML/CSS classes) 🌟
+    // 🌟 RENDER NEW PRODUCT GRID 🌟
     if(grid) {
         grid.innerHTML = products.map((p, i) => {
             const delay = i * 0.05; // Stagger animation
@@ -108,8 +108,9 @@ async function initStore() {
             const imgHtml = p.image_url ? `<img src="${p.image_url}" alt="${p.title}" style="${isOut ? 'filter: grayscale(1); opacity: 0.8;' : ''}">` : '<i class="bi bi-box" style="font-size:2rem; color:var(--text-muted);"></i>';
             const catData = p.category ? p.category : 'Other';
 
+            // UPDATED: Now uses the clean path that matches vercel.json rewrite rules
             return `
-            <a href="/product/?vendor=${slug}&id=${p.id}" class="product-item text-decoration-none" data-category="${catData}" style="animation-delay: ${delay}s;">
+            <a href="/product/${p.id}" class="product-item text-decoration-none" data-category="${catData}" style="animation-delay: ${delay}s;">
                 <div class="product-card">
                     <div class="prod-img">
                         ${badge}
@@ -140,11 +141,11 @@ window.searchStore = function() {
             item.style.display = 'none';
         }
     });
-    
+
     // Update count dynamically during search
     const countEl = document.getElementById('productCount');
     if(countEl) countEl.innerText = `${visibleCount} item${visibleCount !== 1 ? 's' : ''}`;
-    
+
     // Handle empty state
     const empty = document.getElementById('emptyState');
     if (visibleCount === 0) {
@@ -181,7 +182,7 @@ window.filterStorefront = function(category, buttonElement) {
     // Update count dynamically during filter
     const countEl = document.getElementById('productCount');
     if(countEl) countEl.innerText = `${visibleCount} item${visibleCount !== 1 ? 's' : ''}`;
-    
+
     // Handle empty state
     const empty = document.getElementById('emptyState');
     if (visibleCount === 0) {
