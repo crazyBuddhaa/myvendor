@@ -8,7 +8,9 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 window.currentUser = null;
 window.vendorSlug = null;
 window.currentProductsCount = 0;
-const FREE_PRODUCT_LIMIT = 15;
+
+// 🌟 Changed to 'let' and increased to 20 so it can dynamically grow
+let FREE_PRODUCT_LIMIT = 20; 
 
 // ─── 1. AUTH & INITIALIZATION ─────────────────────────────────────
 async function initDashboard() {
@@ -33,6 +35,10 @@ async function initDashboard() {
     window.currentUser = profile;
     window.vendorSlug = profile.slug;
 
+    // 🌟 Calculate total product limit based on base (20) + referrals
+    // If 'bonus_slots' is null/undefined, it defaults to 0
+    FREE_PRODUCT_LIMIT = 20 + (profile.bonus_slots || 0);
+
     // Inject the Premium Upgrade Modal into the page globally
     injectUpgradeModal();
 
@@ -42,7 +48,7 @@ async function initDashboard() {
     if (document.getElementById('orderList')) await window.loadOrders();
     if (document.getElementById('totalRevenue')) await window.loadAnalytics();
 
-    // 🌟 NEW: Load Settings if we are on the settings page
+    // Load Settings if we are on the settings page
     if (document.getElementById('settingsForm')) await window.loadSettings();
 
     // Check for edit product form
