@@ -557,11 +557,14 @@ window.loadOrders = async function() {
 };
 
 window.generateReceipt = function(orderId) {
+    // 1. Check if the user is on the premium tier
     if (currentUser.tier !== 'premium') {
         window.showPremiumModal("Custom Branded Receipts are a Premium feature.");
         return;
     }
-    alert("Receipt generator opening for Order: " + orderId);
+    
+    // 2. Open the receipt page in a new tab, passing the order ID in the URL
+    window.open(`/dashboard/receipt.html?id=${orderId}`, '_blank');
 };
 
 window.filterOrders = function(status, pillElement) {
