@@ -562,16 +562,63 @@ window.loadOrders = async function() {
     }).join('');
 };
 
-window.generateReceipt = function(orderId) {
-    // 1. Check if the user is on the premium tier
-    if (currentUser.tier !== 'premium') {
-        window.showPremiumModal("Custom Branded Receipts are a Premium feature.");
-        return;
+window.generateReceipt = async function(orderId) {
+    // Optional: Grab the button to show a loading spinner while we check Supabase
+    const btn = event ? event.currentTarget : null;
+    let originalHtml = '';
+    if (btn) {
+        originalHtml = btn.innerHTML;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+        btn.disabled = true;
     }
-    
-    // 2. Open the receipt page in a new tab, passing the order ID in the URL
-    window.open(`/dashboard/receipt.html?id=${orderId}`, '_blank');
+
+    try {
+        // 1. Get the exact timestamp for the 1st of the current month
+        const startOfMonth = new Date();
+        startOfMonth.setDate(1);
+        startOfMonth.setHours(0, 0, 0, 0);
+
+        // 2. Count how many receipts were generated this month
+        const { count, error } = await supabase
+            .from('analytics_events')
+            .select('*', { count: 'exact', head: true })
+            .eq('vendor_id', currentUser.id)
+            .eq('event_type', 'receipt_generated')
+            .gte('created_at', startOfMonth.toISOString());
+
+        if (error) throw error;
+
+        // Base limit (You can dynamically add referral bonuses to this later!)
+        let RECEIPT_LIMIT = 10; 
+
+        // 3. Block free users who hit the limit
+        if (currentUser.tier !== 'premium' && count >= RECEIPT_LIMIT) {
+            window.showPremiumModal(`You have reached your limit of ${RECEIPT_LIMIT} free receipts this month. Upgrade to generate unlimited branded receipts!`);
+            if (btn) { btn.innerHTML = originalHtml; btn.disabled = false; }
+            return;
+        }
+
+        // 4. Log the generation event to count against their quota
+        await supabase.from('analytics_events').insert([{
+            vendor_id: currentUser.id,
+            event_type: 'receipt_generated'
+            // Note: you could also pass product_id: orderId here if you wanted to track which orders got receipts
+        }]);
+
+        // 5. Open the receipt page
+        window.open(`/dashboard/receipt.html?id=${orderId}`, '_blank');
+        
+    } catch (err) {
+        console.error(err);
+        alert("Error generating receipt. Please try again.");
+    } finally {
+        if (btn) {
+            btn.innerHTML = originalHtml;
+            btn.disabled = false;
+        }
+    }
 };
+
 
 window.filterOrders = function(status, pillElement) {
     document.querySelectorAll('.filter-pill-modern').forEach(p => p.classList.remove('active'));
