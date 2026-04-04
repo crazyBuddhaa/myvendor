@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Receipt | myvendor</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,700;1,700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --green-primary: #0f6e3f; --green-dark: #0a4a2a; --green-soft: #e9f7ef;
+      --bg-color: #f0f7ec; --text-dark: #1a2e1f; --text-muted: #4a6741;
+      --border-light: #e9eee5; --shadow-lg: 0 20px 40px rgba(0, 32, 0, 0.08);
+    }
+
+    body {
+      background: var(--bg-color);
+      font-family: 'Inter', sans-serif;
+      color: var(--text-dark);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem 1rem;
+    }
+
+    /* Receipt Container */
+    .receipt-wrapper {
+      width: 100%;
+      max-width: 420px;
+      margin: 0 auto;
+      position: relative;
+    }
+
+    /* The Paper */
+    .receipt-paper {
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 2.5rem 2rem;
+      box-shadow: var(--shadow-lg);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Jagged Bottom Edge Effect */
+    .receipt-paper::after {
+      content: "";
+      position: absolute;
+      bottom: -10px;
+      left: 0;
+      width: 100%;
+      height: 20px;
+      background: linear-gradient(135deg, transparent 25%, #ffffff 25%) -10px 0,
+                  linear-gradient(225deg, transparent 25%, #ffffff 25%) -10px 0;
+      background-size: 20px 20px;
+      transform: rotate(180deg);
+    }
+
+    /* Store Info */
+    .store-header { text-align: center; margin-bottom: 2rem; }
+    .store-name { font-family: 'Playfair Display', serif; font-size: 1.8rem; font-weight: 700; color: var(--green-dark); line-height: 1.2; }
+    .store-link { font-size: 0.8rem; color: var(--text-muted); text-decoration: none; }
+
+    /* Order Meta */
+    .meta-row { display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 0.5rem; }
+    .meta-label { color: var(--text-muted); font-weight: 500; }
+    .meta-value { font-weight: 700; text-align: right; }
+
+    /* Divider */
+    .divider { border-top: 2px dashed var(--border-light); margin: 1.5rem 0; }
+
+    /* Items Section (Monospace for that authentic till receipt feel) */
+    .items-container { font-family: 'Space Mono', monospace; font-size: 0.85rem; line-height: 1.6; margin-bottom: 1.5rem; white-space: pre-wrap;}
+    
+    /* Total */
+    .total-row { display: flex; justify-content: space-between; align-items: center; font-size: 1.2rem; font-weight: 800; color: var(--green-primary); }
+    
+    /* Status Badge */
+    .paid-stamp {
+      display: inline-block; border: 2px solid var(--green-primary); color: var(--green-primary);
+      font-weight: 800; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 2px;
+      padding: 0.4rem 1rem; border-radius: 4px; transform: rotate(-5deg); margin-top: 2rem;
+      opacity: 0.85;
+    }
+
+    /* Footer */
+    .receipt-footer { text-align: center; margin-top: 2.5rem; font-size: 0.8rem; color: var(--text-muted); }
+    
+    /* Action Buttons (Hidden when printing) */
+    .action-buttons { display: flex; gap: 1rem; margin-top: 2rem; width: 100%; max-width: 420px; }
+    .btn-action { 
+      flex: 1; padding: 0.9rem; border-radius: 12px; font-weight: 700; font-size: 0.9rem;
+      border: none; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: 0.2s;
+    }
+    .btn-print { background: var(--green-dark); color: white; }
+    .btn-print:hover { background: #073820; }
+    .btn-share { background: white; color: var(--green-dark); border: 1px solid var(--border-light); }
+    .btn-share:hover { background: var(--green-soft); border-color: var(--green-primary); }
+
+    /* Print Styles */
+    @media print {
+      body { background: white; padding: 0; align-items: flex-start; justify-content: flex-start; }
+      .receipt-wrapper { max-width: 100%; margin: 0; }
+      .receipt-paper { box-shadow: none; padding: 1rem; border-radius: 0; }
+      .receipt-paper::after { display: none; }
+      .action-buttons { display: none; }
+    }
+
+    /* Loading State */
+    .loading-overlay { position: fixed; inset: 0; background: var(--bg-color); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10; }
+    .loader { width: 40px; height: 40px; border: 3px solid var(--border-light); border-top-color: var(--green-primary); border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 1rem; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loadingState">
+  <div class="loader"></div>
+  <p style="font-weight: 600; color: var(--green-dark);">Generating Receipt...</p>
+</div>
+
+<div class="receipt-wrapper hidden" id="receiptContent">
+  <div class="receipt-paper">
+    
+    <div class="store-header">
+      <div class="store-name" id="storeName">Store Name</div>
+      <a href="#" class="store-link" id="storeLink">myvendor.qzz.io/store</a>
+    </div>
+
+    <div class="meta-row">
+      <span class="meta-label">Receipt No:</span>
+      <span class="meta-value" id="orderId">MV-0000</span>
+    </div>
+    <div class="meta-row">
+      <span class="meta-label">Date:</span>
+      <span class="meta-value" id="orderDate">Jan 01, 2026</span>
+    </div>
+    <div class="meta-row">
+      <span class="meta-label">Customer:</span>
+      <span class="meta-value" id="customerName">Customer Name</span>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="items-container" id="orderItems">
+      Loading items...
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="total-row">
+      <span>TOTAL</span>
+      <span id="orderTotal">₦0.00</span>
+    </div>
+
+    <div style="text-align: center;">
+      <div class="paid-stamp" id="statusStamp">PAID</div>
+    </div>
+
+    <div class="receipt-footer">
+      <p style="font-weight: 600; margin-bottom: 0.2rem;">Thank you for your purchase!</p>
+      <p style="font-size: 0.7rem; opacity: 0.7;">If you have any questions, please contact us via WhatsApp.</p>
+    </div>
+
+  </div>
+
+  <div class="action-buttons">
+    <button class="btn-action btn-share" onclick="copyReceiptLink()">
+      <i class="bi bi-link-45deg fs-5"></i> Copy Link
+    </button>
+    <button class="btn-action btn-print" onclick="window.print()">
+      <i class="bi bi-printer"></i> Print / PDF
+    </button>
+  </div>
+</div>
+
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+
+  // ⚠️ Ensure these match your actual keys!
+  const SUPABASE_URL = 'https://sotdghhayztnpwnrzjzu.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable_OcOKwSDnoCGm_rt725Bi-g_rV6tjGlK';
+  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  async function loadReceipt() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const orderId = urlParams.get('id');
+
+    if (!orderId) {
+      alert("Invalid Order ID");
+      window.location.href = '/dashboard/orders.html';
+      return;
+    }
+
+    try {
+      // 1. Fetch Order
+      const { data: order, error: orderError } = await supabase
+        .from('orders')
+        .select('*')
+        .eq('id', orderId)
+        .single();
+
+      if (orderError || !order) throw new Error("Order not found");
+
+      // 2. Fetch Vendor info based on the order's vendor_id
+      const { data: vendor, error: vendorError } = await supabase
+        .from('vendor_profiles')
+        .select('business_name, slug')
+        .eq('id', order.vendor_id)
+        .single();
+
+      if (vendorError || !vendor) throw new Error("Vendor details not found");
+
+      // 3. Populate DOM
+      document.getElementById('storeName').textContent = vendor.business_name;
+      document.getElementById('storeLink').textContent = `myvendor.qzz.io/${vendor.slug}`;
+      document.getElementById('storeLink').href = `/${vendor.slug}`;
+
+      document.getElementById('orderId').textContent = order.id;
+      document.getElementById('orderDate').textContent = new Date(order.created_at).toLocaleDateString('en-NG', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+      document.getElementById('customerName').textContent = order.customer_name;
+
+      // Clean up items text (your app saves items as a text block, we just render it safely)
+      document.getElementById('orderItems').textContent = order.items.trim();
+
+      document.getElementById('orderTotal').textContent = `₦${parseFloat(order.total_amount).toLocaleString()}`;
+
+      // Update Stamp based on status
+      const stamp = document.getElementById('statusStamp');
+      if (order.status === 'cancelled') {
+        stamp.textContent = 'CANCELLED';
+        stamp.style.borderColor = '#ef4444';
+        stamp.style.color = '#ef4444';
+      } else if (order.status === 'new' || order.status === 'processing') {
+        stamp.textContent = 'PENDING';
+        stamp.style.borderColor = '#b45309';
+        stamp.style.color = '#b45309';
+      } else {
+        stamp.textContent = 'PAID & CONFIRMED';
+      }
+
+      // Hide Loader, Show Content
+      document.getElementById('loadingState').classList.add('hidden');
+      document.getElementById('receiptContent').classList.remove('hidden');
+
+    } catch (error) {
+      alert(error.message);
+      window.location.href = '/dashboard/orders.html';
+    }
+  }
+
+  // Handle Copy Link
+  window.copyReceiptLink = function() {
+    navigator.clipboard.writeText(window.location.href).then(() => {
+      const btn = document.querySelector('.btn-share');
+      const originalHtml = btn.innerHTML;
+      btn.innerHTML = '<i class="bi bi-check-lg text-success"></i> Copied!';
+      setTimeout(() => btn.innerHTML = originalHtml, 2000);
+    });
+  };
+
+  loadReceipt();
+</script>
+</body>
+</html>
