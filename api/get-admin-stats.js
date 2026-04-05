@@ -2,36 +2,38 @@ import { createClient } from '@supabase/supabase-js';
 
 export default async function handler(req, res) {
     const authHeader = req.headers.authorization;
-    if (authHeader !== `Bearer ${process.env.ADMIN_PASSWORD}`) {
-        return res.status(401).json({ error: 'Unauthorized. Nice try, hacker!' });
-    }
+    if (authHeader !== `Bearer ${process.env.ADMIN_PASSWORD}`) return res.status(401).json({ error: 'Unauthorized' });
 
-    const supabase = createClient(
-        process.env.SUPABASE_URL,
-        process.env.SUPABASE_SERVICE_KEY // ⚠️ Master Key
-    );
+    const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
 
     try {
-        // 1. Fetch raw counts for orders and products
-        const { count: orderCount } = await supabase.from('orders').select('*', { count: 'exact', head: true });
+        const { data: vendors } = await supabase.from('vendor_profiles').select('*').order('created_at', { ascending: false });
         const { count: productCount } = await supabase.from('products').select('*', { count: 'exact', head: true });
+        
+        // Fetch ALL orders to calculate global revenue
+        const { data: orders } = await supabase.from('orders').select('total_amount, status');
 
-        // 2. Fetch the actual list of all vendors (newest first)
-        const { data: vendors, error: vendorErr } = await supabase
-            .from('vendor_profiles')
-            .select('*')
-            .order('created_at', { ascending: false });
+        let totalRevenue = 0;
+        let pendingCount = 0;
 
-        if (vendorErr) throw vendorErr;
+        if (orders) {
+            orders.forEach(o => {
+                if (o.status === 'delivered') {
+                    totalRevenue += parseFloat(o.total_amount || 0);
+                } else if (o.status === 'new' || o.status === 'processing') {
+                    pendingCount++;
+                }
+            });
+        }
 
-        // 3. Send it all back
         return res.status(200).json({
+            vendorList: vendors || [],
             vendorCount: vendors ? vendors.length : 0,
-            orders: orderCount || 0,
             products: productCount || 0,
-            vendorList: vendors || []
+            orders: orders ? orders.length : 0,
+            revenue: totalRevenue,
+            pending: pendingCount
         });
-
     } catch (error) {
         return res.status(500).json({ error: error.message });
     }
