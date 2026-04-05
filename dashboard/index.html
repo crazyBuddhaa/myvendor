@@ -403,7 +403,7 @@
     }
 
     window.setLoading('signup', true)
-    
+
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email,
       password,
@@ -424,9 +424,25 @@
       return
     }
 
-    // 🌟 MODIFIED: Triggers the new 'verify' action in the modal
+    // 🌟 REFERRAL REWARD TRIGGER 🌟
+    // Check if they signed up using a promo link
+    const urlParams = new URLSearchParams(window.location.search);
+    const referrerId = urlParams.get('ref');
+
+    if (referrerId) {
+        try {
+            // Secretly ping the database to give the referrer their +3 slots
+            await supabase.rpc('reward_referral', { referrer_id: referrerId });
+            console.log("Promo reward granted to:", referrerId);
+        } catch (err) {
+            console.error("Promo reward failed:", err);
+        }
+    }
+    // 🌟 END REFERRAL BLOCK 🌟
+
+    // Triggers the 'verify' action in the modal
     if (authData.user) {
-      window.showResultModal('success', 'Check Your Email 📧', 'Your store is almost ready! We just sent a verification link to your email. Please click it to activate your account.', 'verify')
+      window.showResultModal('success', 'Check Your Email 📧', 'Your store is almost ready! We just sent a verification link to your email. If you can't find it in your inbox. Please check spam. Click it to activate your account.', 'verify')
     }
   }
 
