@@ -5,6 +5,17 @@ const SUPABASE_URL = 'https://sotdghhayztnpwnrzjzu.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_OcOKwSDnoCGm_rt725Bi-g_rV6tjGlK';
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+// 🛡️ XSS SECURITY: Escapes malicious characters from user input
+const escapeHTML = (str) => {
+    if (!str) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+};
+
 async function initStore() {
     // 1. EXTRACT SLUG
     let slug = null;
@@ -47,7 +58,7 @@ async function initStore() {
             <div class="text-center py-5" style="background: var(--cream-bg); min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center;">
                 <i class="bi bi-exclamation-circle text-danger" style="font-size: 3rem;"></i>
                 <h3 class="mt-3 fw-bold" style="color: var(--green-deep); font-family: 'Playfair Display', serif;">Store Does Not Exist</h3>
-                <p style="color: var(--text-muted);">There is no store registered with the name "${slug}".</p>
+                <p style="color: var(--text-muted);">There is no store registered with the name "${escapeHTML(slug)}".</p>
             </div>`;
         return;
     }
@@ -55,10 +66,12 @@ async function initStore() {
     // 3. UPDATE UI WITH VENDOR INFO
     document.title = `${vendor.business_name} - myvendor`;
     const storeNameEl = document.getElementById('displayStoreName');
-    if(storeNameEl) storeNameEl.innerText = vendor.business_name;
+    
+    // Using escapeHTML for safety when setting UI elements
+    if(storeNameEl) storeNameEl.innerHTML = escapeHTML(vendor.business_name);
 
     const navLinkEl = document.getElementById('navStoreLink');
-    if(navLinkEl) navLinkEl.href = `/${slug}`;
+    if(navLinkEl) navLinkEl.href = `/${vendor.slug}`;
 
     // 🌟 BACKGROUND ANALYTICS
     supabase.from('analytics_events').insert([{ vendor_id: vendor.id, event_type: 'store_view', product_id: null }]).then();
@@ -85,39 +98,39 @@ async function initStore() {
     if(empty) empty.classList.add('hidden');
     if(countEl) countEl.innerText = `${products.length} items`;
 
-    // 🌟 GENERATE ARTISANAL CATEGORY PILLS 🌟
+    // 🌟 GENERATE CATEGORY PILLS 🌟
     if (filterContainer) {
         const categories = ['All', ...new Set(products.map(p => p.category).filter(c => c && c.trim() !== 'Other' && c.trim() !== ''))];
 
         if (categories.length > 1) {
             filterContainer.style.display = 'flex';
             filterContainer.innerHTML = categories.map((cat, index) => `
-                <button class="filter-pill ${index === 0 ? 'active' : ''}" onclick="filterStorefront('${cat}', this)">
-                    ${cat}
+                <button class="filter-pill ${index === 0 ? 'active' : ''}" onclick="filterStorefront('${escapeHTML(cat)}', this)">
+                    ${escapeHTML(cat)}
                 </button>
             `).join('');
         }
     }
 
-    // 🌟 RENDER NEW PRODUCT GRID 🌟
+    // 🌟 RENDER PRODUCT GRID 🌟
     if(grid) {
         grid.innerHTML = products.map((p, i) => {
-            const delay = i * 0.05; // Stagger animation
+            const delay = i * 0.05; 
             const isOut = !p.in_stock;
             const badge = isOut ? `<div class="sold-out-tag">SOLD OUT</div>` : '';
-            const imgHtml = p.image_url ? `<img src="${p.image_url}" alt="${p.title}" style="${isOut ? 'filter: grayscale(1); opacity: 0.8;' : ''}">` : '<i class="bi bi-box" style="font-size:2rem; color:var(--text-muted);"></i>';
+            const imgHtml = p.image_url ? `<img src="${p.image_url}" alt="${escapeHTML(p.title)}" style="${isOut ? 'filter: grayscale(1); opacity: 0.8;' : ''}">` : '<i class="bi bi-box" style="font-size:2rem; color:var(--text-muted);"></i>';
             const catData = p.category ? p.category : 'Other';
 
-            // UPDATED: Now uses the clean path that matches vercel.json rewrite rules
+            // Clean path that matches vercel.json rewrite rules
             return `
-            <a href="/product/${p.id}" class="product-item text-decoration-none" data-category="${catData}" style="animation-delay: ${delay}s;">
+            <a href="/product/${p.id}" class="product-item text-decoration-none" data-category="${escapeHTML(catData)}" style="animation-delay: ${delay}s;">
                 <div class="product-card">
                     <div class="prod-img">
                         ${badge}
                         ${imgHtml}
                     </div>
                     <div class="prod-info">
-                        <div class="prod-title">${p.title}</div>
+                        <div class="prod-title">${escapeHTML(p.title)}</div>
                         <div class="prod-price">₦${parseFloat(p.price).toLocaleString()}</div>
                     </div>
                 </div>
@@ -126,7 +139,7 @@ async function initStore() {
     }
 }
 
-// 🌟 UPDATED: SEARCH & FILTER LOGIC 🌟
+// 🌟 SEARCH & FILTER LOGIC 🌟
 window.searchStore = function() {
     const term = document.getElementById('searchInput').value.toLowerCase();
     const items = document.querySelectorAll('.product-item');
@@ -142,11 +155,9 @@ window.searchStore = function() {
         }
     });
 
-    // Update count dynamically during search
     const countEl = document.getElementById('productCount');
     if(countEl) countEl.innerText = `${visibleCount} item${visibleCount !== 1 ? 's' : ''}`;
 
-    // Handle empty state
     const empty = document.getElementById('emptyState');
     if (visibleCount === 0) {
         empty.classList.remove('hidden');
@@ -156,17 +167,14 @@ window.searchStore = function() {
 };
 
 window.filterStorefront = function(category, buttonElement) {
-    // Update active pill styling
     document.querySelectorAll('.filter-pill').forEach(btn => btn.classList.remove('active'));
     buttonElement.classList.add('active');
 
-    // Update Section Title Text
     const labelText = document.querySelector('.section-title');
     if (labelText) {
         labelText.innerText = category === 'All' ? 'All offerings' : category;
     }
 
-    // Filter the grid items
     const items = document.querySelectorAll('.product-item');
     let visibleCount = 0;
 
@@ -179,11 +187,9 @@ window.filterStorefront = function(category, buttonElement) {
         }
     });
 
-    // Update count dynamically during filter
     const countEl = document.getElementById('productCount');
     if(countEl) countEl.innerText = `${visibleCount} item${visibleCount !== 1 ? 's' : ''}`;
 
-    // Handle empty state
     const empty = document.getElementById('emptyState');
     if (visibleCount === 0) {
         empty.classList.remove('hidden');
@@ -192,5 +198,4 @@ window.filterStorefront = function(category, buttonElement) {
     }
 };
 
-// Initialize the storefront
 initStore();
