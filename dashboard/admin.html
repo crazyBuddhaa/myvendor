@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Super Admin | myvendor</title>
+  <style>
+    body { font-family: sans-serif; padding: 2rem; background: #f0f7ec; }
+    .card { background: white; padding: 2rem; border-radius: 12px; max-width: 400px; margin: 0 auto; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    input { width: 100%; padding: 0.8rem; margin-bottom: 1rem; border: 1px solid #ccc; border-radius: 8px; }
+    button { width: 100%; padding: 0.8rem; background: #0f6e3f; color: white; border: none; border-radius: 8px; cursor: pointer; }
+    #dashboard { display: none; margin-top: 2rem; }
+  </style>
+</head>
+<body>
+
+  <div class="card" id="loginCard">
+    <h2>Admin Login</h2>
+    <input type="password" id="adminPass" placeholder="Enter Master Password">
+    <button onclick="loadAdminData()">Access Platform</button>
+  </div>
+
+  <div class="card" id="dashboard">
+    <h2>Platform Stats</h2>
+    <p>Total Vendors: <strong id="valVendors">...</strong></p>
+    <p>Total Products: <strong id="valProducts">...</strong></p>
+    <p>Total Orders: <strong id="valOrders">...</strong></p>
+  </div>
+
+  <script>
+    async function loadAdminData() {
+      const pass = document.getElementById('adminPass').value;
+      
+      // Ping your hidden Vercel backend
+      const response = await fetch('/api/get-admin-stats', {
+        headers: { 'Authorization': `Bearer ${pass}` }
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        alert(data.error);
+        return;
+      }
+
+      // Hide login, show dashboard
+      document.getElementById('loginCard').style.display = 'none';
+      document.getElementById('dashboard').style.display = 'block';
+
+      // Update UI
+      document.getElementById('valVendors').innerText = data.vendors;
+      document.getElementById('valProducts').innerText = data.products;
+      document.getElementById('valOrders').innerText = data.orders;
+    }
+  </script>
+
+</body>
+</html>
