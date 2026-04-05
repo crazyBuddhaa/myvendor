@@ -1,39 +1,52 @@
 import { createClient } from '@supabase/supabase-js';
 
 export default async function handler(req, res) {
-    const authHeader = req.headers.authorization;
-    if (authHeader !== `Bearer ${process.env.ADMIN_PASSWORD}`) return res.status(401).json({ error: 'Unauthorized' });
+    if (req.headers.authorization !== `Bearer ${process.env.ADMIN_PASSWORD}`) {
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
 
     const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
 
     try {
+        // 1. Fetch Core Data
         const { data: vendors } = await supabase.from('vendor_profiles').select('*').order('created_at', { ascending: false });
-        const { count: productCount } = await supabase.from('products').select('*', { count: 'exact', head: true });
-        
-        // Fetch ALL orders to calculate global revenue
-        const { data: orders } = await supabase.from('orders').select('total_amount, status');
+        const { data: orders } = await supabase.from('orders').select('vendor_id, total_amount, status');
+        const { data: products } = await supabase.from('products').select('vendor_id');
+        const { data: events } = await supabase.from('analytics_events').select('vendor_id, event_type');
 
-        let totalRevenue = 0;
-        let pendingCount = 0;
+        // 2. Aggregate Global Metrics
+        let globalRevenue = 0;
+        let globalTraffic = events ? events.length : 0;
 
-        if (orders) {
-            orders.forEach(o => {
-                if (o.status === 'delivered') {
-                    totalRevenue += parseFloat(o.total_amount || 0);
-                } else if (o.status === 'new' || o.status === 'processing') {
-                    pendingCount++;
-                }
-            });
-        }
+        // 3. Map Data to Specific Vendors
+        const enrichedVendors = vendors.map(vendor => {
+            const vOrders = orders ? orders.filter(o => o.vendor_id === vendor.id) : [];
+            const vProducts = products ? products.filter(p => p.vendor_id === vendor.id) : [];
+            const vEvents = events ? events.filter(e => e.vendor_id === vendor.id) : [];
+
+            const revenue = vOrders.filter(o => o.status === 'delivered')
+                                   .reduce((sum, o) => sum + parseFloat(o.total_amount || 0), 0);
+            
+            globalRevenue += revenue;
+
+            return {
+                ...vendor,
+                total_orders: vOrders.length,
+                total_products: vProducts.length,
+                total_revenue: revenue,
+                page_views: vEvents.filter(e => e.event_type === 'store_view').length,
+                wa_clicks: vEvents.filter(e => e.event_type === 'whatsapp_click').length
+            };
+        });
 
         return res.status(200).json({
-            vendorList: vendors || [],
+            globalRevenue,
+            globalTraffic,
             vendorCount: vendors ? vendors.length : 0,
-            products: productCount || 0,
-            orders: orders ? orders.length : 0,
-            revenue: totalRevenue,
-            pending: pendingCount
+            activeOrders: orders ? orders.filter(o => o.status !== 'delivered' && o.status !== 'cancelled').length : 0,
+            vendors: enrichedVendors
         });
+
     } catch (error) {
         return res.status(500).json({ error: error.message });
     }
