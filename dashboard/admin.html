@@ -3,402 +3,188 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Nexus Admin | myvendor</title>
+  <title>Super Admin | myvendor</title>
 
-  <!-- Bootstrap 5 + Icons + Fonts -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300..800&family=Raleway:wght@600..900&display=swap" rel="stylesheet" />
-  <!-- Chart.js CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     :root {
       --green-primary: #0f6e3f; --green-bright: #22c55e; --green-dark: #0a4a2a; --green-soft: #e9f7ef;
       --gray-bg: #fafcf9; --card-white: #ffffff; --text-dark: #1a2e1f; --text-muted: #4a6741;
-      --border-light: #e9eee5; --shadow-sm: 0 12px 28px rgba(0, 32, 0, 0.06);
-      --radius-lg: 24px; --radius-md: 18px;
+      --border-light: #e9eee5; --shadow-sm: 0 8px 20px rgba(0, 32, 0, 0.04);
+      --radius-lg: 20px; --radius-md: 16px;
     }
 
-    body { background: radial-gradient(circle at 10% 20%, #f6fcf5, #edf5ea); font-family: 'Inter', sans-serif; color: var(--text-dark); min-height: 100vh; }
-    h1, h2, h3, h4, .fw-heavy { font-family: 'Raleway', sans-serif; font-weight: 800; letter-spacing: -0.02em; }
+    body { background: linear-gradient(145deg, #f6fcf5 0%, #f0f7ec 100%); font-family: 'Inter', sans-serif; color: var(--text-dark); min-height: 100vh; }
+    h1, h2, h3, h4 { font-family: 'Raleway', sans-serif; font-weight: 800; letter-spacing: -0.02em; }
 
-    /* glass navigation */
-    .dash-nav { background: rgba(255, 255, 255, 0.88); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(34, 197, 94, 0.25); padding: 0.75rem 0; position: sticky; top: 0; z-index: 1000; }
-    .nav-container { max-width: 1400px; margin: 0 auto; padding: 0 1.5rem; display: flex; justify-content: space-between; align-items: center; }
-    .mv-logo { font-size: 1.6rem; font-weight: 900; background: linear-gradient(135deg, var(--green-dark), var(--green-primary)); -webkit-background-clip: text; background-clip: text; color: transparent; text-decoration: none; }
-    .mv-logo span { background: linear-gradient(135deg, var(--green-bright), #2b9348); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    /* Nav */
+    .dash-nav { background: rgba(255, 255, 255, 0.92); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(34, 197, 94, 0.2); padding: 0.9rem 0; position: sticky; top: 0; z-index: 1000; }
+    .nav-container { max-width: 900px; margin: 0 auto; padding: 0 1rem; display: flex; justify-content: space-between; align-items: center; }
+    .mv-logo { font-size: 1.5rem; font-weight: 900; background: linear-gradient(135deg, var(--green-dark), var(--green-primary)); -webkit-background-clip: text; color: transparent; text-decoration: none; }
+    .mv-logo span { background: linear-gradient(135deg, var(--green-bright), #2b9348); -webkit-background-clip: text; color: transparent; }
 
-    /* cards */
-    .stat-card { background: var(--card-white); border: none; border-radius: var(--radius-md); padding: 1.4rem; display: flex; align-items: center; gap: 1rem; box-shadow: var(--shadow-sm); transition: transform 0.2s ease; }
-    .stat-card:hover { transform: translateY(-3px); }
-    .glass-table { background: var(--card-white); border-radius: var(--radius-lg); border: 1px solid var(--border-light); box-shadow: var(--shadow-sm); overflow: hidden; }
-    .badge-soft { background: var(--green-soft); color: var(--green-dark); font-weight: 600; padding: 0.3rem 0.7rem; border-radius: 40px; font-size: 0.7rem; }
-    .btn-outline-modern { border: 1.5px solid var(--border-light); border-radius: 40px; padding: 0.4rem 1rem; font-weight: 600; transition: all 0.2s; }
-    .btn-outline-modern:hover { background: var(--green-primary); color: white; border-color: var(--green-primary); }
-    .search-input { border: 1.5px solid var(--border-light); border-radius: 48px; padding: 0.6rem 1.2rem; background: white; width: 260px; }
-    .avatar-icon { width: 36px; height: 36px; background: #eef5ea; border-radius: 14px; display: inline-flex; align-items: center; justify-content: center; }
-    .login-card { backdrop-filter: blur(4px); background: rgba(255,255,255,0.96); border-radius: 32px; box-shadow: 0 25px 40px rgba(0,0,0,0.05); border: 1px solid rgba(34,197,94,0.2); }
-    .action-icon { cursor: pointer; font-size: 1.2rem; margin: 0 4px; transition: 0.1s; color: var(--text-muted); }
-    .action-icon:hover { color: var(--green-primary); transform: scale(1.05); }
-    .table-modern td { vertical-align: middle; }
-    .status-badge { font-size: 0.7rem; font-weight: 700; padding: 0.2rem 0.7rem; border-radius: 100px; width: fit-content; }
-    .status-active { background: #e0f2e9; color: #0f6e3f; }
-    .status-inactive { background: #ffe8e6; color: #b91c1c; }
+    /* Login View */
+    #loginView { display: flex; align-items: center; justify-content: center; min-height: 80vh; padding: 1rem; }
+    .login-card { background: var(--card-white); padding: 2.5rem 2rem; border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); border: 1px solid var(--border-light); width: 100%; max-width: 400px; text-align: center; }
+    .form-control-modern { width: 100%; padding: 0.8rem 1rem; border: 1.5px solid var(--border-light); border-radius: 12px; font-size: 0.9rem; background: var(--gray-bg); margin-bottom: 1rem; outline: none; }
+    .form-control-modern:focus { border-color: var(--green-bright); background: white; }
+    .btn-submit { width: 100%; background: linear-gradient(105deg, var(--green-primary), var(--green-dark)); border: none; padding: 0.85rem; border-radius: 12px; font-weight: 700; color: white; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: all 0.2s; }
+    
+    /* Dashboard View */
+    #dashboardView { display: none; max-width: 900px; margin: 0 auto; padding: 2rem 1rem; }
+    
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+    .stat-card { background: var(--card-white); border: 1px solid var(--border-light); border-radius: var(--radius-md); padding: 1.5rem; display: flex; align-items: center; gap: 1rem; box-shadow: var(--shadow-sm); }
+    .stat-icon { width: 50px; height: 50px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
+    .stat-details h3 { font-size: 1.6rem; margin: 0; line-height: 1; color: var(--text-dark); }
+    .stat-details p { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; margin: 0; color: var(--text-muted); }
+
+    /* Directory Table */
+    .table-container { background: var(--card-white); border-radius: var(--radius-lg); border: 1px solid var(--border-light); box-shadow: var(--shadow-sm); overflow: hidden; }
+    .table-header { padding: 1.2rem 1.5rem; border-bottom: 1px solid var(--border-light); background: #fefce8; }
+    .table-header h4 { margin: 0; color: #b45309; font-size: 1.1rem; }
+    
+    .modern-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    .modern-table th { text-align: left; padding: 1rem 1.5rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; font-size: 0.7rem; border-bottom: 1px solid var(--border-light); }
+    .modern-table td { padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-light); color: var(--text-dark); }
+    .modern-table tr:last-child td { border-bottom: none; }
+    .modern-table tr:hover { background: var(--gray-bg); }
+    
+    .vendor-name { font-weight: 700; color: var(--green-dark); display: flex; align-items: center; gap: 0.5rem; }
+    .link-badge { background: var(--green-soft); color: var(--green-dark); padding: 0.2rem 0.6rem; border-radius: 40px; font-weight: 600; font-size: 0.75rem; text-decoration: none; }
+    .link-badge:hover { background: var(--green-bright); color: white; }
   </style>
 </head>
 <body>
 
 <nav class="dash-nav">
   <div class="nav-container">
-    <a href="#" class="mv-logo">my<span>vendor</span> · Nexus</a>
-    <div class="d-flex gap-3 align-items-center">
-      <span class="badge bg-dark rounded-pill px-3" id="adminBadge" style="display: none; background: linear-gradient(135deg,#0f6e3f,#0a4a2a) !important;">🔐 SUPER ADMIN</span>
-      <button class="btn btn-sm btn-outline-modern" id="logoutBtn" style="display: none;"><i class="bi bi-box-arrow-right"></i> Exit</button>
-    </div>
+    <a href="#" class="mv-logo">my<span>vendor</span></a>
+    <span class="badge bg-danger rounded-pill" id="adminBadge" style="display: none;">SUPER ADMIN</span>
   </div>
 </nav>
 
-<!-- LOGIN VIEW -->
-<div id="loginView" class="d-flex align-items-center justify-content-center" style="min-height: 85vh; padding: 1rem;">
-  <div class="login-card p-4 p-md-5" style="max-width: 440px; width: 100%;">
-    <div class="text-center mb-4">
-      <div class="avatar-icon mx-auto mb-3" style="width: 70px; height: 70px; background: #eef5ea;"><i class="bi bi-shield-lock-fill" style="font-size: 2rem; color: var(--green-primary);"></i></div>
-      <h3 class="fw-bold">Admin portal</h3>
-      <p class="text-muted small">Enter secure master key</p>
-    </div>
-    <input type="password" id="adminPass" class="form-control-modern" placeholder="Master password (demo: admin123)" style="width: 100%; padding: 0.85rem; border-radius: 60px; border: 1.5px solid #e2e8e0;">
-    <button class="btn-submit mt-3" id="loginBtn">Authenticate <i class="bi bi-arrow-right-circle"></i></button>
-    <div id="loginError" class="text-danger small text-center mt-3" style="display: none;"></div>
+<div id="loginView">
+  <div class="login-card">
+    <i class="bi bi-shield-lock-fill" style="font-size: 2.5rem; color: var(--green-primary); margin-bottom: 1rem; display: inline-block;"></i>
+    <h2 style="margin-bottom: 1.5rem;">System Access</h2>
+    <input type="password" id="adminPass" class="form-control-modern" placeholder="Enter Master Password">
+    <button class="btn-submit" onclick="loadAdminData()" id="loginBtn">Authenticate</button>
+    <div id="loginError" style="color: #dc2626; font-size: 0.8rem; font-weight: 600; margin-top: 1rem; display: none;"></div>
   </div>
 </div>
 
-<!-- MAIN DASHBOARD -->
-<div id="dashboardView" style="display: none; max-width: 1400px; margin: 0 auto; padding: 2rem 1.5rem;">
-  <!-- stats row -->
-  <div class="row g-4 mb-5">
-    <div class="col-sm-6 col-lg-3">
-      <div class="stat-card"><div class="stat-icon" style="background:#e0f2fe; color:#0284c7;"><i class="bi bi-shop fs-4"></i></div><div><h3 id="valVendors" class="fw-bold mb-0">0</h3><span class="text-muted small">Total stores</span></div></div>
-    </div>
-    <div class="col-sm-6 col-lg-3">
-      <div class="stat-card"><div class="stat-icon" style="background:var(--green-soft); color:var(--green-primary);"><i class="bi bi-box-seam fs-4"></i></div><div><h3 id="valProducts" class="fw-bold mb-0">0</h3><span class="text-muted small">Total products</span></div></div>
-    </div>
-    <div class="col-sm-6 col-lg-3">
-      <div class="stat-card"><div class="stat-icon" style="background:#fefce8; color:#d97706;"><i class="bi bi-receipt fs-4"></i></div><div><h3 id="valOrders" class="fw-bold mb-0">0</h3><span class="text-muted small">Total orders</span></div></div>
-    </div>
-    <div class="col-sm-6 col-lg-3">
-      <div class="stat-card"><div class="stat-icon" style="background:#f3e8ff; color:#9333ea;"><i class="bi bi-currency-dollar fs-4"></i></div><div><h3 id="valRevenue" class="fw-bold mb-0">$0</h3><span class="text-muted small">Revenue</span></div></div>
-    </div>
-  </div>
-
-  <!-- Chart + recent orders row -->
-  <div class="row g-4 mb-5">
-    <div class="col-lg-7">
-      <div class="glass-table p-3 p-md-4">
-        <h5 class="mb-3"><i class="bi bi-graph-up me-2 text-success"></i>Weekly orders trend</h5>
-        <canvas id="ordersChart" height="200" style="max-height: 220px; width: 100%;"></canvas>
+<div id="dashboardView">
+  <h2 style="margin-bottom: 1.5rem; color: var(--green-dark);">Platform Overview</h2>
+  
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon" style="background: #e0f2fe; color: #0284c7;"><i class="bi bi-shop"></i></div>
+      <div class="stat-details">
+        <h3 id="valVendors">0</h3>
+        <p>Total Stores</p>
       </div>
     </div>
-    <div class="col-lg-5">
-      <div class="glass-table p-3">
-        <div class="d-flex justify-content-between align-items-center mb-2"><h5 class="mb-0"><i class="bi bi-clock-history"></i> Recent activity</h5><small class="text-muted">live log</small></div>
-        <div id="activityFeed" style="max-height: 220px; overflow-y: auto; font-size: 0.8rem;"></div>
+    <div class="stat-card">
+      <div class="stat-icon" style="background: var(--green-soft); color: var(--green-primary);"><i class="bi bi-box-seam"></i></div>
+      <div class="stat-details">
+        <h3 id="valProducts">0</h3>
+        <p>Total Products</p>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon" style="background: #fefce8; color: #d97706;"><i class="bi bi-receipt"></i></div>
+      <div class="stat-details">
+        <h3 id="valOrders">0</h3>
+        <p>Total Orders</p>
       </div>
     </div>
   </div>
 
-  <!-- Vendor management section with search, filters, export -->
-  <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
-    <h4 class="mb-0"><i class="bi bi-people-fill me-2"></i>Vendor directory</h4>
-    <div class="d-flex flex-wrap gap-2">
-      <div class="input-group" style="max-width: 260px;"><span class="input-group-text bg-white border-end-0"><i class="bi bi-search"></i></span><input type="text" id="searchVendor" class="form-control border-start-0" placeholder="Search name / store..."></div>
-      <select id="statusFilter" class="form-select w-auto"><option value="all">All status</option><option value="active">Active</option><option value="inactive">Inactive</option></select>
-      <button class="btn btn-success" id="openAddVendorModalBtn" style="background: var(--green-primary); border: none;"><i class="bi bi-plus-circle"></i> Add vendor</button>
-      <button class="btn btn-outline-secondary" id="exportCsvBtn"><i class="bi bi-download"></i> CSV</button>
+  <div class="table-container">
+    <div class="table-header">
+      <h4><i class="bi bi-people-fill me-2"></i> Vendor Directory</h4>
     </div>
-  </div>
-
-  <!-- vendors table -->
-  <div class="glass-table">
     <div style="overflow-x: auto;">
-      <table class="table table-modern align-middle mb-0">
-        <thead class="bg-light">
-          <tr><th>Store</th><th>Owner</th><th>WhatsApp</th><th>Slug</th><th>Bonus slots</th><th>Products</th><th>Orders</th><th>Status</th><th class="text-end">Actions</th></tr>
+      <table class="modern-table">
+        <thead>
+          <tr>
+            <th>Store Name</th>
+            <th>Owner</th>
+            <th>WhatsApp</th>
+            <th>Store Link</th>
+            <th>Bonus Slots</th>
+          </tr>
         </thead>
-        <tbody id="vendorTableBody"></tbody>
+        <tbody id="vendorTableBody">
+          </tbody>
       </table>
     </div>
   </div>
-
-  <!-- recent orders preview -->
-  <div class="mt-5 glass-table p-3">
-    <h5 class="mb-3"><i class="bi bi-truck"></i> Recent orders overview</h5>
-    <div style="overflow-x: auto;"><table class="table table-sm"><thead><tr><th>Order ID</th><th>Vendor</th><th>Amount</th><th>Status</th></tr></thead><tbody id="recentOrdersBody"></tbody></table></div>
-  </div>
 </div>
 
-<!-- MODAL: Edit Bonus Slots -->
-<div class="modal fade" id="editBonusModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header bg-light"><h5 class="modal-title"><i class="bi bi-gem"></i> Edit bonus slots</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><input type="number" id="editBonusValue" class="form-control" placeholder="Bonus slots"><input type="hidden" id="editVendorId"></div><div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button><button class="btn btn-success" id="confirmEditBonus">Update slots</button></div></div></div></div>
-
-<!-- MODAL: Add Vendor -->
-<div class="modal fade" id="addVendorModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header bg-success text-white"><h5 class="modal-title"><i class="bi bi-plus-circle"></i> New vendor</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body"><input type="text" id="newBusinessName" class="form-control mb-2" placeholder="Business name"><input type="text" id="newFullName" class="form-control mb-2" placeholder="Owner full name"><input type="text" id="newWhatsapp" class="form-control mb-2" placeholder="WhatsApp number"><input type="text" id="newSlug" class="form-control mb-2" placeholder="Store slug (unique)"><input type="number" id="newBonus" class="form-control mb-2" placeholder="Bonus slots" value="0"><select id="newStatus" class="form-select"><option value="active">Active</option><option value="inactive">Inactive</option></select></div><div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button><button class="btn btn-success" id="confirmAddVendor">Create vendor</button></div></div></div></div>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-  // ----------------------------- MOCK DATA & STATE ---------------------------------
-  let vendors = [];
-  let orders = [];
-  let activityLogs = [];
-  let nextVendorId = 100;
-  let ordersChartInstance = null;
-
-  // Helper: add activity log
-  function addActivity(message) {
-    const timestamp = new Date().toLocaleTimeString();
-    activityLogs.unshift({ id: Date.now(), text: message, time: timestamp });
-    if (activityLogs.length > 15) activityLogs.pop();
-    renderActivityFeed();
-  }
-
-  // compute totals
-  function computeTotals() {
-    const totalVendors = vendors.length;
-    const totalProducts = vendors.reduce((sum, v) => sum + (v.productCount || 0), 0);
-    const totalOrders = vendors.reduce((sum, v) => sum + (v.orderCount || 0), 0);
-    const revenue = orders.reduce((sum, o) => sum + o.amount, 0);
-    return { totalVendors, totalProducts, totalOrders, revenue };
-  }
-
-  function updateStatsCards() {
-    const { totalVendors, totalProducts, totalOrders, revenue } = computeTotals();
-    document.getElementById('valVendors').innerText = totalVendors;
-    document.getElementById('valProducts').innerText = totalProducts;
-    document.getElementById('valOrders').innerText = totalOrders;
-    document.getElementById('valRevenue').innerText = `$${revenue.toLocaleString()}`;
-  }
-
-  // render vendor table with filters
-  function renderVendorTable() {
-    const searchTerm = document.getElementById('searchVendor')?.value.toLowerCase() || '';
-    const statusFilter = document.getElementById('statusFilter')?.value || 'all';
-    let filtered = vendors.filter(v => 
-      (v.business_name.toLowerCase().includes(searchTerm) || v.full_name.toLowerCase().includes(searchTerm)) &&
-      (statusFilter === 'all' || v.status === statusFilter)
-    );
-    const tbody = document.getElementById('vendorTableBody');
-    if (!filtered.length) {
-      tbody.innerHTML = '<tr><td colspan="9" class="text-center text-muted py-4">No vendors match</td></tr>';
-      return;
-    }
-    tbody.innerHTML = filtered.map(v => `
-      <tr>
-        <td><div class="d-flex align-items-center gap-2"><i class="bi bi-shop text-success"></i><span class="fw-semibold">${escapeHtml(v.business_name)}</span></div></td>
-        <td>${escapeHtml(v.full_name)}</td>
-        <td>${v.wa_number ? `<a href="https://wa.me/${v.wa_number.replace(/\D/g,'')}" target="_blank" class="text-decoration-none"><i class="bi bi-whatsapp text-success"></i> ${escapeHtml(v.wa_number)}</a>` : '—'}</td>
-        <td><code>/${escapeHtml(v.slug)}</code></td>
-        <td><span class="badge-soft">+${v.bonus_slots}</span></td>
-        <td>${v.productCount || 0}</td>
-        <td>${v.orderCount || 0}</td>
-        <td><span class="status-badge ${v.status === 'active' ? 'status-active' : 'status-inactive'}">${v.status === 'active' ? 'Active' : 'Inactive'}</span></td>
-        <td class="text-end">
-          <i class="bi bi-pencil-square action-icon me-2" title="Edit bonus" data-id="${v.id}" data-bonus="${v.bonus_slots}" onclick="openEditBonusModal(${v.id})"></i>
-          <i class="bi bi-arrow-repeat action-icon me-2" title="Toggle status" data-id="${v.id}" onclick="toggleVendorStatus(${v.id})"></i>
-          <i class="bi bi-trash3 action-icon text-danger" title="Delete" data-id="${v.id}" onclick="deleteVendorById(${v.id})"></i>
-        </td>
-      </tr>
-    `).join('');
-  }
-
-  function escapeHtml(str) { if(!str) return ''; return str.replace(/[&<>]/g, function(m){if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
-
-  // render activity feed
-  function renderActivityFeed() {
-    const container = document.getElementById('activityFeed');
-    if (!container) return;
-    if (activityLogs.length === 0) { container.innerHTML = '<div class="text-muted small">No recent actions</div>'; return; }
-    container.innerHTML = activityLogs.map(log => `<div class="border-bottom pb-2 mb-2"><i class="bi bi-record-circle text-success me-1" style="font-size: 0.6rem;"></i> <strong>${log.time}</strong> — ${escapeHtml(log.text)}</div>`).join('');
-  }
-
-  // render recent orders (linked to vendors)
-  function renderRecentOrders() {
-    const container = document.getElementById('recentOrdersBody');
-    if (!container) return;
-    const latest = [...orders].sort((a,b)=>b.id - a.id).slice(0,5);
-    if(!latest.length) { container.innerHTML = '<tr><td colspan="4" class="text-muted">No orders</td></tr>'; return; }
-    container.innerHTML = latest.map(o => `<tr><td>#${o.id}</td><td>${escapeHtml(o.vendorName)}</td><td>$${o.amount}</td><td><span class="badge bg-light text-dark">${o.status}</span></td></tr>`).join('');
-  }
-
-  function fullRefresh() {
-    updateStatsCards();
-    renderVendorTable();
-    renderRecentOrders();
-    renderActivityFeed();
-  }
-
-  // --- CRUD actions ---
-  window.openEditBonusModal = (vendorId) => {
-    const vendor = vendors.find(v => v.id === vendorId);
-    if(vendor) {
-      document.getElementById('editVendorId').value = vendorId;
-      document.getElementById('editBonusValue').value = vendor.bonus_slots;
-      new bootstrap.Modal(document.getElementById('editBonusModal')).show();
-    }
-  };
-  document.getElementById('confirmEditBonus')?.addEventListener('click', () => {
-    const vendorId = parseInt(document.getElementById('editVendorId').value);
-    const newBonus = parseInt(document.getElementById('editBonusValue').value);
-    const vendor = vendors.find(v => v.id === vendorId);
-    if(vendor && !isNaN(newBonus)) {
-      vendor.bonus_slots = newBonus;
-      addActivity(`✏️ Updated bonus slots for "${vendor.business_name}" → +${newBonus}`);
-      fullRefresh();
-      bootstrap.Modal.getInstance(document.getElementById('editBonusModal')).hide();
-    }
-  });
-
-  window.toggleVendorStatus = (vendorId) => {
-    const vendor = vendors.find(v => v.id === vendorId);
-    if(vendor) {
-      vendor.status = vendor.status === 'active' ? 'inactive' : 'active';
-      addActivity(`🔄 Toggled ${vendor.business_name} status → ${vendor.status.toUpperCase()}`);
-      fullRefresh();
-    }
-  };
-
-  window.deleteVendorById = (vendorId) => {
-    if(confirm('Permanently delete this vendor? Orders linked will be removed.')) {
-      const vendor = vendors.find(v => v.id === vendorId);
-      if(vendor) {
-        // remove orders referencing this vendor name or vendorId? keep consistency: remove orders where vendorId matches
-        orders = orders.filter(o => o.vendorId !== vendorId);
-        vendors = vendors.filter(v => v.id !== vendorId);
-        addActivity(`🗑️ Deleted vendor "${vendor.business_name}" and ${orders.filter(o=>o.vendorId===vendorId).length} associated orders`);
-        fullRefresh();
-      }
-    }
-  };
-
-  // Add vendor logic
-  document.getElementById('confirmAddVendor')?.addEventListener('click', () => {
-    const business = document.getElementById('newBusinessName').value.trim();
-    const owner = document.getElementById('newFullName').value.trim();
-    const wa = document.getElementById('newWhatsapp').value.trim();
-    let slug = document.getElementById('newSlug').value.trim();
-    const bonus = parseInt(document.getElementById('newBonus').value) || 0;
-    const status = document.getElementById('newStatus').value;
-    if(!business || !owner || !slug) { alert("Business name, owner and slug required"); return; }
-    if(vendors.some(v => v.slug === slug)) { alert("Slug already exists"); return; }
-    const newId = nextVendorId++;
-    const newVendor = {
-      id: newId, business_name: business, full_name: owner, wa_number: wa, slug: slug,
-      bonus_slots: bonus, status: status, productCount: 0, orderCount: 0
-    };
-    vendors.push(newVendor);
-    addActivity(`🌟 New vendor added: ${business} (slug: ${slug})`);
-    fullRefresh();
-    bootstrap.Modal.getInstance(document.getElementById('addVendorModal')).hide();
-    document.getElementById('newBusinessName').value = ''; document.getElementById('newFullName').value = ''; document.getElementById('newWhatsapp').value = ''; document.getElementById('newSlug').value = ''; document.getElementById('newBonus').value = 0;
-  });
-
-  document.getElementById('openAddVendorModalBtn')?.addEventListener('click', () => new bootstrap.Modal(document.getElementById('addVendorModal')).show());
-
-  // Export CSV
-  document.getElementById('exportCsvBtn')?.addEventListener('click', () => {
-    let filtered = vendors;
-    const searchTerm = document.getElementById('searchVendor')?.value.toLowerCase() || '';
-    const statusFilter = document.getElementById('statusFilter')?.value || 'all';
-    filtered = vendors.filter(v => (v.business_name.toLowerCase().includes(searchTerm) || v.full_name.toLowerCase().includes(searchTerm)) && (statusFilter === 'all' || v.status === statusFilter));
-    const csvRows = [["Store","Owner","WhatsApp","Slug","Bonus slots","Products","Orders","Status"]];
-    filtered.forEach(v => { csvRows.push([v.business_name, v.full_name, v.wa_number, v.slug, v.bonus_slots, v.productCount, v.orderCount, v.status]); });
-    const csvContent = csvRows.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(",")).join("\n");
-    const blob = new Blob([csvContent], {type: "text/csv"}); const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = "vendors_export.csv"; link.click(); URL.revokeObjectURL(link.href);
-    addActivity("📁 Exported vendor list to CSV");
-  });
-
-  // search + filter listeners
-  document.getElementById('searchVendor')?.addEventListener('input', () => renderVendorTable());
-  document.getElementById('statusFilter')?.addEventListener('change', () => renderVendorTable());
-
-  // --- CHART INIT ---
-  function initChart() {
-    const ctx = document.getElementById('ordersChart').getContext('2d');
-    if(ordersChartInstance) ordersChartInstance.destroy();
-    ordersChartInstance = new Chart(ctx, {
-      type: 'line', data: { labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5', 'Week 6'], datasets: [{ label: 'Orders volume', data: [32, 41, 58, 64, 79, 88], borderColor: '#0f6e3f', backgroundColor: 'rgba(15,110,63,0.05)', tension: 0.3, fill: true, pointBackgroundColor: '#22c55e' }] },
-      options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { position: 'top' } } }
-    });
-  }
-
-  // load mock data after successful login
-  function initMockData() {
-    vendors = [
-      { id: 1, business_name: "GreenLeaf Organics", full_name: "Aisha Khan", wa_number: "+971501234567", slug: "greenleaf", bonus_slots: 12, status: "active", productCount: 48, orderCount: 312 },
-      { id: 2, business_name: "Urban Spice Bazaar", full_name: "Rahul Mehta", wa_number: "+971551234567", slug: "urbanspice", bonus_slots: 8, status: "active", productCount: 124, orderCount: 567 },
-      { id: 3, business_name: "Desert Rose", full_name: "Layla Hassan", wa_number: "+971501112233", slug: "desertrose", bonus_slots: 5, status: "inactive", productCount: 23, orderCount: 89 },
-      { id: 4, business_name: "ElectroMart", full_name: "James Carter", wa_number: "+971569998877", slug: "electromart", bonus_slots: 20, status: "active", productCount: 312, orderCount: 1045 },
-      { id: 5, business_name: "Handmade Treasures", full_name: "Sophia Lee", wa_number: "+971502345678", slug: "handmade", bonus_slots: 3, status: "active", productCount: 67, orderCount: 210 }
-    ];
-    nextVendorId = 6;
-    orders = [];
-    vendors.forEach(v => { 
-      const orderCount = v.orderCount || 0;
-      for(let i=1;i<=Math.min(5, Math.ceil(orderCount/50));i++) {
-        orders.push({ id: orders.length+100, vendorId: v.id, vendorName: v.business_name, amount: Math.floor(Math.random() * 300 + 50), status: "completed", date: new Date() });
-      }
-    });
-    if(orders.length < 8) orders.push({ id: 999, vendorId: 1, vendorName: "GreenLeaf Organics", amount: 129, status: "pending" });
-    activityLogs = [];
-    addActivity("🔐 Admin session started — dashboard ready");
-    addActivity("📊 System sync: vendor & order data loaded");
-  }
-
-  // Login handler
-  async function handleLogin() {
+  async function loadAdminData() {
     const pass = document.getElementById('adminPass').value;
+    const btn = document.getElementById('loginBtn');
     const errDiv = document.getElementById('loginError');
-    const loginBtn = document.getElementById('loginBtn');
-    loginBtn.disabled = true;
-    loginBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Verifying...';
+    
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Verifying...';
+    btn.disabled = true;
     errDiv.style.display = 'none';
-    setTimeout(() => {
-      if(pass === "admin123") {
-        initMockData();
-        document.getElementById('loginView').style.display = 'none';
-        document.getElementById('dashboardView').style.display = 'block';
-        document.getElementById('adminBadge').style.display = 'inline-block';
-        document.getElementById('logoutBtn').style.display = 'inline-block';
-        fullRefresh();
-        initChart();
-        addActivity("✅ Authenticated as Super Admin");
-      } else {
-        errDiv.innerText = 'Invalid master password. Try: admin123';
-        errDiv.style.display = 'block';
+
+    try {
+      const response = await fetch('/api/get-admin-stats', {
+        headers: { 'Authorization': `Bearer ${pass}` }
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Authentication failed');
       }
-      loginBtn.disabled = false;
-      loginBtn.innerHTML = 'Authenticate <i class="bi bi-arrow-right-circle"></i>';
-    }, 400);
+
+      // Hide login, show dashboard
+      document.getElementById('loginView').style.display = 'none';
+      document.getElementById('adminBadge').style.display = 'inline-block';
+      document.getElementById('dashboardView').style.display = 'block';
+
+      // Update Top Stats
+      document.getElementById('valVendors').innerText = data.vendorCount;
+      document.getElementById('valProducts').innerText = data.products;
+      document.getElementById('valOrders').innerText = data.orders;
+
+      // Populate Vendor Table
+      const tableBody = document.getElementById('vendorTableBody');
+      if (data.vendorList.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="5" style="text-align:center; color: var(--text-muted); padding: 2rem;">No vendors found.</td></tr>';
+      } else {
+        tableBody.innerHTML = data.vendorList.map(v => `
+          <tr>
+            <td>
+              <div class="vendor-name"><i class="bi bi-shop-window text-success"></i> ${v.business_name || 'N/A'}</div>
+            </td>
+            <td>${v.full_name || 'Unknown'}</td>
+            <td>${v.wa_number ? `<a href="https://wa.me/${v.wa_number.replace(/\D/g,'')}" target="_blank" style="color:var(--text-dark); text-decoration:none;"><i class="bi bi-whatsapp" style="color: #25D366;"></i> ${v.wa_number}</a>` : 'N/A'}</td>
+            <td><a href="/${v.slug}" target="_blank" class="link-badge">/${v.slug}</a></td>
+            <td><strong>+${v.bonus_slots || 0}</strong></td>
+          </tr>
+        `).join('');
+      }
+
+    } catch (error) {
+      errDiv.innerText = error.message;
+      errDiv.style.display = 'block';
+    } finally {
+      btn.innerHTML = 'Authenticate';
+      btn.disabled = false;
+    }
   }
-
-  // logout
-  document.getElementById('logoutBtn')?.addEventListener('click', () => {
-    document.getElementById('dashboardView').style.display = 'none';
-    document.getElementById('loginView').style.display = 'flex';
-    document.getElementById('adminBadge').style.display = 'none';
-    document.getElementById('logoutBtn').style.display = 'none';
-    document.getElementById('adminPass').value = '';
-    if(ordersChartInstance) { ordersChartInstance.destroy(); ordersChartInstance = null; }
-    addActivity = () => {}; // avoid ghost logs; re-assign later. but we reset view
-  });
-
-  document.getElementById('loginBtn')?.addEventListener('click', handleLogin);
-  // optional enter key
-  document.getElementById('adminPass')?.addEventListener('keypress', (e) => { if(e.key === 'Enter') handleLogin(); });
-  
-  // fix modal interactions with dynamic content
-  window.openEditBonusModal = window.openEditBonusModal;
-  window.toggleVendorStatus = window.toggleVendorStatus;
-  window.deleteVendorById = window.deleteVendorById;
 </script>
+
 </body>
 </html>
