@@ -6,6 +6,7 @@
   <title>Receipt | myvendor</title>
 
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=Space+Mono:wght@400;700&family=Cormorant+Garamond:wght@500;600;700&display=swap" rel="stylesheet" />
 
   <style>
@@ -437,11 +438,13 @@
     /* ─── Action buttons ──────────────────────── */
     .action-row {
       display: flex;
-      gap: .8rem;
+      flex-direction: column;
+      gap: .7rem;
       margin-top: 1.2rem;
       animation: slideUp .65s cubic-bezier(.16,1,.3,1) both;
       animation-delay: .2s;
     }
+    .action-sub { display: flex; gap: .7rem; }
     .btn-act {
       flex: 1;
       padding: .85rem 1rem;
@@ -458,6 +461,26 @@
       transition: all .2s cubic-bezier(.34,1.56,.64,1);
       -webkit-tap-highlight-color: transparent;
     }
+    /* Primary — Save as Image */
+    .btn-image {
+      background: linear-gradient(135deg, var(--g-dark) 0%, var(--g-primary) 100%);
+      color: white;
+      font-size: .92rem;
+      padding: 1rem 1rem;
+      box-shadow: 0 4px 20px rgba(7,45,25,.35);
+    }
+    .btn-image:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(15,110,63,.45);
+      filter: brightness(1.08);
+    }
+    .btn-image:disabled {
+      opacity: .65;
+      transform: none !important;
+      cursor: wait;
+      filter: none;
+    }
+    /* Secondary — Copy Link */
     .btn-share {
       background: var(--paper);
       color: var(--ink);
@@ -471,15 +494,19 @@
       transform: translateY(-2px);
       box-shadow: 0 6px 20px rgba(15,110,63,.15);
     }
+    /* Secondary — Print */
     .btn-print {
-      background: var(--g-deep);
-      color: white;
-      box-shadow: 0 4px 16px rgba(7,45,25,.3);
+      background: var(--paper);
+      color: var(--ink);
+      border: 1.5px solid var(--border-dk);
+      box-shadow: 0 2px 8px rgba(0,0,0,.06);
     }
     .btn-print:hover {
-      background: var(--g-primary);
+      background: var(--ink);
+      color: white;
+      border-color: var(--ink);
       transform: translateY(-2px);
-      box-shadow: 0 8px 24px rgba(15,110,63,.4);
+      box-shadow: 0 6px 20px rgba(0,0,0,.15);
     }
     .btn-act:active { transform: scale(.97) translateY(0) !important; }
 
@@ -626,12 +653,17 @@
 
   <!-- Buttons -->
   <div class="action-row">
-    <button class="btn-act btn-share" id="shareBtn" onclick="shareReceipt()">
-      <i class="bi bi-share"></i> Share
+    <button class="btn-act btn-image" id="imgBtn" onclick="shareAsImage()">
+      <i class="bi bi-image"></i> Save as Image
     </button>
-    <button class="btn-act btn-print" onclick="window.print()">
-      <i class="bi bi-printer"></i> Print / PDF
-    </button>
+    <div class="action-sub">
+      <button class="btn-act btn-share" id="shareBtn" onclick="shareReceipt()">
+        <i class="bi bi-link-45deg"></i> Copy Link
+      </button>
+      <button class="btn-act btn-print" onclick="window.print()">
+        <i class="bi bi-printer"></i> Print / PDF
+      </button>
+    </div>
   </div>
 </div>
 
@@ -708,6 +740,122 @@
         btn.innerHTML = '<i class="bi bi-check-lg"></i> Copied!';
         setTimeout(() => (btn.innerHTML = orig), 2200);
       });
+    }
+  };
+
+  /* ── Download blob helper ───────────────────── */
+  function downloadBlob(blob) {
+    const url = URL.createObjectURL(blob);
+    const a   = document.createElement('a');
+    a.href = url;
+    a.download = 'myvendor-receipt.png';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 3000);
+  }
+
+  /* ── Save as Image ───────────────────────────── */
+  window.shareAsImage = async function() {
+    const btn     = document.getElementById('imgBtn');
+    const origBtn = btn.innerHTML;
+    btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Generating…';
+    btn.disabled  = true;
+
+    const actRow = document.querySelector('.action-row');
+    actRow.style.visibility = 'hidden';   // hide buttons from screenshot
+
+    try {
+      const card = document.querySelector('.receipt-card');
+
+      // Capture receipt card at 2× (retina quality)
+      const cardCanvas = await html2canvas(card, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#fffef9',
+        logging: false,
+        removeContainer: true,
+      });
+
+      // Build a framed output canvas with padding + watermark
+      const PAD    = 64;          // px of breathing room around card
+      const WM_H   = 36;          // watermark strip height
+      const R      = 22 * 2;      // border-radius × scale
+      const out    = document.createElement('canvas');
+      out.width    = cardCanvas.width  + PAD * 2;
+      out.height   = cardCanvas.height + PAD * 2 + WM_H;
+      const ctx    = out.getContext('2d');
+
+      // Background gradient
+      const grad = ctx.createLinearGradient(0, 0, out.width, out.height);
+      grad.addColorStop(0, '#f5f1e8');
+      grad.addColorStop(1, '#e8e3d8');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, out.width, out.height);
+
+      // Card drop shadow
+      ctx.save();
+      ctx.shadowColor   = 'rgba(0,0,0,0.18)';
+      ctx.shadowBlur    = 48;
+      ctx.shadowOffsetY = 12;
+      ctx.fillStyle     = '#fffef9';
+      const cx = PAD, cy = PAD, cw = cardCanvas.width, ch = cardCanvas.height;
+      ctx.beginPath();
+      ctx.moveTo(cx + R, cy);
+      ctx.lineTo(cx + cw - R, cy);   ctx.quadraticCurveTo(cx + cw, cy,      cx + cw, cy + R);
+      ctx.lineTo(cx + cw, cy + ch - R); ctx.quadraticCurveTo(cx + cw, cy + ch, cx + cw - R, cy + ch);
+      ctx.lineTo(cx + R, cy + ch);   ctx.quadraticCurveTo(cx,      cy + ch, cx,      cy + ch - R);
+      ctx.lineTo(cx, cy + R);        ctx.quadraticCurveTo(cx,      cy,      cx + R,  cy);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+
+      // Clip card image to rounded rect
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(cx + R, cy);
+      ctx.lineTo(cx + cw - R, cy);   ctx.quadraticCurveTo(cx + cw, cy,      cx + cw, cy + R);
+      ctx.lineTo(cx + cw, cy + ch - R); ctx.quadraticCurveTo(cx + cw, cy + ch, cx + cw - R, cy + ch);
+      ctx.lineTo(cx + R, cy + ch);   ctx.quadraticCurveTo(cx,      cy + ch, cx,      cy + ch - R);
+      ctx.lineTo(cx, cy + R);        ctx.quadraticCurveTo(cx,      cy,      cx + R,  cy);
+      ctx.closePath();
+      ctx.clip();
+      ctx.drawImage(cardCanvas, PAD, PAD);
+      ctx.restore();
+
+      // Watermark
+      ctx.fillStyle   = 'rgba(100, 88, 70, 0.55)';
+      ctx.font        = `500 ${13 * 2}px "DM Sans", sans-serif`;
+      ctx.textAlign   = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('myvendor.qzz.io', out.width / 2, out.height - WM_H / 2 - 2);
+
+      // Share or download
+      out.toBlob(async (blob) => {
+        const file = new File([blob], 'myvendor-receipt.png', { type: 'image/png' });
+
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          try {
+            await navigator.share({
+              title: 'myvendor Receipt',
+              text:  'Here is your order receipt.',
+              files: [file],
+            });
+          } catch (e) {
+            if (e.name !== 'AbortError') downloadBlob(blob);
+          }
+        } else {
+          downloadBlob(blob);
+        }
+      }, 'image/png');
+
+    } catch (err) {
+      console.error('Image generation failed:', err);
+      alert('Could not generate image. Try "Print / PDF" instead.');
+    } finally {
+      actRow.style.visibility = '';
+      btn.innerHTML = origBtn;
+      btn.disabled  = false;
     }
   };
 
