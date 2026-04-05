@@ -7,123 +7,67 @@
 
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300..800&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300..800&family=Raleway:wght@600..900&display=swap" rel="stylesheet" />
 
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-
     :root {
       --green-primary: #0f6e3f; --green-bright: #22c55e; --green-dark: #0a4a2a; --green-soft: #e9f7ef;
       --gray-bg: #fafcf9; --card-white: #ffffff; --text-dark: #1a2e1f; --text-muted: #4a6741;
       --border-light: #e9eee5; --shadow-sm: 0 8px 20px rgba(0, 32, 0, 0.04);
     }
-
-    body {
-      background: var(--gray-bg);
-      font-family: 'Inter', sans-serif;
-      color: var(--text-dark);
-      padding-bottom: 5rem;
-    }
+    
+    body { background: var(--gray-bg); font-family: 'Inter', sans-serif; color: var(--text-dark); padding-bottom: 5rem; }
 
     /* Header */
-    .dashboard-header {
-      background: var(--card-white); padding: 1.2rem 1.5rem;
-      border-bottom: 1px solid var(--border-light);
-      position: sticky; top: 0; z-index: 10;
-      display: flex; justify-content: space-between; align-items: center;
-    }
-    .page-title { font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 700; color: var(--green-dark); margin: 0; }
+    .dashboard-header { background: var(--card-white); padding: 1.2rem 1.5rem; border-bottom: 1px solid var(--border-light); position: sticky; top: 0; z-index: 10; display: flex; justify-content: space-between; align-items: center; }
+    .page-title { font-family: 'Raleway', sans-serif; font-size: 1.4rem; font-weight: 700; color: var(--green-dark); margin: 0; }
 
     /* Filters */
-    .filter-scroll {
-      display: flex; overflow-x: auto; gap: 0.5rem; padding: 1rem 1.5rem;
-      scrollbar-width: none; border-bottom: 1px solid var(--border-light); background: var(--card-white);
-    }
+    .filter-scroll { display: flex; overflow-x: auto; gap: 0.5rem; padding: 1rem 1.5rem; scrollbar-width: none; border-bottom: 1px solid var(--border-light); background: var(--card-white); }
     .filter-scroll::-webkit-scrollbar { display: none; }
-    .filter-pill-modern {
-      background: var(--gray-bg); border: 1px solid var(--border-light);
-      color: var(--text-muted); padding: 0.5rem 1.2rem; border-radius: 40px;
-      font-size: 0.85rem; font-weight: 600; white-space: nowrap; cursor: pointer; transition: 0.2s;
-    }
-    .filter-pill-modern.active { background: var(--green-dark); color: white; border-color: var(--green-dark); }
+    .filter-pill { background: var(--gray-bg); border: 1px solid var(--border-light); color: var(--text-muted); padding: 0.5rem 1.2rem; border-radius: 40px; font-size: 0.85rem; font-weight: 600; white-space: nowrap; cursor: pointer; transition: 0.2s; }
+    .filter-pill.active { background: var(--green-dark); color: white; border-color: var(--green-dark); }
 
     /* Order Cards */
     .orders-container { padding: 1.5rem; }
-    .order-card-modern {
-      background: var(--card-white); border-radius: 16px; padding: 1.2rem;
-      margin-bottom: 1rem; border: 1px solid var(--border-light);
-      box-shadow: var(--shadow-sm);
-    }
-    .order-header-modern { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; padding-bottom: 0.8rem; border-bottom: 1px dashed var(--border-light); }
-    .order-id-modern { font-weight: 700; color: var(--green-dark); font-size: 0.9rem; }
-    .order-date-modern { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem; }
-    .order-amount-modern { font-weight: 800; color: var(--green-primary); font-size: 1.1rem; }
+    .order-card { background: var(--card-white); border-radius: 12px; padding: 1.2rem; margin-bottom: 1rem; border: 1px solid var(--border-light); box-shadow: var(--shadow-sm); }
+    .order-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; padding-bottom: 0.8rem; border-bottom: 1px dashed var(--border-light); }
+    .order-id { font-weight: 700; color: var(--green-dark); font-size: 0.9rem; }
+    .order-date { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem; }
+    .order-amount { font-weight: 800; color: var(--green-primary); font-size: 1.1rem; }
     
-    .status-badge-modern {
-      display: inline-block; padding: 0.3rem 0.8rem; border-radius: 40px;
-      font-size: 0.7rem; font-weight: 700; text-transform: uppercase; margin-top: 0.3rem;
-    }
+    .status-badge { display: inline-block; padding: 0.3rem 0.8rem; border-radius: 40px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; margin-top: 0.3rem; }
     .status-new { background: #fef3c7; color: #b45309; }
     .status-processing { background: #e0f2fe; color: #0369a1; }
     .status-shipped { background: #fce7f3; color: #be185d; }
     .status-delivered { background: #dcfce7; color: #15803d; }
     .status-cancelled { background: #fee2e2; color: #b91c1c; }
 
-    .customer-info-modern { margin-bottom: 1rem; }
-    .customer-name-modern { font-weight: 600; font-size: 0.9rem; color: var(--text-dark); margin-bottom: 0.3rem; }
-    .item-summary-modern { font-size: 0.8rem; color: var(--text-muted); line-height: 1.5; white-space: pre-wrap; font-family: monospace; background: #f8fafc; padding: 0.5rem; border-radius: 8px;}
+    .customer-info { margin-bottom: 1rem; }
+    .customer-name { font-weight: 600; font-size: 0.9rem; color: var(--text-dark); margin-bottom: 0.3rem; }
+    .item-summary { font-size: 0.8rem; color: var(--text-muted); line-height: 1.5; white-space: pre-wrap; font-family: monospace; background: #f8fafc; padding: 0.5rem; border-radius: 8px;}
 
-    .rider-info-modern { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 0.8rem; margin-bottom: 1rem; }
+    .rider-info { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.8rem; margin-bottom: 1rem; }
     .rider-title { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.2rem; text-transform: uppercase; }
     .rider-details { font-size: 0.85rem; font-weight: 600; color: var(--text-dark); }
     .rider-details a { color: var(--green-primary); text-decoration: none; }
 
-    .order-actions-modern { display: grid; gap: 0.5rem; }
-    .btn-action-modern {
-      padding: 0.7rem; border-radius: 12px; font-weight: 600; font-size: 0.85rem;
-      border: none; display: flex; align-items: center; justify-content: center; gap: 0.4rem; cursor: pointer;
-    }
+    .order-actions { display: grid; gap: 0.5rem; }
+    .btn-action { padding: 0.7rem; border-radius: 8px; font-weight: 600; font-size: 0.85rem; border: none; display: flex; align-items: center; justify-content: center; gap: 0.4rem; cursor: pointer; }
     .btn-update { background: var(--green-dark); color: white; }
     .btn-track { background: var(--gray-bg); border: 1px solid var(--border-light); color: var(--text-dark); }
     .btn-chat { background: #25D366; color: white; grid-column: span 2; }
+    .btn-receipt { background: #fefaf5; border: 1px solid #d97706; color: #b45309; }
 
-    /* Forms & Modals */
-    .form-control-modern {
-      width: 100%; padding: 0.9rem 1rem; border: 1px solid var(--border-light);
-      border-radius: 12px; font-size: 0.9rem; background: var(--gray-bg);
-      transition: 0.2s; margin-bottom: 1rem; outline: none;
-    }
-    .form-control-modern:focus { border-color: var(--green-primary); background: white; box-shadow: 0 0 0 4px var(--green-soft); }
-    .modal-content-modern { border-radius: 24px; border: none; overflow: hidden; }
-    .modal-header-modern { background: var(--card-white); border-bottom: 1px solid var(--border-light); padding: 1.5rem; }
-    .modal-body-modern { padding: 1.5rem; }
-    .btn-save-modern {
-      width: 100%; padding: 1rem; background: var(--green-dark); color: white;
-      border: none; border-radius: 14px; font-weight: 700; font-size: 1rem; transition: 0.2s;
-    }
-
-    .fab-add {
-      position: fixed; bottom: 80px; right: 20px; width: 56px; height: 56px;
-      background: var(--green-dark); color: white; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.5rem; box-shadow: 0 10px 25px rgba(10, 74, 42, 0.4);
-      border: none; z-index: 100; transition: transform 0.2s;
-    }
+    .fab-add { position: fixed; bottom: 80px; right: 20px; width: 56px; height: 56px; background: var(--green-dark); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; box-shadow: 0 10px 25px rgba(10, 74, 42, 0.4); border: none; z-index: 100; transition: transform 0.2s; }
     .fab-add:active { transform: scale(0.9); }
-
     .empty-state { text-align: center; padding: 4rem 1.5rem; color: var(--text-muted); }
     .hidden { display: none !important; }
-    
+
     /* Navigation Bottom */
-    .bottom-nav {
-        position: fixed; bottom: 0; width: 100%; background: var(--card-white);
-        display: flex; justify-content: space-around; padding: 0.8rem 0;
-        border-top: 1px solid var(--border-light); z-index: 50;
-    }
-    .nav-item {
-        display: flex; flex-direction: column; align-items: center;
-        color: var(--text-muted); text-decoration: none; font-size: 0.75rem; font-weight: 500; gap: 0.2rem;
-    }
+    .bottom-nav { position: fixed; bottom: 0; width: 100%; background: var(--card-white); display: flex; justify-content: space-around; padding: 0.8rem 0; border-top: 1px solid var(--border-light); z-index: 50; }
+    .nav-item { display: flex; flex-direction: column; align-items: center; color: var(--text-muted); text-decoration: none; font-size: 0.75rem; font-weight: 500; gap: 0.2rem; }
     .nav-item.active { color: var(--green-dark); font-weight: 700; }
     .nav-item i { font-size: 1.2rem; }
   </style>
@@ -132,17 +76,17 @@
 
 <header class="dashboard-header">
   <h1 class="page-title">Orders</h1>
-  <button class="btn btn-sm btn-light" style="border-radius: 8px; border-color: var(--border-light);" onclick="window.loadOrders()">
+  <button class="btn btn-sm btn-light border" onclick="window.loadOrders()">
     <i class="bi bi-arrow-clockwise"></i>
   </button>
 </header>
 
 <div class="filter-scroll">
-  <div class="filter-pill-modern active" onclick="filterOrders('all', this)">All Orders</div>
-  <div class="filter-pill-modern" onclick="filterOrders('new', this)">New</div>
-  <div class="filter-pill-modern" onclick="filterOrders('processing', this)">Processing</div>
-  <div class="filter-pill-modern" onclick="filterOrders('shipped', this)">Shipped</div>
-  <div class="filter-pill-modern" onclick="filterOrders('delivered', this)">Delivered</div>
+  <div class="filter-pill active" onclick="filterOrders('all', this)">All Orders</div>
+  <div class="filter-pill" onclick="filterOrders('new', this)">New</div>
+  <div class="filter-pill" onclick="filterOrders('processing', this)">Processing</div>
+  <div class="filter-pill" onclick="filterOrders('shipped', this)">Shipped</div>
+  <div class="filter-pill" onclick="filterOrders('delivered', this)">Delivered</div>
 </div>
 
 <main class="orders-container">
@@ -170,41 +114,44 @@
 
 <div class="modal fade" id="createOrderModal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content modal-content-modern">
-      <div class="modal-header modal-header-modern">
-        <h5 class="modal-title" style="font-family: 'Playfair Display', serif; font-weight: 700; color: var(--green-dark);">Create Order</h5>
+    <div class="modal-content" style="border-radius: 16px; border: none;">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold" style="color: var(--green-dark);">Create Order</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
-      <div class="modal-body modal-body-modern">
+      <div class="modal-body">
         <form id="createOrderForm" onsubmit="window.handleCreateOrder(event)">
+          
           <div class="mb-3">
-            <label class="form-label text-muted" style="font-size: 0.7rem; font-weight: 700;">Customer Name</label>
-            <input type="text" class="form-control-modern" id="newCustomerName" required>
+            <label class="form-label text-muted" style="font-size: 0.8rem; font-weight: 600;">Customer Name</label>
+            <input type="text" class="form-control" id="newCustomerName" required>
           </div>
           
           <div class="mb-3">
-            <label class="form-label text-muted" style="font-size: 0.7rem; font-weight: 700;">Order Items</label>
+            <label class="form-label text-muted" style="font-size: 0.8rem; font-weight: 600;">Order Items</label>
+            
             <div id="orderItemsContainer">
               <div class="item-row d-flex gap-2 mb-2">
-                <input type="number" class="form-control-modern qty-input" placeholder="Qty" value="1" min="1" style="width: 80px; margin-bottom: 0;">
-                <input type="text" class="form-control-modern name-input" placeholder="Product name (e.g. Tote)" style="flex: 1; margin-bottom: 0;" required>
-                <input type="text" class="form-control-modern variant-input" placeholder="Variant (Optional)" style="flex: 1; margin-bottom: 0;">
-                <button type="button" class="btn btn-light border text-danger" onclick="this.parentElement.remove()" style="border-radius: 12px;">
+                <input type="number" class="form-control qty-input" placeholder="Qty" value="1" min="1" style="width: 80px;" required>
+                <input type="text" class="form-control name-input" placeholder="Product name" style="flex: 1;" required>
+                <input type="text" class="form-control variant-input" placeholder="Variant (Optional)" style="flex: 1;">
+                <button type="button" class="btn btn-outline-danger" onclick="this.parentElement.remove()" style="border-radius: 8px;">
                   <i class="bi bi-trash"></i>
                 </button>
               </div>
             </div>
-            <button type="button" class="btn btn-sm mt-1" style="background: var(--green-soft); color: var(--green-dark); border-radius: 8px; font-weight: 600;" onclick="window.addOrderItemRow()">
+
+            <button type="button" class="btn btn-sm btn-light w-100 mt-1" style="border: 1px dashed #ccc; color: #666;" onclick="window.addOrderItemRow()">
               <i class="bi bi-plus-lg"></i> Add Another Item
             </button>
           </div>
 
           <div class="mb-4">
-            <label class="form-label text-muted" style="font-size: 0.7rem; font-weight: 700;">Total Amount (₦)</label>
-            <input type="number" class="form-control-modern" id="newOrderTotal" placeholder="0.00" required>
+            <label class="form-label text-muted" style="font-size: 0.8rem; font-weight: 600;">Total Amount (₦)</label>
+            <input type="number" class="form-control" id="newOrderTotal" placeholder="0.00" required>
           </div>
 
-          <button type="submit" class="btn-save-modern">Save & Generate Link</button>
+          <button type="submit" class="btn btn-success w-100 py-2" style="background: var(--green-dark); border: none; border-radius: 8px; font-weight: 600;">Save & Generate Link</button>
         </form>
       </div>
     </div>
@@ -213,14 +160,14 @@
 
 <div class="modal fade" id="statusModal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content modal-content-modern">
-      <div class="modal-header modal-header-modern">
-        <h5 class="modal-title" style="font-weight: 700; color: var(--green-dark);">Update Order Status</h5>
+    <div class="modal-content" style="border-radius: 16px; border: none;">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold" style="color: var(--green-dark);">Update Status</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
-      <div class="modal-body modal-body-modern">
-        <label class="form-label text-muted" style="font-size: 0.7rem; font-weight: 700;">Set new status</label>
-        <select class="form-control-modern" id="statusSelect">
+      <div class="modal-body">
+        <label class="form-label text-muted" style="font-size: 0.8rem; font-weight: 600;">Set new status</label>
+        <select class="form-select mb-3" id="statusSelect">
           <option value="new">New Order</option>
           <option value="processing">Processing (Packaging)</option>
           <option value="shipped">Shipped / Out for Delivery</option>
@@ -228,20 +175,20 @@
           <option value="cancelled">Cancelled</option>
         </select>
 
-        <div class="mb-3" id="riderDetailsGroup" style="display: none; background: #f8fafc; padding: 1rem; border-radius: 12px; margin-top: 1rem; border: 1px dashed #cbd5e1;">
-          <label class="form-label text-muted" style="font-size: 0.7rem; font-weight: 700;"><i class="bi bi-bicycle"></i> Rider Details (Optional)</label>
-          <input type="text" class="form-control-modern" style="margin-bottom: 0.5rem;" id="riderName" placeholder="Rider / Courier Name">
-          <input type="tel" class="form-control-modern" style="margin-bottom: 0;" id="riderPhone" placeholder="Rider Phone Number">
+        <div class="mb-3" id="riderDetailsGroup" style="display: none; background: #f8fafc; padding: 1rem; border-radius: 8px; border: 1px dashed #cbd5e1;">
+          <label class="form-label text-muted" style="font-size: 0.8rem; font-weight: 600;"><i class="bi bi-bicycle"></i> Rider Details (Optional)</label>
+          <input type="text" class="form-control mb-2" id="riderName" placeholder="Rider / Courier Name">
+          <input type="tel" class="form-control" id="riderPhone" placeholder="Rider Phone Number">
         </div>
 
-        <button type="button" class="btn-save-modern mt-3" onclick="window.saveStatus()">Save Update</button>
+        <button type="button" class="btn btn-success w-100 py-2" style="background: var(--green-dark); border: none; border-radius: 8px; font-weight: 600;" onclick="window.saveStatus()">Save Update</button>
       </div>
     </div>
   </div>
 </div>
 
 <div class="position-fixed bottom-0 start-50 translate-middle-x p-3" style="z-index: 11; margin-bottom: 60px;">
-  <div id="toastMsg" class="toast align-items-center text-white bg-dark border-0" style="border-radius: 12px;" role="alert" aria-live="assertive" aria-atomic="true">
+  <div id="toastMsg" class="toast align-items-center text-white bg-dark border-0" style="border-radius: 8px;" role="alert" aria-live="assertive" aria-atomic="true">
     <div class="d-flex">
       <div class="toast-body" id="toastText">Action successful</div>
     </div>
