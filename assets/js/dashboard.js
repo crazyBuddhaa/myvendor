@@ -160,11 +160,17 @@ window.loadHomeDashboard = async function() {
 };
 
 // ─── 4. PRODUCT & INVENTORY LOGIC ─────────────────────────────────
+
 window.loadProducts = async function() {
     const list = document.getElementById('productGrid');
     if (!list) return;
 
-    const { data: prods } = await supabase.from('products').select('*').eq('vendor_id', currentUser.id).order('created_at', {ascending: false});
+    const { data: prods } = await supabase
+        .from('products')
+        .select('*')
+        .eq('vendor_id', currentUser.id)
+        .order('created_at', {ascending: false});
+
     const emptyState = document.getElementById('emptyState');
     window.currentProductsCount = prods ? prods.length : 0;
 
@@ -184,16 +190,25 @@ window.loadProducts = async function() {
         let badgeClass = 'stock-in';
         let badgeText = 'In Stock';
 
-        if (p.status === 'pre_order') { badgeClass = 'stock-low'; badgeText = 'Pre-Order'; }
-        else if (p.status === 'out_of_stock' || p.in_stock === false) { badgeClass = 'stock-out'; badgeText = 'Sold Out'; }
+        if (p.status === 'pre_order') { 
+            badgeClass = 'stock-low'; 
+            badgeText = 'Pre-Order'; 
+        } else if (p.status === 'out_of_stock' || p.in_stock === false) { 
+            badgeClass = 'stock-out'; 
+            badgeText = 'Sold Out'; 
+        }
 
-        const imgHtml = p.image_url ? `<img src="${p.image_url}" alt="${escapeHTML(p.title)}">` : `<i class="bi bi-box placeholder-icon"></i>`;
+        // Apply XSS protection to the title and alt text
+        const safeTitle = escapeHTML(p.title);
+        const imgHtml = p.image_url 
+            ? `<img src="${p.image_url}" alt="${safeTitle}">` 
+            : `<i class="bi bi-box placeholder-icon"></i>`;
 
         return `
         <div class="product-card">
             <div class="product-image">${imgHtml}</div>
             <div class="product-info">
-                <div class="product-title">${escapeHTML(p.title)}</div>
+                <div class="product-title">${safeTitle}</div>
                 <div class="product-price">₦${parseFloat(p.price).toLocaleString()}</div>
                 <div class="stock-badge ${badgeClass}">${badgeText}</div>
                 <div class="product-actions">
@@ -206,11 +221,13 @@ window.loadProducts = async function() {
     }).join('');
 };
 
+// ─── ADD PRODUCT ───
 window.saveProduct = async function(e) {
     e.preventDefault();
     const btn = document.getElementById('btnSave') || document.getElementById('saveBtn');
     if(btn) btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving...';
 
+    // Premium Check (Using the dynamic FREE_PRODUCT_LIMIT set during init)
     const { count } = await supabase.from('products').select('*', { count: 'exact', head: true }).eq('vendor_id', currentUser.id);
     if (currentUser.tier !== 'premium' && count >= FREE_PRODUCT_LIMIT) {
         if(btn) btn.innerHTML = 'Save Product';
@@ -235,8 +252,11 @@ window.saveProduct = async function(e) {
         title: document.getElementById('prodTitle').value,
         price: document.getElementById('prodPrice').value,
         description: document.getElementById('prodDesc').value,
-        image_url: finalImageUrl,
-        extra_images: extraImagesArr,
+        
+        // 🌟 Apply Cloudinary Optimization to URLs before saving
+        image_url: optimizeCloudinaryUrl(finalImageUrl),
+        extra_images: extraImagesArr.map(url => optimizeCloudinaryUrl(url)),
+        
         category: document.getElementById('prodCategory') ? document.getElementById('prodCategory').value : 'Other',
         status: statusVal,
         quantity: qtyVal !== '' ? parseInt(qtyVal) : null,
@@ -253,6 +273,7 @@ window.saveProduct = async function(e) {
     }
 };
 
+// ─── EDIT PRODUCT ───
 window.loadEditProduct = async function(id) {
     const { data: p, error } = await supabase.from('products').select('*').eq('id', id).single();
     if (error || !p) {
@@ -273,6 +294,7 @@ window.loadEditProduct = async function(id) {
     setVal('editProdStatus', 'prodStatus', p.status || 'in_stock');
     setVal('editProdQty', 'prodQty', p.quantity !== null ? p.quantity : '');
 
+    // Populate main image
     if (p.image_url) {
         if(document.getElementById('imageUrl')) document.getElementById('imageUrl').value = p.image_url;
         const preview = document.getElementById('imagePreview') || document.getElementById('editImagePreview');
@@ -284,6 +306,7 @@ window.loadEditProduct = async function(id) {
         }
     }
 
+    // Populate gallery images
     if (p.extra_images && p.extra_images.length > 0) {
         if(document.getElementById('extraImagesData')) document.getElementById('extraImagesData').value = JSON.stringify(p.extra_images);
         window.uploadedGalleryImages = [...p.extra_images]; 
@@ -336,8 +359,11 @@ window.updateProduct = async function(e) {
         title: getVal('editProdTitle', 'prodTitle'),
         price: getVal('editProdPrice', 'prodPrice'),
         description: getVal('editProdDesc', 'prodDesc'),
-        image_url: finalImageUrl,
-        extra_images: extraImagesArr,
+        
+        // 🌟 Apply Cloudinary Optimization to URLs before saving
+        image_url: optimizeCloudinaryUrl(finalImageUrl),
+        extra_images: extraImagesArr.map(url => optimizeCloudinaryUrl(url)),
+        
         category: getVal('editProdCategory', 'prodCategory') || 'Other',
         status: statusVal,
         quantity: qtyVal !== '' ? parseInt(qtyVal) : null,
@@ -363,13 +389,16 @@ window.deleteProduct = async function(id) {
 };
 
 window.copyProductLink = function(id) {
+    // Generates a clean URL compatible with Vercel routing
     navigator.clipboard.writeText(`https://${window.location.host}/product/${id}`);
     const toast = document.getElementById('toastMsg');
     if (toast) {
         toast.innerText = "Product link copied!";
         toast.classList.add('show');
         setTimeout(() => toast.classList.remove('show'), 2500);
-    } else { alert("Product link copied!"); }
+    } else { 
+        alert("Product link copied!"); 
+    }
 };
 
 // ─── 5. ORDER MANAGEMENT LOGIC ────────────────────────────────────
