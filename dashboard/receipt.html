@@ -414,7 +414,9 @@
 
       // Populate UI
       document.getElementById('storeName').textContent = vendor?.business_name || 'myvendor Store';
-      const storeLink = vendor?.slug ? `myvendor.ng/${vendor.slug}` : 'myvendor.ng/store';
+      // Automatically grabs 'myvendor.qzz.io' now, and your custom domain later!
+const currentDomain = window.location.host; 
+const storeLink = vendor?.slug ? `${currentDomain}/${vendor.slug}` : `${currentDomain}/store`;
       document.getElementById('storeLink').textContent = storeLink;
       document.getElementById('storeLink').href = `/${vendor?.slug || ''}`;
 
