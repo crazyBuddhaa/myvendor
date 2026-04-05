@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Referrals | myvendor</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300..800&family=Raleway:wght@600..900&display=swap" rel="stylesheet" />
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --green-primary: #0f6e3f; --green-bright: #22c55e; --green-dark: #0a4a2a; --green-soft: #e9f7ef;
+      --gray-bg: #fafcf9; --card-white: #ffffff; --text-dark: #1a2e1f; --text-muted: #4a6741;
+      --border-light: #e9eee5; --shadow-sm: 0 8px 20px rgba(0, 32, 0, 0.04);
+      --wa-green: #25D366;
+    }
+    
+    body { background: var(--gray-bg); font-family: 'Inter', sans-serif; color: var(--text-dark); padding-bottom: 5rem; }
+
+    /* Header (Matches your styling) */
+    .dashboard-header { background: var(--card-white); padding: 1.2rem 1.5rem; border-bottom: 1px solid var(--border-light); position: sticky; top: 0; z-index: 10; display: flex; justify-content: space-between; align-items: center; }
+    .page-title { font-family: 'Raleway', sans-serif; font-size: 1.4rem; font-weight: 700; color: var(--green-dark); margin: 0; }
+
+    .main-container { padding: 1.5rem; max-width: 680px; margin: 0 auto; }
+
+    /* Hero Card */
+    .reward-card { background: linear-gradient(135deg, var(--green-dark), var(--green-primary)); border-radius: 20px; padding: 2rem 1.5rem; color: white; text-align: center; box-shadow: var(--shadow-sm); margin-bottom: 1.5rem; position: relative; overflow: hidden; }
+    .reward-card::after { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%); pointer-events: none; }
+    .reward-card h2 { font-family: 'Raleway', sans-serif; font-weight: 800; font-size: 1.6rem; margin-bottom: 0.5rem; }
+    .reward-card p { font-size: 0.9rem; opacity: 0.9; margin-bottom: 0; }
+
+    /* Stats Grid */
+    .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }
+    .stat-box { background: var(--card-white); border: 1px solid var(--border-light); border-radius: 16px; padding: 1.2rem; text-align: center; box-shadow: var(--shadow-sm); }
+    .stat-box h3 { font-size: 2rem; font-weight: 800; color: var(--green-primary); margin: 0; }
+    .stat-box p { font-size: 0.75rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin: 0.2rem 0 0 0; }
+
+    /* Link Share Section */
+    .share-section { background: var(--card-white); border: 1px solid var(--border-light); border-radius: 16px; padding: 1.5rem; box-shadow: var(--shadow-sm); }
+    .share-section h5 { font-weight: 700; font-size: 1rem; color: var(--text-dark); margin-bottom: 1rem; }
+    
+    .link-box { display: flex; align-items: center; background: var(--gray-bg); border: 1.5px solid var(--border-light); border-radius: 12px; padding: 0.4rem; margin-bottom: 1rem; }
+    .link-box input { flex: 1; background: transparent; border: none; font-size: 0.85rem; color: var(--text-muted); padding: 0.5rem; outline: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: monospace; }
+    .link-box button { background: var(--green-soft); color: var(--green-dark); border: none; padding: 0.6rem 1rem; border-radius: 8px; font-weight: 700; font-size: 0.8rem; cursor: pointer; transition: 0.2s; }
+    .link-box button:hover { background: var(--green-bright); color: white; }
+
+    .btn-whatsapp { width: 100%; background: var(--wa-green); color: white; border: none; padding: 0.9rem; border-radius: 12px; font-weight: 700; font-size: 0.95rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: 0.2s; text-decoration: none; }
+    .btn-whatsapp:hover { background: #1da851; color: white; }
+
+    /* Bottom Nav (Matches other pages) */
+    .bottom-nav { position: fixed; bottom: 0; width: 100%; background: var(--card-white); display: flex; justify-content: space-around; padding: 0.8rem 0; border-top: 1px solid var(--border-light); z-index: 50; }
+    .nav-item { display: flex; flex-direction: column; align-items: center; color: var(--text-muted); text-decoration: none; font-size: 0.75rem; font-weight: 500; gap: 0.2rem; }
+    .nav-item.active { color: var(--green-dark); font-weight: 700; }
+    .nav-item i { font-size: 1.2rem; }
+    
+    /* Toast */
+    .toast-modern { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(40px); background: #1e2f1c; color: white; padding: 0.7rem 1.5rem; border-radius: 60px; font-weight: 600; font-size: 0.8rem; opacity: 0; transition: transform 0.25s ease, opacity 0.2s; z-index: 2000; pointer-events: none; }
+    .toast-modern.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+  </style>
+</head>
+<body>
+
+<header class="dashboard-header">
+  <h1 class="page-title">Refer & Earn</h1>
+</header>
+
+<main class="main-container" id="referralPage">
+  
+  <div class="reward-card">
+    <h2>Get +3 Product Slots!</h2>
+    <p>Invite other vendors to join myvendor. When they sign up using your link, your free product limit automatically increases by 3.</p>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-box">
+      <h3 id="statTotalLimit">20</h3>
+      <p>Total Limit</p>
+    </div>
+    <div class="stat-box">
+      <h3 id="statBonusSlots">0</h3>
+      <p>Bonus Slots</p>
+    </div>
+  </div>
+
+  <div class="share-section">
+    <h5>Your Unique Invite Link</h5>
+    <div class="link-box">
+      <input type="text" id="referralLinkInput" readonly value="Loading link...">
+      <button onclick="copyReferralLink()" id="copyBtn">Copy</button>
+    </div>
+    <a href="#" id="waShareBtn" class="btn-whatsapp" target="_blank">
+      <i class="bi bi-whatsapp"></i> Share to WhatsApp
+    </a>
+  </div>
+
+  <div class="mt-4" style="background: var(--card-white); border: 1px dashed var(--border-light); padding: 1.2rem; border-radius: 16px;">
+    <h6 style="font-weight: 700; color: var(--green-dark); font-size: 0.85rem; margin-bottom: 0.5rem;"><i class="bi bi-info-circle"></i> How it works</h6>
+    <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0; line-height: 1.6;">
+      Share your link on WhatsApp groups or your status. The moment a new vendor creates their account using your link, your limit instantly upgrades. There is no cap on how many slots you can earn!
+    </p>
+  </div>
+
+</main>
+
+<nav class="bottom-nav">
+  <a href="home.html" class="nav-item"><i class="bi bi-house-door"></i> Home</a>
+  <a href="products.html" class="nav-item"><i class="bi bi-grid"></i> Products</a>
+  <a href="orders.html" class="nav-item"><i class="bi bi-receipt"></i> Orders</a>
+  <a href="referrals.html" class="nav-item active"><i class="bi bi-gift"></i> Rewards</a>
+  <a href="settings.html" class="nav-item"><i class="bi bi-gear"></i> Settings</a>
+</nav>
+
+<div id="toastMsg" class="toast-modern">Link copied!</div>
+
+<script type="module" src="/assets/js/dashboard.js"></script>
+</body>
+</html>
