@@ -23,6 +23,13 @@ const escapeHTML = (str) => {
         .replace(/'/g, '&#039;');
 };
 
+// 🖼️ NEW: IMAGE OPTIMIZATION: Injects compression parameters into Cloudinary URLs
+const optimizeCloudinaryUrl = (url) => {
+    if (!url || !url.includes('cloudinary.com')) return url;
+    if (url.includes('/upload/w_') || url.includes('/upload/q_')) return url;
+    return url.replace('/upload/', '/upload/w_600,q_auto,f_auto/');
+};
+
 // ─── 1. AUTH & INITIALIZATION ─────────────────────────────────────
 async function initDashboard() {
     const { data: { user } } = await supabase.auth.getUser();
