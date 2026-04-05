@@ -5,9 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Receipt | myvendor</title>
 
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
-  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=Space+Mono:wght@400;700&family=Cormorant+Garamond:wght@500;600;700&display=swap" rel="stylesheet" />
+  
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
@@ -28,6 +30,10 @@
       --ink-muted: #8a7d68;
       --border:    #e8e0d0;
       --border-dk: #c8bfaf;
+      --error:     #dc2626;
+      --warning:   #b45309;
+      --info:      #0369a1;
+      --success:   #15803d;
     }
 
     body {
@@ -43,6 +49,7 @@
       align-items: center;
       justify-content: flex-start;
       padding: 2.5rem 1rem 5rem;
+      padding-bottom: calc(5rem + env(safe-area-inset-bottom));
     }
 
     /* Noise texture */
@@ -67,26 +74,58 @@
       justify-content: center;
       z-index: 100;
       gap: 1.25rem;
+      transition: opacity 0.4s ease, visibility 0.4s ease;
+    }
+    .loading-overlay.hidden {
+      opacity: 0;
+      visibility: hidden;
     }
     .loading-logo {
       font-family: 'Playfair Display', serif;
       font-weight: 900;
       font-size: 1.7rem;
       color: var(--g-deep);
+      animation: logoPulse 2s ease-in-out infinite;
+    }
+    @keyframes logoPulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.8; transform: scale(0.98); }
     }
     .loading-logo em { color: var(--g-primary); font-style: normal; }
+    
     .loading-dots { display: flex; gap: 0.45rem; }
     .loading-dots span {
-      width: 7px; height: 7px;
+      width: 8px; height: 8px;
       border-radius: 50%;
       background: var(--g-primary);
-      animation: pulse 1.4s ease-in-out infinite;
+      animation: bounce 1.4s ease-in-out infinite;
     }
     .loading-dots span:nth-child(2) { animation-delay: .18s; }
     .loading-dots span:nth-child(3) { animation-delay: .36s; }
-    @keyframes pulse {
-      0%, 80%, 100% { transform: scale(0.55); opacity: 0.35; }
-      40%            { transform: scale(1);    opacity: 1; }
+    @keyframes bounce {
+      0%, 80%, 100% { transform: translateY(0) scale(0.6); opacity: 0.4; }
+      40% { transform: translateY(-10px) scale(1); opacity: 1; }
+    }
+
+    .loading-progress {
+      width: 200px;
+      height: 3px;
+      background: var(--border);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-top: 0.5rem;
+    }
+    .loading-progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--g-primary), var(--g-bright));
+      border-radius: 3px;
+      animation: progress 2s ease-in-out infinite;
+    }
+    @keyframes progress {
+      0% { width: 0%; transform: translateX(-100%); }
+      50% { width: 70%; }
+      100% { width: 100%; transform: translateX(200%); }
     }
 
     /* ─── Wrap ────────────────────────────────── */
@@ -95,289 +134,464 @@
       width: 100%;
       position: relative;
       z-index: 1;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.6s cubic-bezier(.16,1,.3,1), transform 0.6s cubic-bezier(.16,1,.3,1);
+    }
+    .receipt-wrap.visible {
+      opacity: 1;
+      transform: translateY(0);
     }
 
     /* ─── Card ────────────────────────────────── */
     .receipt-card {
       background: var(--paper);
-      border-radius: 22px;
+      border-radius: 24px;
       box-shadow:
         0 2px 4px rgba(0,0,0,.04),
         0 8px 24px rgba(0,0,0,.08),
         0 28px 60px rgba(0,0,0,.10),
         0 0 0 1px rgba(0,0,0,.04);
       overflow: hidden;
-      animation: slideUp .65s cubic-bezier(.16,1,.3,1) both;
-      animation-delay: .08s;
+      position: relative;
     }
-    @keyframes slideUp {
-      from { opacity: 0; transform: translateY(36px) scale(.96); }
-      to   { opacity: 1; transform: translateY(0)   scale(1);    }
+    
+    .receipt-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 200px;
+      background: linear-gradient(155deg, var(--g-dark) 0%, var(--g-primary) 100%);
+      z-index: 0;
     }
 
     /* ─── Header ──────────────────────────────── */
     .receipt-header {
-      background: linear-gradient(155deg, var(--g-dark) 0%, var(--g-primary) 100%);
-      padding: 2rem 2rem 0;
+      padding: 2.2rem 2rem 0;
       text-align: center;
       color: white;
       position: relative;
       overflow: hidden;
     }
-    /* Decorative rings */
+    
     .receipt-header::before,
     .receipt-header::after {
       content: '';
       position: absolute;
       border-radius: 50%;
-      border: 1px solid rgba(255,255,255,.09);
+      border: 1px solid rgba(255,255,255,.1);
+      animation: float 6s ease-in-out infinite;
     }
     .receipt-header::before {
-      width: 140px; height: 140px;
-      top: -40px; right: -30px;
+      width: 160px; height: 160px;
+      top: -50px; right: -40px;
       background: rgba(255,255,255,.03);
+      animation-delay: 0s;
     }
     .receipt-header::after {
-      width: 90px; height: 90px;
-      bottom: 30px; left: -20px;
+      width: 100px; height: 100px;
+      bottom: 20px; left: -30px;
       background: rgba(255,255,255,.025);
+      animation-delay: 3s;
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      50% { transform: translateY(-10px) rotate(5deg); }
     }
 
     .hdr-eyebrow {
-      display: inline-block;
-      font-size: .62rem;
-      letter-spacing: 3px;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: .65rem;
+      letter-spacing: 2.5px;
       text-transform: uppercase;
       background: rgba(255,255,255,.12);
       border: 1px solid rgba(255,255,255,.18);
       border-radius: 40px;
-      padding: .2rem .8rem;
-      margin-bottom: .9rem;
+      padding: .25rem 1rem;
+      margin-bottom: 1rem;
       position: relative;
       z-index: 1;
+      backdrop-filter: blur(4px);
     }
+    .hdr-eyebrow::before {
+      content: '';
+      width: 6px; height: 6px;
+      background: var(--g-accent);
+      border-radius: 50%;
+      animation: pulse-dot 2s ease-in-out infinite;
+    }
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.6; transform: scale(0.8); }
+    }
+    
     .hdr-logo {
       font-family: 'Playfair Display', serif;
       font-weight: 900;
-      font-size: 2.1rem;
+      font-size: 2.3rem;
       letter-spacing: -1.5px;
       line-height: 1;
       position: relative;
       z-index: 1;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.2);
     }
     .hdr-logo em {
       font-style: normal;
       color: var(--g-accent);
+      position: relative;
     }
+    .hdr-logo em::after {
+      content: '';
+      position: absolute;
+      bottom: 2px; left: 0; right: 0;
+      height: 4px;
+      background: var(--g-accent);
+      opacity: 0.3;
+      border-radius: 2px;
+    }
+    
     .hdr-sub {
-      font-size: .68rem;
-      letter-spacing: 2.5px;
+      font-size: .7rem;
+      letter-spacing: 3px;
       text-transform: uppercase;
-      opacity: .5;
-      margin-top: .35rem;
-      margin-bottom: 1.5rem;
+      opacity: .6;
+      margin-top: .4rem;
+      margin-bottom: 1.8rem;
       position: relative;
       z-index: 1;
     }
 
-    /* SVG zigzag tear */
+    /* SVG zigzag tear - IMPROVED */
     .tear {
       display: block;
       width: 100%;
+      height: 24px;
       overflow: hidden;
       line-height: 0;
-      margin-top: -.5px; /* snap to header */
+      margin-top: -1px;
+      filter: drop-shadow(0 -2px 4px rgba(0,0,0,0.1));
+    }
+    .tear svg {
+      width: 100%;
+      height: 100%;
+      display: block;
     }
 
     /* ─── Body ────────────────────────────────── */
     .receipt-body {
-      padding: 1.6rem 2rem 1.8rem;
+      padding: 1.8rem 2rem 2rem;
       position: relative;
+      background: var(--paper);
     }
-
-    /* ─── Store block ─────────────────────────── */
-    .store-block {
-      text-align: center;
-      margin-bottom: 1.25rem;
-      padding-bottom: 1.2rem;
-      border-bottom: 1px dashed var(--border-dk);
-    }
-    .store-name {
-      font-family: 'Cormorant Garamond', serif;
-      font-weight: 700;
-      font-size: 1.35rem;
-      letter-spacing: -.3px;
-      color: var(--ink);
-      margin-bottom: .2rem;
-    }
-    .store-url {
-      font-size: .73rem;
-      color: var(--g-primary);
-      font-weight: 500;
-      text-decoration: none;
-      letter-spacing: .2px;
-    }
-    .store-url:hover { text-decoration: underline; }
 
     /* ─── Status stamp (absolute) ─────────────── */
     .stamp-wrap {
       position: absolute;
-      top: 1.4rem;
+      top: 1.6rem;
       right: 1.8rem;
+      z-index: 10;
     }
     .stamp {
-      display: inline-block;
-      font-size: .6rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      font-size: .65rem;
       font-weight: 700;
-      letter-spacing: 1.8px;
+      letter-spacing: 1.5px;
       text-transform: uppercase;
-      padding: .22rem .6rem;
-      border-radius: 3px;
+      padding: .35rem .8rem;
+      border-radius: 6px;
       border: 2px solid currentColor;
-      transform: rotate(4deg);
+      transform: rotate(3deg);
       transform-origin: center center;
-      transition: transform .15s;
+      transition: all 0.3s cubic-bezier(.34,1.56,.64,1);
+      cursor: default;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
     }
-    .stamp:hover { transform: rotate(2deg) scale(1.04); }
+    .stamp:hover { 
+      transform: rotate(0deg) scale(1.05); 
+      box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    }
+    .stamp::before {
+      content: '';
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: currentColor;
+      animation: status-pulse 2s infinite;
+    }
+    @keyframes status-pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    
     .stamp-new,
-    .stamp-processing { color: #b45309; background: rgba(180,83,9,.07); }
-    .stamp-shipped    { color: #0369a1; background: rgba(3,105,161,.07); }
-    .stamp-delivered  { color: #15803d; background: rgba(21,128,61,.07); }
-    .stamp-cancelled  { color: #dc2626; background: rgba(220,38,38,.07); }
+    .stamp-processing { color: var(--warning); background: rgba(180,83,9,.08); }
+    .stamp-shipped    { color: var(--info); background: rgba(3,105,161,.08); }
+    .stamp-delivered  { color: var(--success); background: rgba(21,128,61,.08); }
+    .stamp-cancelled  { color: var(--error); background: rgba(220,38,38,.08); }
+
+    /* ─── Store block ─────────────────────────── */
+    .store-block {
+      text-align: center;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1.4rem;
+      border-bottom: 2px dashed var(--border-dk);
+      position: relative;
+    }
+    .store-block::after {
+      content: '✂';
+      position: absolute;
+      bottom: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 12px;
+      color: var(--ink-muted);
+      opacity: 0.5;
+    }
+    
+    .store-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 700;
+      font-size: 1.5rem;
+      letter-spacing: -.3px;
+      color: var(--ink);
+      margin-bottom: .3rem;
+      transition: color 0.2s;
+    }
+    .store-url {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      font-size: .75rem;
+      color: var(--g-primary);
+      font-weight: 500;
+      text-decoration: none;
+      letter-spacing: .2px;
+      padding: 0.3rem 0.8rem;
+      border-radius: 20px;
+      background: var(--g-soft);
+      transition: all 0.2s;
+    }
+    .store-url:hover { 
+      background: var(--g-accent); 
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(15,110,63,0.15);
+    }
+    .store-url::after {
+      content: '→';
+      font-size: 0.8em;
+      transition: transform 0.2s;
+    }
+    .store-url:hover::after {
+      transform: translateX(2px);
+    }
 
     /* ─── Meta grid ───────────────────────────── */
     .meta-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 0 1.2rem;
-      margin-bottom: 1.5rem;
+      gap: 0 1.5rem;
+      margin-bottom: 1.8rem;
     }
     .meta-item {
-      padding: .55rem 0;
+      padding: .7rem 0;
       border-bottom: 1px solid var(--border);
+      transition: background 0.2s;
+      border-radius: 4px;
+      margin: 0 -4px;
+      padding-left: 4px;
+      padding-right: 4px;
+    }
+    .meta-item:hover {
+      background: var(--paper-off);
     }
     .meta-label {
-      font-size: .59rem;
-      letter-spacing: 1.8px;
+      font-size: .6rem;
+      letter-spacing: 2px;
       text-transform: uppercase;
       color: var(--ink-muted);
       font-weight: 600;
-      margin-bottom: .18rem;
+      margin-bottom: .25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
     }
     .meta-val {
-      font-size: .82rem;
+      font-size: .9rem;
       font-weight: 600;
       color: var(--ink);
-      line-height: 1.35;
+      line-height: 1.4;
       word-break: break-word;
     }
     .meta-val.mono {
       font-family: 'Space Mono', monospace;
-      font-size: .72rem;
-      font-weight: 400;
+      font-size: .78rem;
+      font-weight: 500;
       color: var(--ink-mid);
+      letter-spacing: -0.5px;
     }
 
     /* ─── Section header ──────────────────────── */
     .section-hdr {
       display: flex;
       align-items: center;
-      gap: .6rem;
-      margin-bottom: .8rem;
+      gap: .8rem;
+      margin-bottom: 1rem;
+      margin-top: 0.5rem;
     }
     .section-hdr-label {
-      font-size: .6rem;
-      letter-spacing: 2px;
+      font-size: .65rem;
+      letter-spacing: 2.5px;
       text-transform: uppercase;
       color: var(--ink-muted);
       font-weight: 600;
       white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
     }
     .section-hdr-line {
       flex: 1;
       height: 1px;
-      background: var(--border);
-    }
-
-    /* ─── Items – text mode ───────────────────── */
-    .items-text {
-      font-family: 'Space Mono', monospace;
-      font-size: .78rem;
-      line-height: 1.85;
-      white-space: pre-wrap;
-      color: var(--ink-mid);
-      background: var(--paper-off);
-      padding: .9rem 1rem;
-      border-radius: 10px;
-      border-left: 3px solid var(--g-primary);
+      background: linear-gradient(90deg, var(--border), transparent);
     }
 
     /* ─── Items – structured mode ─────────────── */
+    .items-list {
+      background: var(--paper-off);
+      border-radius: 12px;
+      padding: 0.5rem;
+      border: 1px solid var(--border);
+    }
+    
     .item-row {
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
-      gap: .75rem;
-      padding: .6rem 0;
+      gap: 1rem;
+      padding: .8rem .7rem;
       border-bottom: 1px solid var(--border);
+      transition: all 0.2s;
+      border-radius: 8px;
     }
     .item-row:last-child { border-bottom: none; }
+    .item-row:hover {
+      background: white;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      transform: translateX(2px);
+    }
+    
     .item-info { flex: 1; min-width: 0; }
     .item-name {
-      font-size: .88rem;
+      font-size: .92rem;
       font-weight: 500;
       color: var(--ink);
-      line-height: 1.3;
+      line-height: 1.4;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
     .item-qty {
-      font-size: .7rem;
+      font-size: .72rem;
       color: var(--ink-muted);
-      margin-top: .1rem;
+      margin-top: .15rem;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.2rem;
+      background: var(--border);
+      padding: 0.15rem 0.5rem;
+      border-radius: 10px;
     }
     .item-price {
       font-family: 'Space Mono', monospace;
-      font-size: .8rem;
+      font-size: .9rem;
       font-weight: 700;
       color: var(--g-deep);
       white-space: nowrap;
+      padding: 0.2rem 0.5rem;
+      background: var(--g-soft);
+      border-radius: 6px;
+    }
+
+    /* ─── Items – text mode ───────────────────── */
+    .items-text {
+      font-family: 'Space Mono', monospace;
+      font-size: .82rem;
+      line-height: 1.9;
+      white-space: pre-wrap;
+      color: var(--ink-mid);
+      background: var(--paper-off);
+      padding: 1rem 1.2rem;
+      border-radius: 12px;
+      border-left: 4px solid var(--g-primary);
+      position: relative;
+    }
+    .items-text::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 4px;
+      background: linear-gradient(to bottom, var(--g-primary), var(--g-bright));
+      border-radius: 2px 0 0 2px;
     }
 
     /* ─── Totals ──────────────────────────────── */
+    .total-section {
+      margin-top: 1.5rem;
+      padding: 1.2rem;
+      background: linear-gradient(135deg, var(--g-dark) 0%, var(--g-primary) 100%);
+      border-radius: 16px;
+      color: white;
+      position: relative;
+      overflow: hidden;
+    }
+    .total-section::before {
+      content: '';
+      position: absolute;
+      top: -50%; right: -50%;
+      width: 100%; height: 100%;
+      background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+    }
+    
     .total-row {
       display: flex;
       justify-content: space-between;
-      align-items: baseline;
-      margin-top: 1.1rem;
-      padding-top: .9rem;
-      border-top: 2px solid var(--ink);
+      align-items: center;
+      position: relative;
+      z-index: 1;
     }
     .total-label {
-      font-size: .65rem;
-      letter-spacing: 2px;
+      font-size: .7rem;
+      letter-spacing: 2.5px;
       text-transform: uppercase;
-      font-weight: 700;
+      font-weight: 600;
+      opacity: 0.9;
     }
     .total-amt {
       font-family: 'Space Mono', monospace;
-      font-size: 1.25rem;
+      font-size: 1.6rem;
       font-weight: 700;
-      color: var(--g-deep);
+      letter-spacing: -1px;
     }
 
     /* ─── Barcode ─────────────────────────────── */
     .barcode-wrap {
-      margin: 1.6rem 0 1rem;
+      margin: 2rem 0 1.2rem;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: .3rem;
+      gap: .5rem;
+      padding: 1.2rem;
+      background: var(--paper-off);
+      border-radius: 12px;
+      border: 1px dashed var(--border-dk);
     }
     .barcode {
-      width: 76%;
-      height: 38px;
+      width: 85%;
+      height: 50px;
       background: repeating-linear-gradient(
         to right,
         var(--ink) 0,  var(--ink) 2px,
@@ -397,37 +611,72 @@
         var(--ink) 30px, var(--ink) 32px,
         transparent 32px, transparent 36px
       );
-      opacity: .11;
-      border-radius: 1px;
+      opacity: .15;
+      border-radius: 2px;
+      position: relative;
     }
+    .barcode::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.5) 50%, transparent 100%);
+      animation: barcode-shine 3s ease-in-out infinite;
+    }
+    @keyframes barcode-shine {
+      0%, 100% { transform: translateX(-100%); }
+      50% { transform: translateX(100%); }
+    }
+    
     .barcode-num {
       font-family: 'Space Mono', monospace;
-      font-size: .58rem;
+      font-size: .7rem;
       color: var(--ink-muted);
-      letter-spacing: 2px;
+      letter-spacing: 3px;
       text-align: center;
       word-break: break-all;
+      font-weight: 500;
     }
 
     /* ─── Footer ──────────────────────────────── */
     .receipt-footer {
       text-align: center;
-      padding-top: 1rem;
-      border-top: 1px dashed var(--border-dk);
+      padding-top: 1.2rem;
+      border-top: 2px dashed var(--border-dk);
+      position: relative;
     }
-    .footer-msg {
-      font-size: .73rem;
+    .receipt-footer::before {
+      content: '✂';
+      position: absolute;
+      top: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 12px;
       color: var(--ink-muted);
-      line-height: 1.7;
+      opacity: 0.5;
     }
+    
+    .footer-msg {
+      font-size: .8rem;
+      color: var(--ink-muted);
+      line-height: 1.8;
+      margin-bottom: 0.8rem;
+    }
+    .footer-msg strong {
+      color: var(--g-deep);
+      font-weight: 600;
+    }
+    
     .footer-brand {
       display: inline-flex;
       align-items: center;
-      gap: .3rem;
-      margin-top: .7rem;
-      font-size: .63rem;
+      gap: .4rem;
+      padding: 0.5rem 1rem;
+      background: var(--cream);
+      border-radius: 20px;
+      font-size: .7rem;
       color: var(--ink-muted);
-      letter-spacing: .4px;
+      letter-spacing: .5px;
+      font-weight: 500;
     }
     .footer-brand b {
       font-family: 'Playfair Display', serif;
@@ -439,138 +688,303 @@
     .action-row {
       display: flex;
       flex-direction: column;
-      gap: .7rem;
-      margin-top: 1.2rem;
-      animation: slideUp .65s cubic-bezier(.16,1,.3,1) both;
-      animation-delay: .2s;
+      gap: .8rem;
+      margin-top: 1.5rem;
+      opacity: 0;
+      transform: translateY(10px);
+      animation: slideUp 0.5s ease forwards;
+      animation-delay: 0.4s;
     }
-    .action-sub { display: flex; gap: .7rem; }
+    @keyframes slideUp {
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .action-sub { display: flex; gap: .8rem; }
+    
     .btn-act {
       flex: 1;
-      padding: .85rem 1rem;
-      border-radius: 60px;
+      padding: 1rem 1.2rem;
+      border-radius: 14px;
       font-family: 'DM Sans', sans-serif;
       font-weight: 600;
-      font-size: .85rem;
+      font-size: .9rem;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: .45rem;
+      gap: .5rem;
       cursor: pointer;
       border: none;
-      transition: all .2s cubic-bezier(.34,1.56,.64,1);
+      transition: all 0.25s cubic-bezier(.34,1.56,.64,1);
       -webkit-tap-highlight-color: transparent;
+      position: relative;
+      overflow: hidden;
     }
+    
+    .btn-act::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+      transform: translateX(-100%);
+      transition: transform 0.6s;
+    }
+    .btn-act:hover::before {
+      transform: translateX(100%);
+    }
+    
     /* Primary — Save as Image */
     .btn-image {
       background: linear-gradient(135deg, var(--g-dark) 0%, var(--g-primary) 100%);
       color: white;
-      font-size: .92rem;
-      padding: 1rem 1rem;
+      font-size: 1rem;
       box-shadow: 0 4px 20px rgba(7,45,25,.35);
+      letter-spacing: 0.3px;
     }
     .btn-image:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 10px 30px rgba(15,110,63,.45);
-      filter: brightness(1.08);
+      transform: translateY(-3px) scale(1.02);
+      box-shadow: 0 12px 35px rgba(15,110,63,.45);
+    }
+    .btn-image:active {
+      transform: translateY(-1px) scale(0.98);
     }
     .btn-image:disabled {
-      opacity: .65;
+      opacity: .7;
       transform: none !important;
       cursor: wait;
-      filter: none;
+      box-shadow: 0 4px 15px rgba(7,45,25,.25);
     }
+
     /* Secondary — Copy Link */
     .btn-share {
       background: var(--paper);
       color: var(--ink);
-      border: 1.5px solid var(--border-dk);
-      box-shadow: 0 2px 8px rgba(0,0,0,.06);
+      border: 2px solid var(--border-dk);
+      box-shadow: 0 2px 10px rgba(0,0,0,.06);
     }
     .btn-share:hover {
       background: var(--g-soft);
       border-color: var(--g-primary);
       color: var(--g-deep);
       transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(15,110,63,.15);
+      box-shadow: 0 8px 25px rgba(15,110,63,.18);
     }
+
     /* Secondary — Print */
     .btn-print {
       background: var(--paper);
       color: var(--ink);
-      border: 1.5px solid var(--border-dk);
-      box-shadow: 0 2px 8px rgba(0,0,0,.06);
+      border: 2px solid var(--border-dk);
+      box-shadow: 0 2px 10px rgba(0,0,0,.06);
     }
     .btn-print:hover {
       background: var(--ink);
       color: white;
       border-color: var(--ink);
       transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(0,0,0,.15);
+      box-shadow: 0 8px 25px rgba(0,0,0,.2);
     }
-    .btn-act:active { transform: scale(.97) translateY(0) !important; }
+
+    /* Button Icons */
+    .btn-icon {
+      font-size: 1.1em;
+      transition: transform 0.2s;
+    }
+    .btn-act:hover .btn-icon {
+      transform: scale(1.1);
+    }
+
+    /* Toast Notification */
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: var(--ink);
+      color: white;
+      padding: 1rem 1.5rem;
+      border-radius: 50px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+      z-index: 1000;
+      opacity: 0;
+      transition: all 0.4s cubic-bezier(.34,1.56,.64,1);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+    .toast-icon {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--g-bright);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+    }
 
     /* ─── Error state ─────────────────────────── */
     .error-card {
       background: var(--paper);
-      border-radius: 22px;
+      border-radius: 24px;
       box-shadow: 0 8px 40px rgba(0,0,0,.1);
-      padding: 3rem 2rem;
+      padding: 3.5rem 2.5rem;
       text-align: center;
-      animation: slideUp .5s cubic-bezier(.16,1,.3,1) both;
+      animation: slideUp 0.5s cubic-bezier(.16,1,.3,1) both;
+      max-width: 400px;
+      margin: 0 auto;
     }
-    .error-icon { font-size: 2.5rem; color: #dc2626; margin-bottom: 1rem; }
+    .error-icon { 
+      font-size: 3rem; 
+      margin-bottom: 1.5rem;
+      display: inline-flex;
+      width: 80px;
+      height: 80px;
+      background: rgba(220,38,38,0.1);
+      border-radius: 50%;
+      align-items: center;
+      justify-content: center;
+      animation: shake 0.5s ease-in-out;
+    }
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-10px); }
+      75% { transform: translateX(10px); }
+    }
+    
     .error-title {
       font-family: 'Playfair Display', serif;
-      font-size: 1.25rem;
+      font-size: 1.5rem;
       font-weight: 700;
-      margin-bottom: .5rem;
+      margin-bottom: .8rem;
+      color: var(--ink);
     }
-    .error-msg { font-size: .85rem; color: var(--ink-muted); margin-bottom: 1.5rem; line-height: 1.6; }
+    .error-msg { 
+      font-size: .9rem; 
+      color: var(--ink-muted); 
+      margin-bottom: 2rem; 
+      line-height: 1.7;
+      max-width: 280px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    
     .btn-home {
-      display: inline-block;
-      padding: .7rem 1.6rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: .9rem 2rem;
       background: var(--g-deep);
       color: white;
-      border-radius: 40px;
+      border-radius: 50px;
       text-decoration: none;
-      font-size: .85rem;
+      font-size: .9rem;
       font-weight: 600;
-      transition: background .2s, transform .2s;
+      transition: all 0.3s;
+      box-shadow: 0 4px 15px rgba(7,45,25,.3);
     }
-    .btn-home:hover { background: var(--g-primary); transform: translateY(-1px); }
+    .btn-home:hover { 
+      background: var(--g-primary); 
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(15,110,63,.4);
+    }
 
     .hidden { display: none !important; }
 
     /* ─── Print ───────────────────────────────── */
     @media print {
-      body { background: white; padding: 0; }
+      body { 
+        background: white; 
+        padding: 0; 
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
       body::before { display: none; }
-      .receipt-card { box-shadow: none; border-radius: 0; animation: none; }
-      .action-row, .loading-overlay, .barcode-wrap { display: none; }
+      .receipt-card { 
+        box-shadow: none; 
+        border-radius: 0; 
+        animation: none; 
+      }
+      .action-row, .loading-overlay { display: none; }
       .receipt-wrap { max-width: 100%; }
-      .stamp { border: 2px solid currentColor !important; }
+      .stamp { 
+        border: 2px solid currentColor !important;
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+      }
+      .total-section {
+        background: var(--g-dark) !important;
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+      }
+      .item-price {
+        background: transparent !important;
+        border: 1px solid var(--border);
+      }
     }
 
     /* ─── Mobile ──────────────────────────────── */
     @media (max-width: 480px) {
-      body { padding: 1.25rem .75rem 4rem; }
-      .receipt-body { padding: 1.25rem 1.25rem 1.5rem; }
-      .hdr-logo { font-size: 1.8rem; }
-      .stamp-wrap { display: none; } /* shows inline in meta on small screens */
+      body { 
+        padding: 1rem 0.75rem 4rem; 
+        padding-bottom: calc(4rem + env(safe-area-inset-bottom));
+      }
+      .receipt-body { padding: 1.4rem 1.25rem 1.6rem; }
+      .hdr-logo { font-size: 2rem; }
+      .stamp-wrap { 
+        position: relative;
+        top: auto;
+        right: auto;
+        text-align: center;
+        margin-bottom: 1rem;
+      }
+      .stamp { transform: rotate(0deg); }
+      .meta-grid { 
+        grid-template-columns: 1fr; 
+        gap: 0;
+      }
+      .total-amt { font-size: 1.4rem; }
+      .btn-act { padding: 0.9rem 1rem; font-size: 0.85rem; }
+    }
+
+    /* Focus visible for accessibility */
+    .btn-act:focus-visible,
+    .store-url:focus-visible,
+    .btn-home:focus-visible {
+      outline: 3px solid var(--g-bright);
+      outline-offset: 2px;
+    }
+
+    /* Reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
     }
   </style>
 </head>
 <body>
 
 <!-- Loading -->
-<div class="loading-overlay" id="loadingState">
+<div class="loading-overlay" id="loadingState" role="status" aria-live="polite" aria-label="Loading receipt">
   <div class="loading-logo">my<em>vendor</em></div>
-  <div class="loading-dots"><span></span><span></span><span></span></div>
+  <div class="loading-dots" aria-hidden="true">
+    <span></span><span></span><span></span>
+  </div>
+  <div class="loading-progress" aria-hidden="true">
+    <div class="loading-progress-bar"></div>
+  </div>
 </div>
 
 <!-- Receipt -->
-<div class="receipt-wrap hidden" id="receiptContent">
+<div class="receipt-wrap hidden" id="receiptContent" role="main" aria-label="Order receipt">
   <div class="receipt-card">
 
     <!-- Header -->
@@ -580,311 +994,375 @@
       <div class="hdr-sub">Vendor Storefront Network</div>
     </div>
 
-    <!-- Zigzag tear (inside card, drawn over header) -->
-    <svg class="tear" viewBox="0 0 460 22" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-      <!-- green fill (matches header) -->
-      <rect width="460" height="22" fill="#0f6e3f"/>
-      <!-- paper-white zigzag eats upward into the green -->
-      <path d="M0,22 L0,12 L11.5,22 L23,12 L34.5,22 L46,12 L57.5,22 L69,12 L80.5,22 L92,12 L103.5,22 L115,12 L126.5,22 L138,12 L149.5,22 L161,12 L172.5,22 L184,12 L195.5,22 L207,12 L218.5,22 L230,12 L241.5,22 L253,12 L264.5,22 L276,12 L287.5,22 L299,12 L310.5,22 L322,12 L333.5,22 L345,12 L356.5,22 L368,12 L379.5,22 L391,12 L402.5,22 L414,12 L425.5,22 L437,12 L448.5,22 L460,12 L460,22 Z" fill="#fffef9"/>
-    </svg>
+    <!-- Zigzag tear -->
+    <div class="tear">
+      <svg viewBox="0 0 460 24" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <defs>
+          <linearGradient id="headerGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" style="stop-color:#072d19"/>
+            <stop offset="100%" style="stop-color:#0f6e3f"/>
+          </linearGradient>
+        </defs>
+        <rect width="460" height="24" fill="url(#headerGrad)"/>
+        <path d="M0,24 L0,10 L11.5,24 L23,10 L34.5,24 L46,10 L57.5,24 L69,10 L80.5,24 L92,10 L103.5,24 L115,10 L126.5,24 L138,10 L149.5,24 L161,10 L172.5,24 L184,10 L195.5,24 L207,10 L218.5,24 L230,10 L241.5,24 L253,10 L264.5,24 L276,10 L287.5,24 L299,10 L310.5,24 L322,10 L333.5,24 L345,10 L356.5,24 L368,10 L379.5,24 L391,10 L402.5,24 L414,10 L425.5,24 L437,10 L448.5,24 L460,10 L460,24 Z" fill="#fffef9"/>
+      </svg>
+    </div>
 
     <!-- Body -->
     <div class="receipt-body">
 
       <!-- Status stamp -->
-      <div class="stamp-wrap">
+      <div class="stamp-wrap" id="stampContainer">
         <span id="statusStamp" class="stamp stamp-new">New</span>
       </div>
 
       <!-- Store -->
       <div class="store-block">
         <div class="store-name" id="storeName">Loading…</div>
-        <a class="store-url" id="storeLink" href="#">myvendor.qzz.io</a>
+        <a class="store-url" id="storeLink" href="#" target="_blank" rel="noopener">myvendor.qzz.io</a>
       </div>
 
       <!-- Meta grid -->
       <div class="meta-grid">
         <div class="meta-item">
-          <div class="meta-label">Receipt No.</div>
+          <div class="meta-label">📋 Receipt No.</div>
           <div class="meta-val mono" id="orderId">—</div>
         </div>
         <div class="meta-item">
-          <div class="meta-label">Date &amp; Time</div>
+          <div class="meta-label">📅 Date & Time</div>
           <div class="meta-val" id="orderDate">—</div>
         </div>
         <div class="meta-item">
-          <div class="meta-label">Customer</div>
+          <div class="meta-label">👤 Customer</div>
           <div class="meta-val" id="customerName">—</div>
         </div>
         <div class="meta-item">
-          <div class="meta-label">Contact</div>
+          <div class="meta-label">📞 Contact</div>
           <div class="meta-val" id="customerPhone">—</div>
         </div>
       </div>
 
       <!-- Items -->
       <div class="section-hdr">
-        <span class="section-hdr-label"><i class="bi bi-receipt"></i> Items Ordered</span>
+        <span class="section-hdr-label">
+          <span>🧾</span> Items Ordered
+        </span>
         <div class="section-hdr-line"></div>
       </div>
       <div id="orderItems">
-        <div class="items-text">Loading…</div>
+        <div class="items-text">Loading your order details…</div>
       </div>
 
       <!-- Total -->
-      <div class="total-row">
-        <span class="total-label">Total Amount</span>
-        <span class="total-amt" id="orderTotal">₦0.00</span>
+      <div class="total-section">
+        <div class="total-row">
+          <span class="total-label">Total Amount</span>
+          <span class="total-amt" id="orderTotal">₦0.00</span>
+        </div>
       </div>
 
       <!-- Barcode -->
       <div class="barcode-wrap">
-        <div class="barcode"></div>
+        <div class="barcode" aria-hidden="true"></div>
         <div class="barcode-num" id="barcodeId">* * * * * * * * *</div>
       </div>
 
       <!-- Footer -->
       <div class="receipt-footer">
-        <p class="footer-msg">Thank you for shopping with us! 🙏<br>For support, reach the vendor directly on WhatsApp.</p>
-        <div class="footer-brand">Powered by <b>myvendor</b></div>
+        <p class="footer-msg">
+          Thank you for shopping with us! 🙏<br>
+          <strong>Need help?</strong> Contact the vendor directly on WhatsApp.
+        </p>
+        <div class="footer-brand">
+          <span>Powered by</span>
+          <b>myvendor</b>
+        </div>
       </div>
     </div>
   </div>
 
   <!-- Buttons -->
-  <div class="action-row">
-    <button class="btn-act btn-image" id="imgBtn" onclick="shareAsImage()">
-      <i class="bi bi-image"></i> Save as Image
+  <div class="action-row" role="group" aria-label="Receipt actions">
+    <button class="btn-act btn-image" id="imgBtn" onclick="ReceiptApp.shareAsImage()">
+      <span class="btn-icon">📸</span>
+      <span>Save as Image</span>
     </button>
     <div class="action-sub">
-      <button class="btn-act btn-share" id="shareBtn" onclick="shareReceipt()">
-        <i class="bi bi-link-45deg"></i> Copy Link
+      <button class="btn-act btn-share" id="shareBtn" onclick="ReceiptApp.shareReceipt()">
+        <span class="btn-icon">🔗</span>
+        <span>Copy Link</span>
       </button>
       <button class="btn-act btn-print" onclick="window.print()">
-        <i class="bi bi-printer"></i> Print / PDF
+        <span class="btn-icon">🖨️</span>
+        <span>Print / PDF</span>
       </button>
     </div>
   </div>
 </div>
 
+<!-- Toast -->
+<div class="toast" id="toast" role="status" aria-live="polite">
+  <span class="toast-icon">✓</span>
+  <span id="toastMsg">Copied!</span>
+</div>
+
 <script type="module">
   import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-  const SUPABASE_URL     = 'https://sotdghhayztnpwnrzjzu.supabase.co';
+  const SUPABASE_URL = 'https://sotdghhayztnpwnrzjzu.supabase.co';
   const SUPABASE_ANON_KEY = 'sb_publishable_OcOKwSDnoCGm_rt725Bi-g_rV6tjGlK';
   const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
   /* ── Status map ─────────────────────────────── */
   const STATUS = {
-    new:        { label: 'New',         cls: 'stamp-new'       },
-    processing: { label: 'Processing',  cls: 'stamp-processing'},
-    shipped:    { label: 'Shipped',     cls: 'stamp-shipped'   },
-    delivered:  { label: 'Delivered ✓', cls: 'stamp-delivered' },
-    cancelled:  { label: 'Cancelled ✗', cls: 'stamp-cancelled' },
+    new:        { label: 'New',         cls: 'stamp-new',       icon: '●' },
+    processing: { label: 'Processing',  cls: 'stamp-processing', icon: '◐' },
+    shipped:    { label: 'Shipped',     cls: 'stamp-shipped',    icon: '✈' },
+    delivered:  { label: 'Delivered',   cls: 'stamp-delivered',  icon: '✓' },
+    cancelled:  { label: 'Cancelled',   cls: 'stamp-cancelled',  icon: '✕' },
   };
+
+  /* ── Toast notification ─────────────────────── */
+  function showToast(message, type = 'success') {
+    const toast = document.getElementById('toast');
+    const toastMsg = document.getElementById('toastMsg');
+    const toastIcon = toast.querySelector('.toast-icon');
+    
+    toastMsg.textContent = message;
+    toastIcon.textContent = type === 'success' ? '✓' : '!';
+    toastIcon.style.background = type === 'success' ? 'var(--g-bright)' : 'var(--error)';
+    
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3000);
+  }
 
   /* ── Items renderer ─────────────────────────── */
   function renderItems(raw) {
     const el = document.getElementById('orderItems');
-    // Try JSON array (structured items)
     try {
       const parsed = JSON.parse(raw);
       if (Array.isArray(parsed) && parsed.length) {
-        el.innerHTML = parsed.map(it => `
-          <div class="item-row">
+        el.innerHTML = '<div class="items-list">' + 
+          parsed.map((it, idx) => `
+          <div class="item-row" style="animation: slideUp 0.3s ease forwards; animation-delay: ${idx * 0.05}s">
             <div class="item-info">
               <div class="item-name">${esc(it.name ?? it.product ?? it.title ?? 'Item')}</div>
-              ${it.qty ?? it.quantity
-                ? `<div class="item-qty">Qty: ${it.qty ?? it.quantity}</div>` : ''}
+              ${(it.qty ?? it.quantity) ? `<div class="item-qty">× ${it.qty ?? it.quantity}</div>` : ''}
             </div>
-            ${it.price != null
-              ? `<div class="item-price">₦${Number(it.price).toLocaleString()}</div>` : ''}
-          </div>`).join('');
+            ${it.price != null ? `<div class="item-price">₦${Number(it.price).toLocaleString()}</div>` : ''}
+          </div>`).join('') + '</div>';
         return;
       }
-    } catch (_) {/* not JSON */}
-    // Fallback: pre-wrap text
+    } catch (_) {}
     el.innerHTML = `<div class="items-text">${esc(raw || 'No items listed.')}</div>`;
   }
 
   /* ── HTML escape ─────────────────────────────── */
   function esc(s) {
     return String(s)
-      .replace(/&/g,'&amp;').replace(/</g,'&lt;')
-      .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+      .replace(/&/g,'&amp;')
+      .replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;');
   }
 
   /* ── Error state ─────────────────────────────── */
   function showError(msg) {
     document.getElementById('loadingState').innerHTML = `
-      <div class="receipt-wrap">
+      <div class="receipt-wrap visible">
         <div class="error-card">
-          <div class="error-icon"><i class="bi bi-exclamation-circle-fill"></i></div>
+          <div class="error-icon">⚠️</div>
           <h2 class="error-title">Receipt Not Found</h2>
-          <p class="error-msg">${msg}</p>
-          <a href="/" class="btn-home">← Back to Home</a>
+          <p class="error-msg">${esc(msg)}</p>
+          <a href="/" class="btn-home">
+            <span>←</span>
+            <span>Back to Home</span>
+          </a>
         </div>
       </div>`;
   }
 
-  /* ── Share / copy ────────────────────────────── */
-  window.shareReceipt = function() {
-    const url   = window.location.href;
-    const title = document.getElementById('storeName').textContent;
-    if (navigator.share) {
-      navigator.share({ title: `Receipt – ${title}`, url }).catch(() => {});
-    } else {
-      navigator.clipboard.writeText(url).then(() => {
-        const btn = document.getElementById('shareBtn');
-        const orig = btn.innerHTML;
-        btn.innerHTML = '<i class="bi bi-check-lg"></i> Copied!';
-        setTimeout(() => (btn.innerHTML = orig), 2200);
-      });
-    }
-  };
-
-  /* ── Download blob helper ───────────────────── */
+  /* ── Download helper ────────────────────────── */
   function downloadBlob(blob) {
     const url = URL.createObjectURL(blob);
-    const a   = document.createElement('a');
+    const a = document.createElement('a');
     a.href = url;
-    a.download = 'myvendor-receipt.png';
+    a.download = `myvendor-receipt-${new Date().toISOString().split('T')[0]}.png`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     setTimeout(() => URL.revokeObjectURL(url), 3000);
   }
 
-  /* ── Save as Image ───────────────────────────── */
-  window.shareAsImage = async function() {
-    const btn     = document.getElementById('imgBtn');
-    const origBtn = btn.innerHTML;
-    btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Generating…';
-    btn.disabled  = true;
+  /* ── Receipt App Namespace ─────────────────── */
+  window.ReceiptApp = {
+    
+    shareReceipt() {
+      const url = window.location.href;
+      const title = document.getElementById('storeName').textContent;
+      
+      if (navigator.share) {
+        navigator.share({ title: `Receipt – ${title}`, url }).catch(() => {});
+      } else {
+        navigator.clipboard.writeText(url).then(() => {
+          showToast('Link copied to clipboard!');
+        }).catch(() => {
+          showToast('Failed to copy link', 'error');
+        });
+      }
+    },
 
-    const actRow = document.querySelector('.action-row');
-    actRow.style.visibility = 'hidden';   // hide buttons from screenshot
+    async shareAsImage() {
+      const btn = document.getElementById('imgBtn');
+      const originalContent = btn.innerHTML;
+      
+      btn.innerHTML = '<span class="btn-icon">⏳</span><span>Generating...</span>';
+      btn.disabled = true;
 
-    try {
-      const card = document.querySelector('.receipt-card');
+      const actionRow = document.querySelector('.action-row');
+      actionRow.style.visibility = 'hidden';
 
-      // Capture receipt card at 2× (retina quality).
-      // onclone runs on html2canvas's internal DOM clone before rendering —
-      // we inject a style that kills the fixed body::before noise overlay
-      // and strips the body radial gradients so they don't bleed onto the card.
-      const cardCanvas = await html2canvas(card, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: '#fffef9',
-        logging: false,
-        removeContainer: true,
-        onclone(clonedDoc) {
-          const s = clonedDoc.createElement('style');
-          s.textContent = `
-            body::before { display: none !important; }
-            body { background: #f5f1e8 !important; background-image: none !important; }
-            .receipt-card { box-shadow: none !important; animation: none !important; }
-            .action-row { display: none !important; }
-          `;
-          clonedDoc.head.appendChild(s);
-        },
-      });
+      try {
+        const card = document.querySelector('.receipt-card');
+        
+        const canvas = await html2canvas(card, {
+          scale: 2,
+          useCORS: true,
+          allowTaint: true,
+          backgroundColor: '#fffef9',
+          logging: false,
+          removeContainer: true,
+          onclone(clonedDoc) {
+            const style = clonedDoc.createElement('style');
+            style.textContent = `
+              body::before { display: none !important; }
+              body { background: #f5f1e8 !important; background-image: none !important; }
+              .receipt-card { box-shadow: none !important; animation: none !important; }
+              .action-row { display: none !important; }
+            `;
+            clonedDoc.head.appendChild(style);
+          },
+        });
 
-      // Build a framed output canvas with padding + watermark
-      const PAD    = 64;          // px of breathing room around card
-      const WM_H   = 36;          // watermark strip height
-      const R      = 22 * 2;      // border-radius × scale
-      const out    = document.createElement('canvas');
-      out.width    = cardCanvas.width  + PAD * 2;
-      out.height   = cardCanvas.height + PAD * 2 + WM_H;
-      const ctx    = out.getContext('2d');
+        // Create framed output
+        const PAD = 60;
+        const WM_H = 40;
+        const R = 24;
+        const output = document.createElement('canvas');
+        output.width = canvas.width + PAD * 2;
+        output.height = canvas.height + PAD * 2 + WM_H;
+        const ctx = output.getContext('2d');
 
-      // Background gradient
-      const grad = ctx.createLinearGradient(0, 0, out.width, out.height);
-      grad.addColorStop(0, '#f5f1e8');
-      grad.addColorStop(1, '#e8e3d8');
-      ctx.fillStyle = grad;
-      ctx.fillRect(0, 0, out.width, out.height);
+        // Background
+        const gradient = ctx.createLinearGradient(0, 0, output.width, output.height);
+        gradient.addColorStop(0, '#f5f1e8');
+        gradient.addColorStop(1, '#e8e3d8');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, output.width, output.height);
 
-      // Card drop shadow
-      ctx.save();
-      ctx.shadowColor   = 'rgba(0,0,0,0.18)';
-      ctx.shadowBlur    = 48;
-      ctx.shadowOffsetY = 12;
-      ctx.fillStyle     = '#fffef9';
-      const cx = PAD, cy = PAD, cw = cardCanvas.width, ch = cardCanvas.height;
-      ctx.beginPath();
-      ctx.moveTo(cx + R, cy);
-      ctx.lineTo(cx + cw - R, cy);   ctx.quadraticCurveTo(cx + cw, cy,      cx + cw, cy + R);
-      ctx.lineTo(cx + cw, cy + ch - R); ctx.quadraticCurveTo(cx + cw, cy + ch, cx + cw - R, cy + ch);
-      ctx.lineTo(cx + R, cy + ch);   ctx.quadraticCurveTo(cx,      cy + ch, cx,      cy + ch - R);
-      ctx.lineTo(cx, cy + R);        ctx.quadraticCurveTo(cx,      cy,      cx + R,  cy);
-      ctx.closePath();
-      ctx.fill();
-      ctx.restore();
+        // Shadow
+        ctx.save();
+        ctx.shadowColor = 'rgba(0,0,0,0.15)';
+        ctx.shadowBlur = 40;
+        ctx.shadowOffsetY = 10;
+        ctx.fillStyle = '#fffef9';
+        
+        const x = PAD, y = PAD, w = canvas.width, h = canvas.height;
+        ctx.beginPath();
+        ctx.moveTo(x + R, y);
+        ctx.lineTo(x + w - R, y);
+        ctx.quadraticCurveTo(x + w, y, x + w, y + R);
+        ctx.lineTo(x + w, y + h - R);
+        ctx.quadraticCurveTo(x + w, y + h, x + w - R, y + h);
+        ctx.lineTo(x + R, y + h);
+        ctx.quadraticCurveTo(x, y + h, x, y + h - R);
+        ctx.lineTo(x, y + R);
+        ctx.quadraticCurveTo(x, y, x + R, y);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
 
-      // Clip card image to rounded rect
-      ctx.save();
-      ctx.beginPath();
-      ctx.moveTo(cx + R, cy);
-      ctx.lineTo(cx + cw - R, cy);   ctx.quadraticCurveTo(cx + cw, cy,      cx + cw, cy + R);
-      ctx.lineTo(cx + cw, cy + ch - R); ctx.quadraticCurveTo(cx + cw, cy + ch, cx + cw - R, cy + ch);
-      ctx.lineTo(cx + R, cy + ch);   ctx.quadraticCurveTo(cx,      cy + ch, cx,      cy + ch - R);
-      ctx.lineTo(cx, cy + R);        ctx.quadraticCurveTo(cx,      cy,      cx + R,  cy);
-      ctx.closePath();
-      ctx.clip();
-      ctx.drawImage(cardCanvas, PAD, PAD);
-      ctx.restore();
+        // Clip and draw
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(x + R, y);
+        ctx.lineTo(x + w - R, y);
+        ctx.quadraticCurveTo(x + w, y, x + w, y + R);
+        ctx.lineTo(x + w, y + h - R);
+        ctx.quadraticCurveTo(x + w, y + h, x + w - R, y + h);
+        ctx.lineTo(x + R, y + h);
+        ctx.quadraticCurveTo(x, y + h, x, y + h - R);
+        ctx.lineTo(x, y + R);
+        ctx.quadraticCurveTo(x, y, x + R, y);
+        ctx.closePath();
+        ctx.clip();
+        ctx.drawImage(canvas, PAD, PAD);
+        ctx.restore();
 
-      // Watermark
-      ctx.fillStyle   = 'rgba(100, 88, 70, 0.55)';
-      ctx.font        = `500 ${13 * 2}px "DM Sans", sans-serif`;
-      ctx.textAlign   = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText('myvendor.qzz.io', out.width / 2, out.height - WM_H / 2 - 2);
+        // Watermark
+        ctx.fillStyle = 'rgba(100, 88, 70, 0.6)';
+        ctx.font = '500 24px "DM Sans", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('myvendor.qzz.io', output.width / 2, output.height - WM_H / 2);
 
-      // Share or download
-      out.toBlob(async (blob) => {
-        const file = new File([blob], 'myvendor-receipt.png', { type: 'image/png' });
+        // Export
+        output.toBlob(async (blob) => {
+          const file = new File([blob], `receipt-${Date.now()}.png`, { type: 'image/png' });
 
-        if (navigator.canShare && navigator.canShare({ files: [file] })) {
-          try {
-            await navigator.share({
-              title: 'myvendor Receipt',
-              text:  'Here is your order receipt.',
-              files: [file],
-            });
-          } catch (e) {
-            if (e.name !== 'AbortError') downloadBlob(blob);
+          if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            try {
+              await navigator.share({
+                title: 'myvendor Receipt',
+                text: 'Here is your order receipt.',
+                files: [file],
+              });
+              showToast('Receipt shared successfully!');
+            } catch (e) {
+              if (e.name !== 'AbortError') {
+                downloadBlob(blob);
+                showToast('Image saved!');
+              }
+            }
+          } else {
+            downloadBlob(blob);
+            showToast('Image saved!');
           }
-        } else {
-          downloadBlob(blob);
-        }
-      }, 'image/png');
+        }, 'image/png');
 
-    } catch (err) {
-      console.error('Image generation failed:', err);
-      alert('Could not generate image. Try "Print / PDF" instead.');
-    } finally {
-      actRow.style.visibility = '';
-      btn.innerHTML = origBtn;
-      btn.disabled  = false;
+      } catch (err) {
+        console.error('Image generation failed:', err);
+        showToast('Failed to generate image. Try Print instead.', 'error');
+      } finally {
+        actionRow.style.visibility = '';
+        btn.innerHTML = originalContent;
+        btn.disabled = false;
+      }
     }
   };
 
-  /* ── Main ────────────────────────────────────── */
-  async function loadReceipt() {
+  /* ── Main loader with timeout ───────────────── */
+  async function loadReceipt(retries = 3) {
     const orderId = new URLSearchParams(window.location.search).get('id');
-    if (!orderId) { showError('No order ID found in this link. Please check the URL.'); return; }
+    
+    if (!orderId) {
+      showError('No order ID found in this link. Please check the URL or contact the vendor.');
+      return;
+    }
+
+    // Timeout handler
+    const timeout = setTimeout(() => {
+      showError('Connection timed out. Please check your internet and try again.');
+    }, 15000);
 
     try {
-      const { data: order, error: oErr } = await supabase
+      const { data: order, error: orderError } = await supabase
         .from('orders')
         .select('*')
         .eq('id', orderId)
         .single();
-      if (oErr || !order) throw new Error('Order not found');
+
+      if (orderError || !order) throw new Error('Order not found');
 
       const { data: vendor } = await supabase
         .from('vendor_profiles')
@@ -892,10 +1370,11 @@
         .eq('id', order.vendor_id)
         .single();
 
-      /* Populate ─────────────────────────────── */
-      document.getElementById('storeName').textContent =
-        vendor?.business_name || 'myvendor Store';
+      clearTimeout(timeout);
 
+      // Populate data
+      document.getElementById('storeName').textContent = vendor?.business_name || 'myvendor Store';
+      
       const host = window.location.host;
       const slug = vendor?.slug;
       const path = slug ? `/${slug}` : '/store';
@@ -903,45 +1382,45 @@
       linkEl.textContent = `${host}${path}`;
       linkEl.href = path;
 
-      /* Receipt ID (truncate long UUIDs) */
       const id = String(order.id);
-      document.getElementById('orderId').textContent =
-        id.length > 14 ? `…${id.slice(-12)}` : id;
-      document.getElementById('barcodeId').textContent = id.toUpperCase();
+      document.getElementById('orderId').textContent = id.length > 14 ? `…${id.slice(-12)}` : id;
+      document.getElementById('barcodeId').textContent = id.toUpperCase().replace(/(.{4})/g, '$1 ').trim();
 
-      /* Date */
-      document.getElementById('orderDate').textContent =
-        new Date(order.created_at).toLocaleString('en-NG', {
-          year: 'numeric', month: 'short', day: 'numeric',
-          hour: '2-digit', minute: '2-digit',
-        });
+      document.getElementById('orderDate').textContent = new Date(order.created_at).toLocaleString('en-NG', {
+        year: 'numeric', month: 'short', day: 'numeric',
+        hour: '2-digit', minute: '2-digit',
+      });
 
-      /* Customer */
       document.getElementById('customerName').textContent = order.customer_name || '—';
-      document.getElementById('customerPhone').textContent =
-        order.customer_phone ?? order.phone ?? '—';
+      document.getElementById('customerPhone').textContent = order.customer_phone ?? order.phone ?? '—';
 
-      /* Items */
       renderItems(order.items);
 
-      /* Total */
       const total = parseFloat(order.total_amount) || 0;
-      document.getElementById('orderTotal').textContent =
-        `₦${total.toLocaleString()}`;
+      document.getElementById('orderTotal').textContent = `₦${total.toLocaleString()}`;
 
-      /* Status stamp */
-      const key    = (order.status || 'new').toLowerCase();
-      const cfg    = STATUS[key] ?? { label: order.status, cls: 'stamp-new' };
-      const stamp  = document.getElementById('statusStamp');
-      stamp.textContent  = cfg.label;
-      stamp.className    = `stamp ${cfg.cls}`;
+      const key = (order.status || 'new').toLowerCase();
+      const cfg = STATUS[key] ?? { label: order.status, cls: 'stamp-new', icon: '●' };
+      const stamp = document.getElementById('statusStamp');
+      stamp.textContent = cfg.label;
+      stamp.className = `stamp ${cfg.cls}`;
 
-      /* Reveal */
+      // Reveal
       document.getElementById('loadingState').classList.add('hidden');
       document.getElementById('receiptContent').classList.remove('hidden');
+      setTimeout(() => {
+        document.getElementById('receiptContent').classList.add('visible');
+      }, 50);
 
     } catch (err) {
+      clearTimeout(timeout);
       console.error(err);
+      
+      if (retries > 0) {
+        setTimeout(() => loadReceipt(retries - 1), 1000);
+        return;
+      }
+      
       showError('Unable to load this receipt. Please check the link or contact the vendor for a resend.');
     }
   }
