@@ -563,29 +563,21 @@
     }
 
     async function loadProduct() {
-        const params = new URLSearchParams(window.location.search);
-        const vendorSlug = params.get('vendor');
-        const productId = params.get('id');
+        // 1. SMART ID EXTRACTION: Handles both ?id=123 and clean /product/123 URLs
+        let productId = new URLSearchParams(window.location.search).get('id');
+        
+        if (!productId) {
+            const pathParts = window.location.pathname.split('/').filter(Boolean);
+            productId = pathParts[pathParts.length - 1]; 
+        }
 
-        if (!vendorSlug || !productId) {
+        // Failsafe if we still don't have an ID
+        if (!productId || productId.includes('.html')) {
             showError('Invalid product link.');
             return;
         }
 
-        // Fetch vendor
-        const { data: vendor, error: vendorErr } = await supabase
-            .from('vendor_profiles')
-            .select('*')
-            .eq('slug', vendorSlug)
-            .single();
-
-        if (vendorErr || !vendor) {
-            showError('Store not found.', vendorSlug);
-            return;
-        }
-        currentVendor = vendor;
-
-        // Fetch product
+        // 2. FETCH PRODUCT FIRST
         const { data: product, error: prodErr } = await supabase
             .from('products')
             .select('*')
@@ -593,10 +585,26 @@
             .single();
 
         if (prodErr || !product) {
-            showError('Product not available.', vendorSlug);
+            showError('Product not available.');
             return;
         }
         currentProduct = product;
+
+        // 3. USE PRODUCT TO FETCH VENDOR
+        const { data: vendor, error: vendorErr } = await supabase
+            .from('vendor_profiles')
+            .select('*')
+            .eq('id', product.vendor_id)
+            .single();
+
+        if (vendorErr || !vendor) {
+            showError('Store not found.');
+            return;
+        }
+        currentVendor = vendor;
+        const vendorSlug = vendor.slug;
+
+        // --- THE REST REMAINS EXACTLY THE SAME ---
 
         // Update page title
         document.title = `${product.title} - ${vendor.business_name}`;
@@ -665,7 +673,7 @@
             totalDisplay.innerText = `₦${total.toLocaleString()}`;
         };
         qtyInput.addEventListener('input', updateTotal);
-        updateTotal();
+        updateTotal(); // Initial call
 
         // Hide loading, show content
         document.getElementById('loadingState').classList.add('hidden');
