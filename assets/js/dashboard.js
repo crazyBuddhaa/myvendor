@@ -9,8 +9,19 @@ window.currentUser = null;
 window.vendorSlug = null;
 window.currentProductsCount = 0;
 
-// 🌟 Changed to 'let' and increased to 20 so it can dynamically grow
+// Dynamic limit for products (Base 20 + any referral bonuses)
 let FREE_PRODUCT_LIMIT = 20; 
+
+// 🛡️ XSS SECURITY: Escapes malicious characters from user input
+const escapeHTML = (str) => {
+    if (!str) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+};
 
 // ─── 1. AUTH & INITIALIZATION ─────────────────────────────────────
 async function initDashboard() {
@@ -31,34 +42,27 @@ async function initDashboard() {
         return;
     }
 
-    // Set Global State
     window.currentUser = profile;
     window.vendorSlug = profile.slug;
-
-    // 🌟 Calculate total product limit based on base (20) + referrals
-    // If 'bonus_slots' is null/undefined, it defaults to 0
+    
+    // Apply referral bonus slots if they exist
     FREE_PRODUCT_LIMIT = 20 + (profile.bonus_slots || 0);
 
-    // Inject the Premium Upgrade Modal into the page globally
     injectUpgradeModal();
 
-    // Route controller: Load appropriate data based on which page we are on
     if (document.getElementById('recentOrdersList')) await window.loadHomeDashboard();
     if (document.getElementById('productGrid')) await window.loadProducts();
     if (document.getElementById('orderList')) await window.loadOrders();
     if (document.getElementById('totalRevenue')) await window.loadAnalytics();
-
-    // Load Settings if we are on the settings page
     if (document.getElementById('settingsForm')) await window.loadSettings();
 
-    // Check for edit product form
     const urlParams = new URLSearchParams(window.location.search);
     if (document.getElementById('editProductForm') && urlParams.has('id')) {
         await window.loadEditProduct(urlParams.get('id'));
     }
 }
 
-// ─── 2. PREMIUM TIER LOGIC (FREEMIUM) ─────────────────────────────
+// ─── 2. PREMIUM TIER LOGIC ────────────────────────────────────────
 function injectUpgradeModal() {
     const modalHtml = `
     <div class="modal fade" id="premiumModal" tabindex="-1" aria-hidden="true">
@@ -102,44 +106,27 @@ window.showPremiumModal = function(reasonText) {
 window.loadHomeDashboard = async function() {
     if (!document.getElementById('recentOrdersList')) return;
 
-    // Populate Greeting & Store Link
     const firstName = window.currentUser.business_name.split(' ')[0] || 'Vendor';
     const welcomeEl = document.getElementById('welcomeName');
-    if (welcomeEl) welcomeEl.innerHTML = `Welcome back, ${firstName} 👋`;
+    if (welcomeEl) welcomeEl.innerHTML = `Welcome back, ${escapeHTML(firstName)} 👋`;
 
-    const storeUrl = `myvendor.qzz.io/${window.vendorSlug}`;
+    const storeUrl = `${window.location.host}/${window.vendorSlug}`;
     const storeLinkEl = document.getElementById('storeLink');
     if (storeLinkEl) storeLinkEl.innerText = storeUrl;
 
-    // Set up WhatsApp Share Button
     const waShareBtn = document.getElementById('waShareBtn');
     if (waShareBtn) {
         const shareText = encodeURIComponent(`Shop our latest collection online! Browse products and place orders directly here: https://${storeUrl}`);
         waShareBtn.href = `https://wa.me/?text=${shareText}`;
     }
 
-    // Fetch Top-Level Stats (Using fast 'head' queries)
-    const { count: prodCount } = await supabase
-        .from('products')
-        .select('*', { count: 'exact', head: true })
-        .eq('vendor_id', window.currentUser.id);
-
-    const { count: orderCount } = await supabase
-        .from('orders')
-        .select('*', { count: 'exact', head: true })
-        .eq('vendor_id', window.currentUser.id);
+    const { count: prodCount } = await supabase.from('products').select('*', { count: 'exact', head: true }).eq('vendor_id', window.currentUser.id);
+    const { count: orderCount } = await supabase.from('orders').select('*', { count: 'exact', head: true }).eq('vendor_id', window.currentUser.id);
 
     if (document.getElementById('statProducts')) document.getElementById('statProducts').innerText = prodCount || 0;
     if (document.getElementById('statOrders')) document.getElementById('statOrders').innerText = orderCount || 0;
 
-    // Fetch & Render Recent Orders (Top 4)
-    const { data: recentOrders } = await supabase
-        .from('orders')
-        .select('*')
-        .eq('vendor_id', window.currentUser.id)
-        .order('created_at', { ascending: false })
-        .limit(4);
-
+    const { data: recentOrders } = await supabase.from('orders').select('*').eq('vendor_id', window.currentUser.id).order('created_at', { ascending: false }).limit(4);
     const ordersListEl = document.getElementById('recentOrdersList');
 
     if (!recentOrders || recentOrders.length === 0) {
@@ -149,18 +136,13 @@ window.loadHomeDashboard = async function() {
 
     ordersListEl.innerHTML = recentOrders.map(o => {
         const date = new Date(o.created_at).toLocaleDateString('en-NG', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-
-        let statusClass = 'status-new';
-        if (o.status === 'processing') statusClass = 'status-processing';
-        if (o.status === 'shipped') statusClass = 'status-shipped';
-        if (o.status === 'delivered') statusClass = 'status-delivered';
-        if (o.status === 'cancelled') statusClass = 'status-cancelled';
+        let statusClass = o.status === 'processing' ? 'status-processing' : o.status === 'shipped' ? 'status-shipped' : o.status === 'delivered' ? 'status-delivered' : o.status === 'cancelled' ? 'status-cancelled' : 'status-new';
 
         return `
         <div class="order-row">
           <div class="order-info">
             <span class="order-id">${o.id}</span>
-            <span class="order-date">${date} • <strong style="color:var(--text-dark);">${o.customer_name}</strong></span>
+            <span class="order-date">${date} • <strong style="color:var(--text-dark);">${escapeHTML(o.customer_name)}</strong></span>
           </div>
           <div class="order-right">
             <div class="order-amount">₦${parseFloat(o.total_amount).toLocaleString()}</div>
@@ -171,19 +153,12 @@ window.loadHomeDashboard = async function() {
 };
 
 // ─── 4. PRODUCT & INVENTORY LOGIC ─────────────────────────────────
-
 window.loadProducts = async function() {
     const list = document.getElementById('productGrid');
     if (!list) return;
 
-    const { data: prods } = await supabase
-        .from('products')
-        .select('*')
-        .eq('vendor_id', currentUser.id)
-        .order('created_at', {ascending: false});
-
+    const { data: prods } = await supabase.from('products').select('*').eq('vendor_id', currentUser.id).order('created_at', {ascending: false});
     const emptyState = document.getElementById('emptyState');
-
     window.currentProductsCount = prods ? prods.length : 0;
 
     if (!prods || prods.length === 0) { 
@@ -202,51 +177,33 @@ window.loadProducts = async function() {
         let badgeClass = 'stock-in';
         let badgeText = 'In Stock';
 
-        if (p.status === 'pre_order') {
-            badgeClass = 'stock-low';
-            badgeText = 'Pre-Order';
-        } else if (p.status === 'out_of_stock' || p.in_stock === false) {
-            badgeClass = 'stock-out';
-            badgeText = 'Sold Out';
-        }
+        if (p.status === 'pre_order') { badgeClass = 'stock-low'; badgeText = 'Pre-Order'; }
+        else if (p.status === 'out_of_stock' || p.in_stock === false) { badgeClass = 'stock-out'; badgeText = 'Sold Out'; }
 
-        const imgHtml = p.image_url 
-            ? `<img src="${p.image_url}" alt="${p.title}">` 
-            : `<i class="bi bi-box placeholder-icon"></i>`;
+        const imgHtml = p.image_url ? `<img src="${p.image_url}" alt="${escapeHTML(p.title)}">` : `<i class="bi bi-box placeholder-icon"></i>`;
 
         return `
         <div class="product-card">
-            <div class="product-image">
-                ${imgHtml}
-            </div>
+            <div class="product-image">${imgHtml}</div>
             <div class="product-info">
-                <div class="product-title">${p.title}</div>
+                <div class="product-title">${escapeHTML(p.title)}</div>
                 <div class="product-price">₦${parseFloat(p.price).toLocaleString()}</div>
                 <div class="stock-badge ${badgeClass}">${badgeText}</div>
-                
                 <div class="product-actions">
-                    <a href="/dashboard/edit-product.html?id=${p.id}" class="action-btn">
-                        <i class="bi bi-pencil"></i> Edit
-                    </a>
-                    <button class="action-btn" onclick="copyProductLink('${p.id}')">
-                        <i class="bi bi-link-45deg"></i> Link
-                    </button>
-                    <button class="action-btn delete" onclick="deleteProduct('${p.id}')">
-                        <i class="bi bi-trash"></i>
-                    </button>
+                    <a href="/dashboard/edit-product.html?id=${p.id}" class="action-btn"><i class="bi bi-pencil"></i> Edit</a>
+                    <button class="action-btn" onclick="copyProductLink('${p.id}')"><i class="bi bi-link-45deg"></i> Link</button>
+                    <button class="action-btn delete" onclick="deleteProduct('${p.id}')"><i class="bi bi-trash"></i></button>
                 </div>
             </div>
         </div>`;
     }).join('');
 };
 
-// ─── ADD PRODUCT ───
 window.saveProduct = async function(e) {
     e.preventDefault();
     const btn = document.getElementById('btnSave') || document.getElementById('saveBtn');
     if(btn) btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving...';
 
-    // Premium Check
     const { count } = await supabase.from('products').select('*', { count: 'exact', head: true }).eq('vendor_id', currentUser.id);
     if (currentUser.tier !== 'premium' && count >= FREE_PRODUCT_LIMIT) {
         if(btn) btn.innerHTML = 'Save Product';
@@ -254,18 +211,13 @@ window.saveProduct = async function(e) {
         return;
     }
 
-    // Read URLs directly from the hidden inputs the Cloudinary Widget populated!
     const imgInput = document.getElementById('imageUrl');
     const finalImageUrl = (imgInput && imgInput.value !== '') ? imgInput.value : null;
 
     const extraInput = document.getElementById('extraImagesData');
     let extraImagesArr = [];
     if (extraInput && extraInput.value) {
-        try {
-            extraImagesArr = JSON.parse(extraInput.value);
-        } catch (err) {
-            extraImagesArr = [];
-        }
+        try { extraImagesArr = JSON.parse(extraInput.value); } catch (err) { extraImagesArr = []; }
     }
 
     const statusVal = document.getElementById('prodStatus') ? document.getElementById('prodStatus').value : 'active';
@@ -276,15 +228,9 @@ window.saveProduct = async function(e) {
         title: document.getElementById('prodTitle').value,
         price: document.getElementById('prodPrice').value,
         description: document.getElementById('prodDesc').value,
-        image_url: finalImageUrl, // The Cloudinary URL
-        extra_images: extraImagesArr, // Array of premium gallery URLs
+        image_url: finalImageUrl,
+        extra_images: extraImagesArr,
         category: document.getElementById('prodCategory') ? document.getElementById('prodCategory').value : 'Other',
-        colors: document.getElementById('prodColors') ? document.getElementById('prodColors').value : null,
-        sizes: document.getElementById('prodSizes') ? document.getElementById('prodSizes').value : null,
-        material: document.getElementById('prodMaterial') ? document.getElementById('prodMaterial').value : null,
-        weight: document.getElementById('prodWeight') ? document.getElementById('prodWeight').value : null,
-        dimensions: document.getElementById('prodDimensions') ? document.getElementById('prodDimensions').value : null,
-        tags: document.getElementById('prodTags') ? document.getElementById('prodTags').value : null,
         status: statusVal,
         quantity: qtyVal !== '' ? parseInt(qtyVal) : null,
         in_stock: statusVal !== 'out_of_stock'
@@ -300,14 +246,7 @@ window.saveProduct = async function(e) {
     }
 };
 
-// ─── EDIT PRODUCT ───
 window.loadEditProduct = async function(id) {
-    const header = document.getElementById('pageHeader');
-    const saveBtn = document.getElementById('btnSave') || document.getElementById('btnUpdate');
-
-    if (header) header.innerHTML = 'Edit Product <i class="bi bi-pencil-square text-success"></i>';
-    if (saveBtn) saveBtn.innerHTML = '<i class="bi bi-check-lg"></i> Update Product';
-
     const { data: p, error } = await supabase.from('products').select('*').eq('id', id).single();
     if (error || !p) {
         alert("Product not found.");
@@ -315,7 +254,6 @@ window.loadEditProduct = async function(id) {
         return;
     }
 
-    // Populate text inputs (Checking both add/edit ID patterns just in case)
     const setVal = (id1, id2, val) => {
         if(document.getElementById(id1)) document.getElementById(id1).value = val || '';
         else if(document.getElementById(id2)) document.getElementById(id2).value = val || '';
@@ -327,47 +265,27 @@ window.loadEditProduct = async function(id) {
     setVal('editProdCategory', 'prodCategory', p.category || 'Other');
     setVal('editProdStatus', 'prodStatus', p.status || 'in_stock');
     setVal('editProdQty', 'prodQty', p.quantity !== null ? p.quantity : '');
-    setVal('editProdColors', 'prodColors', p.colors);
-    setVal('editProdSizes', 'prodSizes', p.sizes);
-    setVal('editProdMaterial', 'prodMaterial', p.material);
-    setVal('editProdWeight', 'prodWeight', p.weight);
-    setVal('editProdDimensions', 'prodDimensions', p.dimensions);
-    setVal('editProdTags', 'prodTags', p.tags);
 
-    // Populate existing primary image into the hidden input so it doesn't get lost on update
     if (p.image_url) {
         if(document.getElementById('imageUrl')) document.getElementById('imageUrl').value = p.image_url;
-
         const preview = document.getElementById('imagePreview') || document.getElementById('editImagePreview');
         const wrapper = document.getElementById('imagePreviewWrapper');
-        const removeBtn = document.getElementById('removeImgBtn') || document.getElementById('editRemoveImgBtn');
-
         if (preview && wrapper) {
             preview.src = p.image_url;
             preview.style.display = 'block';
             wrapper.style.display = 'block';
-            if (removeBtn) removeBtn.classList.remove('hidden');
         }
     }
 
-    // Populate existing gallery images into the hidden input
     if (p.extra_images && p.extra_images.length > 0) {
         if(document.getElementById('extraImagesData')) document.getElementById('extraImagesData').value = JSON.stringify(p.extra_images);
-
-        // This array keeps track of current images so new ones can be appended via the widget
         window.uploadedGalleryImages = [...p.extra_images]; 
-
         const container = document.getElementById('extraImagesContainer');
         if (container) {
             p.extra_images.forEach(url => {
                 const imgBox = document.createElement('div');
                 imgBox.style.cssText = "width:75px; height:75px; border-radius:12px; overflow:hidden; border:1px solid #e9eee5;";
-
-                const img = document.createElement('img');
-                img.src = url;
-                img.style.cssText = "width:100%; height:100%; object-fit:cover;";
-
-                imgBox.appendChild(img);
+                imgBox.innerHTML = `<img src="${url}" style="width:100%; height:100%; object-fit:cover;">`;
                 container.insertBefore(imgBox, container.lastElementChild);
             });
         }
@@ -375,7 +293,6 @@ window.loadEditProduct = async function(id) {
 
     const loader = document.getElementById('loadingState');
     const form = document.getElementById('editProductForm') || document.getElementById('addProductForm');
-
     if (loader) loader.classList.add('hidden');
     if (form) form.classList.remove('hidden');
 };
@@ -390,18 +307,13 @@ window.updateProduct = async function(e) {
     const urlParams = new URLSearchParams(window.location.search);
     const productId = urlParams.get('id');
 
-    // Read URLs directly from hidden inputs
     const imgInput = document.getElementById('imageUrl');
     const finalImageUrl = (imgInput && imgInput.value !== '') ? imgInput.value : null;
 
     const extraInput = document.getElementById('extraImagesData');
     let extraImagesArr = [];
     if (extraInput && extraInput.value) {
-        try {
-            extraImagesArr = JSON.parse(extraInput.value);
-        } catch(err) {
-            extraImagesArr = [];
-        }
+        try { extraImagesArr = JSON.parse(extraInput.value); } catch(err) { extraImagesArr = []; }
     }
 
     const getVal = (id1, id2) => {
@@ -417,15 +329,9 @@ window.updateProduct = async function(e) {
         title: getVal('editProdTitle', 'prodTitle'),
         price: getVal('editProdPrice', 'prodPrice'),
         description: getVal('editProdDesc', 'prodDesc'),
-        image_url: finalImageUrl, // Saving Cloudinary URL
+        image_url: finalImageUrl,
         extra_images: extraImagesArr,
         category: getVal('editProdCategory', 'prodCategory') || 'Other',
-        colors: getVal('editProdColors', 'prodColors'),
-        sizes: getVal('editProdSizes', 'prodSizes'),
-        material: getVal('editProdMaterial', 'prodMaterial'),
-        weight: getVal('editProdWeight', 'prodWeight'),
-        dimensions: getVal('editProdDimensions', 'prodDimensions'),
-        tags: getVal('editProdTags', 'prodTags'),
         status: statusVal,
         quantity: qtyVal !== '' ? parseInt(qtyVal) : null,
         in_stock: statusVal !== 'out_of_stock'
@@ -450,30 +356,21 @@ window.deleteProduct = async function(id) {
 };
 
 window.copyProductLink = function(id) {
-    // UPDATED: Now uses the clean path that matches vercel.json rewrite rules
-    navigator.clipboard.writeText(`https://myvendor.qzz.io/product/${id}`);
+    navigator.clipboard.writeText(`https://${window.location.host}/product/${id}`);
     const toast = document.getElementById('toastMsg');
     if (toast) {
         toast.innerText = "Product link copied!";
         toast.classList.add('show');
         setTimeout(() => toast.classList.remove('show'), 2500);
-    } else {
-        alert("Product link copied!");
-    }
+    } else { alert("Product link copied!"); }
 };
-
 
 // ─── 5. ORDER MANAGEMENT LOGIC ────────────────────────────────────
 window.loadOrders = async function() {
     const list = document.getElementById('orderList');
     if (!list) return;
 
-    const { data: orders } = await supabase
-        .from('orders')
-        .select('*')
-        .eq('vendor_id', currentUser.id)
-        .order('created_at', { ascending: false });
-
+    const { data: orders } = await supabase.from('orders').select('*').eq('vendor_id', currentUser.id).order('created_at', { ascending: false });
     const emptyState = document.getElementById('emptyState');
 
     if (!orders || orders.length === 0) {
@@ -492,13 +389,13 @@ window.loadOrders = async function() {
             riderHtml = `
             <div class="rider-info-modern" style="background: var(--green-soft); border-color: var(--green-bright);">
                 <div class="rider-title"><i class="bi bi-check-circle-fill text-success"></i> Delivery Completed</div>
-                <div class="rider-details">Delivered by: ${o.rider_name || 'N/A'} • <a href="tel:${o.rider_phone || ''}">${o.rider_phone || 'N/A'}</a></div>
+                <div class="rider-details">Delivered by: ${escapeHTML(o.rider_name) || 'N/A'} • <a href="tel:${escapeHTML(o.rider_phone) || ''}">${escapeHTML(o.rider_phone) || 'N/A'}</a></div>
             </div>`;
         } else if (o.rider_name) {
             riderHtml = `
             <div class="rider-info-modern">
                 <div class="rider-title"><i class="bi bi-bicycle"></i> Dispatch Details</div>
-                <div class="rider-details">${o.rider_name} • <a href="tel:${o.rider_phone}">${o.rider_phone}</a></div>
+                <div class="rider-details">${escapeHTML(o.rider_name)} • <a href="tel:${escapeHTML(o.rider_phone)}">${escapeHTML(o.rider_phone)}</a></div>
             </div>`;
         }
 
@@ -507,37 +404,20 @@ window.loadOrders = async function() {
             actionsHtml = ''; 
         } else if (o.status === 'delivered') {
             actionsHtml = `
-            <div class="order-actions-modern" style="grid-template-columns: 1fr 1fr;">
-                <button class="btn-action-modern btn-track" onclick="copyTracking('${o.id}')">
-                    <i class="bi bi-link-45deg"></i> Copy Link
-                </button>
-                <button class="btn-action-modern" style="background: #fefaf5; border: 1px solid #d97706; color: #b45309;" onclick="generateReceipt('${o.id}')">
-                    <i class="bi bi-receipt"></i> Receipt <i class="bi bi-lock-fill small ms-1"></i>
-                </button>
+            <div class="order-actions-modern">
+                <button class="btn-action-modern btn-track" onclick="copyTracking('${o.id}')"><i class="bi bi-link-45deg"></i> Copy Link</button>
+                <button class="btn-action-modern" style="background: #fefaf5; border: 1px solid #d97706; color: #b45309;" onclick="generateReceipt('${o.id}', this)"><i class="bi bi-receipt"></i> Receipt</button>
             </div>`;
         } else {
             actionsHtml = `
-            <div class="order-actions-modern" style="grid-template-columns: 1fr 1fr;">
-                <button class="btn-action-modern btn-update" onclick="openStatusModal('${o.id}', '${o.status}')">
-                    <i class="bi bi-pencil-square"></i> Update Status
-                </button>
-                <button class="btn-action-modern btn-track" style="grid-column: span 1;" onclick="copyTracking('${o.id}')">
-                    <i class="bi bi-link-45deg"></i> Copy Link
-                </button>
-                <button class="btn-action-modern btn-chat" onclick="alert('Copy the tracking link and send it to the customer on WhatsApp!')">
-                    <i class="bi bi-whatsapp"></i> Chat
-                </button>
-                <button class="btn-action-modern" style="background: #fefaf5; border: 1px solid #d97706; color: #b45309;" onclick="generateReceipt('${o.id}')">
-                    <i class="bi bi-receipt"></i> Receipt <i class="bi bi-lock-fill small ms-1"></i>
-                </button>
+            <div class="order-actions-modern">
+                <button class="btn-action-modern btn-update" onclick="openStatusModal('${o.id}', '${o.status}')"><i class="bi bi-pencil-square"></i> Status</button>
+                <button class="btn-action-modern" style="background: #fefaf5; border: 1px solid #d97706; color: #b45309;" onclick="generateReceipt('${o.id}', this)"><i class="bi bi-receipt"></i> Receipt</button>
+                <button class="btn-action-modern btn-track" onclick="copyTracking('${o.id}')"><i class="bi bi-link-45deg"></i> Link</button>
             </div>`;
         }
 
-        let statusClass = 'status-new';
-        if (o.status === 'processing') statusClass = 'status-processing';
-        if (o.status === 'shipped') statusClass = 'status-shipped';
-        if (o.status === 'delivered') statusClass = 'status-delivered';
-        if (o.status === 'cancelled') statusClass = 'status-cancelled';
+        let statusClass = o.status === 'processing' ? 'status-processing' : o.status === 'shipped' ? 'status-shipped' : o.status === 'delivered' ? 'status-delivered' : o.status === 'cancelled' ? 'status-cancelled' : 'status-new';
 
         return `
         <div class="order-card-modern" data-status="${o.status}">
@@ -553,8 +433,8 @@ window.loadOrders = async function() {
             </div>
             
             <div class="customer-info-modern">
-                <div class="customer-name-modern"><i class="bi bi-person-circle text-success" style="opacity: 0.8;"></i> ${o.customer_name}</div>
-                <div class="item-summary-modern">${o.items}</div>
+                <div class="customer-name-modern"><i class="bi bi-person-circle text-success" style="opacity: 0.8;"></i> ${escapeHTML(o.customer_name)}</div>
+                <div class="item-summary-modern">${escapeHTML(o.items)}</div>
             </div>
             ${riderHtml}
             ${actionsHtml}
@@ -562,23 +442,19 @@ window.loadOrders = async function() {
     }).join('');
 };
 
-window.generateReceipt = async function(orderId) {
-    // Optional: Grab the button to show a loading spinner while we check Supabase
-    const btn = event ? event.currentTarget : null;
+window.generateReceipt = async function(orderId, btnElement) {
     let originalHtml = '';
-    if (btn) {
-        originalHtml = btn.innerHTML;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
-        btn.disabled = true;
+    if (btnElement) {
+        originalHtml = btnElement.innerHTML;
+        btnElement.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+        btnElement.disabled = true;
     }
 
     try {
-        // 1. Get the exact timestamp for the 1st of the current month
         const startOfMonth = new Date();
         startOfMonth.setDate(1);
         startOfMonth.setHours(0, 0, 0, 0);
 
-        // 2. Count how many receipts were generated this month
         const { count, error } = await supabase
             .from('analytics_events')
             .select('*', { count: 'exact', head: true })
@@ -588,37 +464,24 @@ window.generateReceipt = async function(orderId) {
 
         if (error) throw error;
 
-        // Base limit (You can dynamically add referral bonuses to this later!)
         let RECEIPT_LIMIT = 10; 
 
-        // 3. Block free users who hit the limit
         if (currentUser.tier !== 'premium' && count >= RECEIPT_LIMIT) {
             window.showPremiumModal(`You have reached your limit of ${RECEIPT_LIMIT} free receipts this month. Upgrade to generate unlimited branded receipts!`);
-            if (btn) { btn.innerHTML = originalHtml; btn.disabled = false; }
+            if (btnElement) { btnElement.innerHTML = originalHtml; btnElement.disabled = false; }
             return;
         }
 
-        // 4. Log the generation event to count against their quota
-        await supabase.from('analytics_events').insert([{
-            vendor_id: currentUser.id,
-            event_type: 'receipt_generated'
-            // Note: you could also pass product_id: orderId here if you wanted to track which orders got receipts
-        }]);
-
-        // 5. Open the receipt page
+        await supabase.from('analytics_events').insert([{ vendor_id: currentUser.id, event_type: 'receipt_generated' }]);
         window.open(`/dashboard/receipt.html?id=${orderId}`, '_blank');
         
     } catch (err) {
         console.error(err);
         alert("Error generating receipt. Please try again.");
     } finally {
-        if (btn) {
-            btn.innerHTML = originalHtml;
-            btn.disabled = false;
-        }
+        if (btnElement) { btnElement.innerHTML = originalHtml; btnElement.disabled = false; }
     }
 };
-
 
 window.filterOrders = function(status, pillElement) {
     document.querySelectorAll('.filter-pill-modern').forEach(p => p.classList.remove('active'));
@@ -644,6 +507,7 @@ window.filterOrders = function(status, pillElement) {
     }
 };
 
+// Original single-textarea Create Order Logic
 window.handleCreateOrder = async function(e) {
     e.preventDefault();
     const submitBtn = document.querySelector('#createOrderForm button[type="submit"]');
@@ -652,11 +516,16 @@ window.handleCreateOrder = async function(e) {
     submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving...';
 
     try {
+        const itemsValue = document.getElementById('newOrderItems').value.trim();
+        if (!itemsValue) throw new Error("Please add items to the order.");
+
         const id = `MV-${new Date().toISOString().slice(2,10).replace(/-/g,'')}-${Math.floor(Math.random()*900)+100}`;
+        
         const { error } = await supabase.from('orders').insert([{ 
-            id, vendor_id: currentUser.id, 
+            id, 
+            vendor_id: currentUser.id, 
             customer_name: document.getElementById('newCustomerName').value, 
-            items: document.getElementById('newOrderItems').value, 
+            items: itemsValue, 
             total_amount: document.getElementById('newOrderTotal').value, 
             status: 'new' 
         }]);
@@ -666,8 +535,10 @@ window.handleCreateOrder = async function(e) {
         if(document.getElementById('createOrderModal')) {
             bootstrap.Modal.getInstance(document.getElementById('createOrderModal')).hide();
         }
+        
+        document.getElementById('createOrderForm').reset();
         window.loadOrders(); 
-        navigator.clipboard.writeText(`https://myvendor.qzz.io/track/?id=${id}`);
+        navigator.clipboard.writeText(`https://${window.location.host}/track/?id=${id}`);
 
         const toast = document.getElementById('toastMsg');
         if (toast) {
@@ -677,8 +548,9 @@ window.handleCreateOrder = async function(e) {
         } else {
             alert('Order Created & Link Copied!');
         }
+        
     } catch (error) {
-        alert("Error creating order: " + error.message);
+        alert("Error: " + error.message);
     } finally {
         submitBtn.disabled = false;
         submitBtn.innerHTML = originalText;
@@ -686,38 +558,30 @@ window.handleCreateOrder = async function(e) {
 };
 
 window.copyTracking = function(id) {
-    navigator.clipboard.writeText(`https://myvendor.qzz.io/track/?id=${id}`);
+    navigator.clipboard.writeText(`https://${window.location.host}/track/?id=${id}`);
     const toast = document.getElementById('toastMsg');
     if (toast) {
         toast.innerText = "Tracking link copied!";
         toast.classList.add('show');
         setTimeout(() => toast.classList.remove('show'), 2500);
-    } else {
-        alert("Tracking link copied!");
-    }
+    } else { alert("Tracking link copied!"); }
 };
 
 window.currentOrderId = null;
 window.openStatusModal = function(id, status) {
     currentOrderId = id;
     const select = document.getElementById('statusSelect');
-
-    // Reset all options
     Array.from(select.options).forEach(opt => opt.disabled = false);
 
-    // Forward-only logic
-    if (status === 'processing') {
-        select.querySelector('option[value="new"]').disabled = true;
-    } else if (status === 'shipped') {
+    if (status === 'processing') select.querySelector('option[value="new"]').disabled = true;
+    else if (status === 'shipped') {
         select.querySelector('option[value="new"]').disabled = true;
         select.querySelector('option[value="processing"]').disabled = true;
     }
 
     select.value = status;
-
     const riderGroup = document.getElementById('riderDetailsGroup');
     if(riderGroup) riderGroup.style.display = (status === 'shipped' || status === 'delivered') ? 'block' : 'none';
-
     new bootstrap.Modal(document.getElementById('statusModal')).show();
 };
 
@@ -791,13 +655,13 @@ window.loadAnalytics = async function() {
     const sortedProducts = Object.entries(productSales).sort((a, b) => b[1].revenue - a[1].revenue).slice(0, 5); 
 
     if (sortedProducts.length === 0) {
-        topProductsList.innerHTML = `<div class="empty-state"><i class="bi bi-inbox text-muted" style="font-size: 2rem;"></i><br>No delivered orders yet to calculate top products.</div>`;
+        topProductsList.innerHTML = `<div class="empty-state"><i class="bi bi-inbox text-muted" style="font-size: 2rem;"></i><br>No delivered orders yet.</div>`;
     } else {
         topProductsList.innerHTML = sortedProducts.map((prod, index) => `
             <div class="top-product-item">
                 <div class="product-rank">${index + 1}</div>
                 <div class="product-info">
-                    <div class="product-name">${prod[0]}</div>
+                    <div class="product-name">${escapeHTML(prod[0])}</div>
                     <div class="product-sales">${prod[1].count} order${prod[1].count !== 1 ? 's' : ''}</div>
                 </div>
                 <div class="product-revenue">₦${prod[1].revenue.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0})}</div>
@@ -809,20 +673,12 @@ window.loadAnalytics = async function() {
 // ─── 7. SETTINGS LOGIC ───────────────────────────────────────────
 window.loadSettings = async function() {
     if (!window.currentUser) return;
-
-    if (document.getElementById('setBizName')) {
-        document.getElementById('setBizName').value = window.currentUser.business_name || '';
-    }
-    if (document.getElementById('setWaNumber')) {
-        document.getElementById('setWaNumber').value = window.currentUser.wa_number || '';
-    }
-    if (document.getElementById('setBio')) {
-        document.getElementById('setBio').value = window.currentUser.bio || '';
-    }
+    if (document.getElementById('setBizName')) document.getElementById('setBizName').value = window.currentUser.business_name || '';
+    if (document.getElementById('setWaNumber')) document.getElementById('setWaNumber').value = window.currentUser.wa_number || '';
+    if (document.getElementById('setBio')) document.getElementById('setBio').value = window.currentUser.bio || '';
     if (document.getElementById('setSlug')) {
         const slugInput = document.getElementById('setSlug');
         slugInput.value = window.currentUser.slug || '';
-        // Trigger the live preview update event
         slugInput.dispatchEvent(new Event('input'));
     }
 };
@@ -836,27 +692,16 @@ window.updateSettings = async function(e) {
 
     let newSlug = document.getElementById('setSlug').value.trim().toLowerCase().replace(/[^a-z0-9-]/g, '');
 
-    // Basic validation
     if (!newSlug) {
         alert("Store Link cannot be empty.");
-        btn.innerHTML = originalText;
-        btn.disabled = false;
-        return;
+        btn.innerHTML = originalText; btn.disabled = false; return;
     }
 
-    // Slug uniqueness check: Make sure no other vendor took this custom link
     if (newSlug !== window.currentUser.slug) {
-        const { data: existingVendor } = await supabase
-            .from('vendor_profiles')
-            .select('id')
-            .eq('slug', newSlug)
-            .single();
-
+        const { data: existingVendor } = await supabase.from('vendor_profiles').select('id').eq('slug', newSlug).single();
         if (existingVendor) {
             alert("This Store Link is already taken. Please choose another one.");
-            btn.innerHTML = originalText;
-            btn.disabled = false;
-            return;
+            btn.innerHTML = originalText; btn.disabled = false; return;
         }
     }
 
@@ -867,30 +712,19 @@ window.updateSettings = async function(e) {
         bio: document.getElementById('setBio').value.trim()
     };
 
-    const { error } = await supabase
-        .from('vendor_profiles')
-        .update(updatedData)
-        .eq('id', window.currentUser.id);
+    const { error } = await supabase.from('vendor_profiles').update(updatedData).eq('id', window.currentUser.id);
 
     if (error) {
         alert("Error saving settings: " + error.message);
-        btn.innerHTML = originalText;
-        btn.disabled = false;
+        btn.innerHTML = originalText; btn.disabled = false;
     } else {
-        // Success! Update global state and UI instantly
         window.currentUser = { ...window.currentUser, ...updatedData };
         window.vendorSlug = updatedData.slug;
-
         btn.innerHTML = '<i class="bi bi-check-lg"></i> Saved Successfully!';
-
-        setTimeout(() => {
-            btn.innerHTML = originalText;
-            btn.disabled = false;
-        }, 2000);
+        setTimeout(() => { btn.innerHTML = originalText; btn.disabled = false; }, 2000);
     }
 };
 
-// ─── 8. UTILS & LOGOUT ───────────────────────────────────────────
 window.logout = async function() {
     await supabase.auth.signOut();
     window.location.href = '/login.html';
