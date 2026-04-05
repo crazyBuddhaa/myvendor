@@ -4,11 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Super Admin | myvendor</title>
-
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300..800&family=Raleway:wght@600..900&display=swap" rel="stylesheet" />
-
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     :root {
@@ -17,46 +15,45 @@
       --border-light: #e9eee5; --shadow-sm: 0 8px 20px rgba(0, 32, 0, 0.04);
       --radius-lg: 20px; --radius-md: 16px;
     }
-
     body { background: linear-gradient(145deg, #f6fcf5 0%, #f0f7ec 100%); font-family: 'Inter', sans-serif; color: var(--text-dark); min-height: 100vh; }
     h1, h2, h3, h4 { font-family: 'Raleway', sans-serif; font-weight: 800; letter-spacing: -0.02em; }
-
-    /* Nav */
+    
     .dash-nav { background: rgba(255, 255, 255, 0.92); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(34, 197, 94, 0.2); padding: 0.9rem 0; position: sticky; top: 0; z-index: 1000; }
-    .nav-container { max-width: 900px; margin: 0 auto; padding: 0 1rem; display: flex; justify-content: space-between; align-items: center; }
+    .nav-container { max-width: 1000px; margin: 0 auto; padding: 0 1rem; display: flex; justify-content: space-between; align-items: center; }
     .mv-logo { font-size: 1.5rem; font-weight: 900; background: linear-gradient(135deg, var(--green-dark), var(--green-primary)); -webkit-background-clip: text; color: transparent; text-decoration: none; }
     .mv-logo span { background: linear-gradient(135deg, var(--green-bright), #2b9348); -webkit-background-clip: text; color: transparent; }
 
-    /* Login View */
     #loginView { display: flex; align-items: center; justify-content: center; min-height: 80vh; padding: 1rem; }
     .login-card { background: var(--card-white); padding: 2.5rem 2rem; border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); border: 1px solid var(--border-light); width: 100%; max-width: 400px; text-align: center; }
-    .form-control-modern { width: 100%; padding: 0.8rem 1rem; border: 1.5px solid var(--border-light); border-radius: 12px; font-size: 0.9rem; background: var(--gray-bg); margin-bottom: 1rem; outline: none; }
+    .form-control-modern { width: 100%; padding: 0.8rem 1rem; border: 1.5px solid var(--border-light); border-radius: 12px; font-size: 0.9rem; background: var(--gray-bg); margin-bottom: 1rem; outline: none; transition: 0.2s; }
     .form-control-modern:focus { border-color: var(--green-bright); background: white; }
-    .btn-submit { width: 100%; background: linear-gradient(105deg, var(--green-primary), var(--green-dark)); border: none; padding: 0.85rem; border-radius: 12px; font-weight: 700; color: white; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: all 0.2s; }
+    .btn-submit { width: 100%; background: linear-gradient(105deg, var(--green-primary), var(--green-dark)); border: none; padding: 0.85rem; border-radius: 12px; font-weight: 700; color: white; transition: 0.2s; }
     
-    /* Dashboard View */
-    #dashboardView { display: none; max-width: 900px; margin: 0 auto; padding: 2rem 1rem; }
-    
-    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
-    .stat-card { background: var(--card-white); border: 1px solid var(--border-light); border-radius: var(--radius-md); padding: 1.5rem; display: flex; align-items: center; gap: 1rem; box-shadow: var(--shadow-sm); }
-    .stat-icon { width: 50px; height: 50px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
-    .stat-details h3 { font-size: 1.6rem; margin: 0; line-height: 1; color: var(--text-dark); }
-    .stat-details p { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; margin: 0; color: var(--text-muted); }
+    #dashboardView { display: none; max-width: 1000px; margin: 0 auto; padding: 2rem 1rem; }
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+    .stat-card { background: var(--card-white); border: 1px solid var(--border-light); border-radius: var(--radius-md); padding: 1.2rem; display: flex; align-items: center; gap: 1rem; box-shadow: var(--shadow-sm); }
+    .stat-icon { width: 45px; height: 45px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; }
+    .stat-details h3 { font-size: 1.3rem; margin: 0; line-height: 1; color: var(--text-dark); }
+    .stat-details p { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; margin: 0; color: var(--text-muted); margin-top: 0.2rem; }
 
-    /* Directory Table */
     .table-container { background: var(--card-white); border-radius: var(--radius-lg); border: 1px solid var(--border-light); box-shadow: var(--shadow-sm); overflow: hidden; }
-    .table-header { padding: 1.2rem 1.5rem; border-bottom: 1px solid var(--border-light); background: #fefce8; }
+    .table-header { padding: 1.2rem 1.5rem; border-bottom: 1px solid var(--border-light); background: #fefce8; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
     .table-header h4 { margin: 0; color: #b45309; font-size: 1.1rem; }
-    
+    .search-box { width: 250px; position: relative; }
+    .search-box i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
+    .search-box input { width: 100%; padding: 0.5rem 1rem 0.5rem 2.2rem; border-radius: 40px; border: 1px solid var(--border-light); font-size: 0.8rem; background: var(--card-white); outline: none; }
+    .search-box input:focus { border-color: #d97706; }
+
     .modern-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
     .modern-table th { text-align: left; padding: 1rem 1.5rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; font-size: 0.7rem; border-bottom: 1px solid var(--border-light); }
-    .modern-table td { padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-light); color: var(--text-dark); }
-    .modern-table tr:last-child td { border-bottom: none; }
+    .modern-table td { padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-light); color: var(--text-dark); vertical-align: middle; }
     .modern-table tr:hover { background: var(--gray-bg); }
     
-    .vendor-name { font-weight: 700; color: var(--green-dark); display: flex; align-items: center; gap: 0.5rem; }
-    .link-badge { background: var(--green-soft); color: var(--green-dark); padding: 0.2rem 0.6rem; border-radius: 40px; font-weight: 600; font-size: 0.75rem; text-decoration: none; }
-    .link-badge:hover { background: var(--green-bright); color: white; }
+    .link-badge { background: var(--gray-bg); border: 1px solid var(--border-light); color: var(--text-dark); padding: 0.3rem 0.6rem; border-radius: 6px; font-weight: 600; font-size: 0.75rem; text-decoration: none; display: inline-block; transition: 0.2s;}
+    .link-badge:hover { border-color: var(--green-primary); color: var(--green-primary); }
+    
+    .btn-action { background: var(--green-soft); color: var(--green-dark); border: none; padding: 0.3rem 0.6rem; border-radius: 6px; font-size: 0.7rem; font-weight: 700; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 0.3rem; }
+    .btn-action:hover { background: var(--green-bright); color: white; }
   </style>
 </head>
 <body>
@@ -64,24 +61,31 @@
 <nav class="dash-nav">
   <div class="nav-container">
     <a href="#" class="mv-logo">my<span>vendor</span></a>
-    <span class="badge bg-danger rounded-pill" id="adminBadge" style="display: none;">SUPER ADMIN</span>
+    <span class="badge bg-danger rounded-pill" id="adminBadge" style="display: none;">GOD MODE</span>
   </div>
 </nav>
 
 <div id="loginView">
   <div class="login-card">
-    <i class="bi bi-shield-lock-fill" style="font-size: 2.5rem; color: var(--green-primary); margin-bottom: 1rem; display: inline-block;"></i>
-    <h2 style="margin-bottom: 1.5rem;">System Access</h2>
-    <input type="password" id="adminPass" class="form-control-modern" placeholder="Enter Master Password">
+    <i class="bi bi-cpu-fill" style="font-size: 2.5rem; color: var(--green-primary); margin-bottom: 1rem;"></i>
+    <h2 style="margin-bottom: 1.5rem;">Admin Access</h2>
+    <input type="password" id="adminPass" class="form-control-modern" placeholder="Master Password" onkeydown="if(event.key==='Enter') loadAdminData()">
     <button class="btn-submit" onclick="loadAdminData()" id="loginBtn">Authenticate</button>
     <div id="loginError" style="color: #dc2626; font-size: 0.8rem; font-weight: 600; margin-top: 1rem; display: none;"></div>
   </div>
 </div>
 
 <div id="dashboardView">
-  <h2 style="margin-bottom: 1.5rem; color: var(--green-dark);">Platform Overview</h2>
+  <h2 style="margin-bottom: 1.5rem; color: var(--green-dark);">Global Metrics</h2>
   
   <div class="stats-grid">
+    <div class="stat-card" style="background: linear-gradient(135deg, var(--green-dark), var(--green-primary)); color: white; border: none;">
+      <div class="stat-icon" style="background: rgba(255,255,255,0.2);"><i class="bi bi-cash-stack"></i></div>
+      <div class="stat-details">
+        <h3 id="valRevenue" style="color: white;">₦0</h3>
+        <p style="color: rgba(255,255,255,0.8);">Platform GMV</p>
+      </div>
+    </div>
     <div class="stat-card">
       <div class="stat-icon" style="background: #e0f2fe; color: #0284c7;"><i class="bi bi-shop"></i></div>
       <div class="stat-details">
@@ -90,17 +94,10 @@
       </div>
     </div>
     <div class="stat-card">
-      <div class="stat-icon" style="background: var(--green-soft); color: var(--green-primary);"><i class="bi bi-box-seam"></i></div>
+      <div class="stat-icon" style="background: #fefce8; color: #d97706;"><i class="bi bi-clock-history"></i></div>
       <div class="stat-details">
-        <h3 id="valProducts">0</h3>
-        <p>Total Products</p>
-      </div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-icon" style="background: #fefce8; color: #d97706;"><i class="bi bi-receipt"></i></div>
-      <div class="stat-details">
-        <h3 id="valOrders">0</h3>
-        <p>Total Orders</p>
+        <h3 id="valPending">0</h3>
+        <p>Active Orders</p>
       </div>
     </div>
   </div>
@@ -108,80 +105,107 @@
   <div class="table-container">
     <div class="table-header">
       <h4><i class="bi bi-people-fill me-2"></i> Vendor Directory</h4>
+      <div class="search-box">
+        <i class="bi bi-search"></i>
+        <input type="text" id="searchInput" placeholder="Search name, link, or phone..." onkeyup="filterTable()">
+      </div>
     </div>
     <div style="overflow-x: auto;">
       <table class="modern-table">
         <thead>
           <tr>
-            <th>Store Name</th>
-            <th>Owner</th>
-            <th>WhatsApp</th>
+            <th>Store & Owner</th>
+            <th>Contact</th>
             <th>Store Link</th>
-            <th>Bonus Slots</th>
+            <th>Slots</th>
+            <th>Actions</th>
           </tr>
         </thead>
-        <tbody id="vendorTableBody">
-          </tbody>
+        <tbody id="vendorTableBody"></tbody>
       </table>
     </div>
   </div>
 </div>
 
 <script>
+  let adminPassword = '';
+
   async function loadAdminData() {
-    const pass = document.getElementById('adminPass').value;
+    adminPassword = document.getElementById('adminPass').value;
     const btn = document.getElementById('loginBtn');
     const errDiv = document.getElementById('loginError');
     
     btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Verifying...';
-    btn.disabled = true;
-    errDiv.style.display = 'none';
+    btn.disabled = true; errDiv.style.display = 'none';
 
     try {
-      const response = await fetch('/api/get-admin-stats', {
-        headers: { 'Authorization': `Bearer ${pass}` }
-      });
-
+      const response = await fetch('/api/get-admin-stats', { headers: { 'Authorization': `Bearer ${adminPassword}` } });
       const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Authentication failed');
 
-      if (!response.ok) {
-        throw new Error(data.error || 'Authentication failed');
-      }
-
-      // Hide login, show dashboard
       document.getElementById('loginView').style.display = 'none';
       document.getElementById('adminBadge').style.display = 'inline-block';
       document.getElementById('dashboardView').style.display = 'block';
 
-      // Update Top Stats
+      document.getElementById('valRevenue').innerText = '₦' + data.revenue.toLocaleString();
       document.getElementById('valVendors').innerText = data.vendorCount;
-      document.getElementById('valProducts').innerText = data.products;
-      document.getElementById('valOrders').innerText = data.orders;
+      document.getElementById('valPending').innerText = data.pending;
 
-      // Populate Vendor Table
       const tableBody = document.getElementById('vendorTableBody');
-      if (data.vendorList.length === 0) {
-        tableBody.innerHTML = '<tr><td colspan="5" style="text-align:center; color: var(--text-muted); padding: 2rem;">No vendors found.</td></tr>';
-      } else {
-        tableBody.innerHTML = data.vendorList.map(v => `
-          <tr>
-            <td>
-              <div class="vendor-name"><i class="bi bi-shop-window text-success"></i> ${v.business_name || 'N/A'}</div>
-            </td>
-            <td>${v.full_name || 'Unknown'}</td>
-            <td>${v.wa_number ? `<a href="https://wa.me/${v.wa_number.replace(/\D/g,'')}" target="_blank" style="color:var(--text-dark); text-decoration:none;"><i class="bi bi-whatsapp" style="color: #25D366;"></i> ${v.wa_number}</a>` : 'N/A'}</td>
-            <td><a href="/${v.slug}" target="_blank" class="link-badge">/${v.slug}</a></td>
-            <td><strong>+${v.bonus_slots || 0}</strong></td>
-          </tr>
-        `).join('');
-      }
-
+      tableBody.innerHTML = data.vendorList.map(v => `
+        <tr class="vendor-row">
+          <td>
+            <div style="font-weight: 800; color: var(--green-dark);">${v.business_name || 'N/A'}</div>
+            <div style="font-size: 0.75rem; color: var(--text-muted);">${v.full_name || 'Unknown'}</div>
+          </td>
+          <td>${v.wa_number ? `<a href="https://wa.me/${v.wa_number.replace(/\D/g,'')}" target="_blank" style="text-decoration:none; font-weight: 600;"><i class="bi bi-whatsapp" style="color: #25D366;"></i> ${v.wa_number}</a>` : 'N/A'}</td>
+          <td><a href="/${v.slug}" target="_blank" class="link-badge">/${v.slug}</a></td>
+          <td><strong id="slot-${v.id}" style="color: #b45309; background: #fefce8; padding: 0.2rem 0.5rem; border-radius: 4px;">${20 + (v.bonus_slots || 0)}</strong></td>
+          <td>
+            <button class="btn-action" onclick="grantSlots('${v.id}', this)"><i class="bi bi-plus-circle"></i> Add Slots</button>
+          </td>
+        </tr>
+      `).join('');
     } catch (error) {
-      errDiv.innerText = error.message;
-      errDiv.style.display = 'block';
+      errDiv.innerText = error.message; errDiv.style.display = 'block';
     } finally {
-      btn.innerHTML = 'Authenticate';
-      btn.disabled = false;
+      btn.innerHTML = 'Authenticate'; btn.disabled = false;
+    }
+  }
+
+  async function grantSlots(vendorId, btnElement) {
+    if(!confirm("Grant +3 bonus slots to this vendor?")) return;
+    
+    const originalText = btnElement.innerHTML;
+    btnElement.innerHTML = 'Wait...'; btnElement.disabled = true;
+
+    try {
+      const response = await fetch('/api/admin-action', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${adminPassword}` },
+        body: JSON.stringify({ action: 'add_slots', vendorId: vendorId, amount: 3 })
+      });
+      const data = await response.json();
+      
+      if (!response.ok) throw new Error(data.error);
+      
+      document.getElementById(`slot-${vendorId}`).innerText = 20 + data.newSlots;
+      btnElement.innerHTML = '<i class="bi bi-check2"></i> Done';
+      btnElement.style.background = '#dcfce7'; btnElement.style.color = '#166534';
+    } catch (err) {
+      alert("Error: " + err.message);
+      btnElement.innerHTML = originalText;
+    } finally {
+      setTimeout(() => { btnElement.innerHTML = originalText; btnElement.disabled = false; btnElement.style.background = ''; btnElement.style.color = ''; }, 3000);
+    }
+  }
+
+  function filterTable() {
+    const input = document.getElementById("searchInput").value.toLowerCase();
+    const rows = document.getElementsByClassName("vendor-row");
+    for (let i = 0; i < rows.length; i++) {
+      const text = rows[i].innerText.toLowerCase();
+      rows[i].style.display = text.includes(input) ? "" : "none";
     }
   }
 </script>
