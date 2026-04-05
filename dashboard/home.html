@@ -3,201 +3,632 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Dashboard | myvendor</title>
+  <title>myvendor | Smart Dashboard</title>
 
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#1a6b3c">
+  <link rel="apple-touch-icon" href="/assets/img/logo.png">
+
+  <!-- Bootstrap + Icons + Fonts -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300..800&family=Raleway:wght@600..900&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=Raleway:wght@600;700;800;900&display=swap" rel="stylesheet" />
 
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
     :root {
-      --green-primary: #0f6e3f; --green-bright: #22c55e; --green-dark: #0a4a2a; --green-soft: #e9f7ef;
-      --gray-bg: #fafcf9; --card-white: #ffffff; --text-dark: #1a2e1f; --text-muted: #4a6741;
+      --green-primary: #0f6e3f;
+      --green-bright: #22c55e;
+      --green-dark: #0a4a2a;
+      --green-soft: #e9f7ef;
+      --gray-bg: #fafcf9;
+      --card-white: #ffffff;
+      --text-dark: #1a2e1f;
+      --text-muted: #4a6741;
       --border-light: #e9eee5;
       --shadow-sm: 0 8px 20px rgba(0, 32, 0, 0.04), 0 2px 4px rgba(0, 0, 0, 0.02);
       --shadow-md: 0 12px 28px rgba(0, 20, 0, 0.08);
-      --radius-lg: 20px; --radius-md: 16px; --radius-sm: 12px;
       --wa-green: #25D366;
+      --radius-xl: 28px;
+      --radius-lg: 20px;
+      --radius-md: 16px;
+      --radius-sm: 12px;
     }
 
-    body { background: linear-gradient(145deg, #f6fcf5 0%, #f0f7ec 100%); font-family: 'Inter', sans-serif; color: var(--text-dark); min-height: 100vh; display: flex; flex-direction: column; }
-    h1, h2, h3, h4, .logo-font { font-family: 'Raleway', sans-serif; font-weight: 800; letter-spacing: -0.02em; }
+    body {
+      background: linear-gradient(145deg, #f6fcf5 0%, #f0f7ec 100%);
+      font-family: 'Inter', sans-serif;
+      color: var(--text-dark);
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
 
-    /* Top Navbar */
-    .orders-nav { background: rgba(255, 255, 255, 0.96); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(34, 197, 94, 0.2); padding: 0.75rem 0; position: sticky; top: 0; z-index: 1000; }
-    .nav-container { max-width: 680px; margin: 0 auto; padding: 0 1rem; display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
+    h1, h2, h3, .logo-font {
+      font-family: 'Raleway', sans-serif;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
 
-    .mv-logo-modern { font-size: 1.5rem; font-weight: 900; background: linear-gradient(135deg, var(--green-dark), var(--green-primary)); -webkit-background-clip: text; color: transparent; text-decoration: none; white-space: nowrap; }
-    .mv-logo-modern span { background: linear-gradient(135deg, var(--green-bright), #2b9348); -webkit-background-clip: text; color: transparent; }
+    /* Modern navbar */
+    .dash-nav {
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(34, 197, 94, 0.2);
+      padding: 0.9rem 0;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.02);
+    }
 
-    .nav-actions-modern { display: flex; gap: 0.5rem; align-items: center; }
-    .nav-actions-modern a { background: rgba(100, 116, 100, 0.08); border-radius: 40px; width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center; font-size: 1.2rem; color: var(--text-muted); text-decoration: none; transition: all 0.2s; }
-    .nav-actions-modern a:hover, .nav-actions-modern a.active { background: rgba(34, 197, 94, 0.15); color: var(--green-primary); }
+    .mv-logo {
+      font-size: 1.5rem;
+      font-weight: 900;
+      background: linear-gradient(135deg, var(--green-dark), var(--green-primary));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      text-decoration: none;
+      transition: 0.2s;
+    }
 
-    /* Main Container */
-    .dashboard-container { max-width: 680px; margin: 0 auto; padding: 1.5rem 1rem 3rem; width: 100%; }
+    .mv-logo span {
+      background: linear-gradient(135deg, var(--green-bright), #2b9348);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
 
-    /* Welcome Section */
-    .welcome-card { background: var(--card-white); border-radius: var(--radius-lg); padding: 1.5rem; box-shadow: var(--shadow-sm); border: 1px solid var(--border-light); margin-bottom: 1.5rem; display: flex; flex-direction: column; gap: 1rem; }
-    .welcome-text h1 { font-size: 1.4rem; color: var(--green-dark); margin-bottom: 0.2rem; }
-    .welcome-text p { font-size: 0.85rem; color: var(--text-muted); margin: 0; }
-    
-    .share-link-box { display: flex; align-items: center; background: var(--gray-bg); border: 1.5px solid var(--border-light); border-radius: var(--radius-sm); padding: 0.4rem; }
-    .share-link-box .link-text { flex: 1; font-family: monospace; font-size: 0.8rem; color: var(--text-muted); padding: 0 0.5rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .btn-copy { background: var(--card-white); color: var(--green-dark); border: 1px solid var(--border-light); padding: 0.5rem 0.8rem; border-radius: 8px; font-weight: 700; font-size: 0.75rem; cursor: pointer; transition: 0.2s; }
-    .btn-copy:hover { background: var(--green-soft); border-color: var(--green-bright); }
+    .btn-logout {
+      background: rgba(100, 116, 100, 0.1);
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 40px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      transition: all 0.2s;
+      backdrop-filter: blur(4px);
+    }
 
-    .btn-wa-share { background: var(--wa-green); color: white; border: none; padding: 0.7rem; border-radius: var(--radius-sm); font-weight: 700; font-size: 0.85rem; text-align: center; text-decoration: none; display: flex; justify-content: center; align-items: center; gap: 0.5rem; transition: 0.2s; }
-    .btn-wa-share:hover { background: #1da851; color: white; transform: translateY(-2px); }
+    .btn-logout:hover {
+      background: #fee2e2;
+      color: #dc2626;
+      transform: scale(0.96);
+    }
 
-    /* Stats Grid */
-    .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }
-    .stat-card { background: var(--card-white); border: 1px solid var(--border-light); border-radius: var(--radius-md); padding: 1.2rem; display: flex; align-items: center; gap: 1rem; box-shadow: var(--shadow-sm); }
-    .stat-icon { width: 45px; height: 45px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; background: var(--green-soft); color: var(--green-primary); }
-    .stat-details h3 { font-size: 1.4rem; font-weight: 800; color: var(--text-dark); margin: 0; line-height: 1; }
-    .stat-details p { font-size: 0.75rem; font-weight: 600; color: var(--text-muted); margin: 0; text-transform: uppercase; letter-spacing: 0.5px; }
+    /* Main container */
+    .dashboard-container {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 1.5rem 1rem 2rem;
+      width: 100%;
+    }
 
-    /* Quick Actions */
-    .section-title { font-size: 1.1rem; font-weight: 800; color: var(--text-dark); margin-bottom: 1rem; }
-    .actions-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 2rem; }
-    .action-card { background: var(--card-white); border: 1px solid var(--border-light); border-radius: var(--radius-md); padding: 1.5rem 1rem; text-align: center; text-decoration: none; box-shadow: var(--shadow-sm); transition: all 0.2s; display: block; }
-    .action-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--green-bright); }
-    .action-icon { font-size: 1.8rem; color: var(--green-primary); margin-bottom: 0.5rem; }
-    .action-title { font-weight: 700; color: var(--text-dark); font-size: 0.9rem; margin: 0; }
-    .action-desc { font-size: 0.7rem; color: var(--text-muted); margin-top: 0.2rem; }
+    /* Hero greeting */
+    .greeting-block h1 {
+      font-size: 1.8rem;
+      font-weight: 800;
+      background: linear-gradient(125deg, #14532d, #2b6e3c);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      margin-bottom: 0.25rem;
+    }
 
-    /* Recent Orders (Minimal List) */
-    .recent-orders-card { background: var(--card-white); border: 1px solid var(--border-light); border-radius: var(--radius-lg); padding: 1.5rem; box-shadow: var(--shadow-sm); }
-    .order-row { display: flex; justify-content: space-between; align-items: center; padding: 1rem 0; border-bottom: 1px dashed var(--border-light); }
-    .order-row:last-child { border-bottom: none; padding-bottom: 0; }
-    .order-info { display: flex; flex-direction: column; gap: 0.2rem; }
-    .order-id { font-weight: 700; font-size: 0.9rem; color: var(--green-dark); }
-    .order-date { font-size: 0.75rem; color: var(--text-muted); }
-    .order-right { text-align: right; }
-    .order-amount { font-weight: 800; font-size: 1rem; color: var(--green-primary); }
-    .badge-status { font-size: 0.65rem; padding: 0.2rem 0.6rem; border-radius: 40px; font-weight: 700; text-transform: uppercase; display: inline-block; margin-top: 0.2rem; }
-    
-    .status-new { background: #fef3c7; color: #b45309; }
-    .status-processing { background: #e0f2fe; color: #0284c7; }
-    .status-shipped { background: #e0e7ff; color: #4338ca; }
-    .status-delivered { background: var(--green-soft); color: var(--green-dark); }
-    .status-cancelled { background: #fee2e2; color: #b91c1c; }
+    .greeting-sub {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      font-weight: 500;
+      border-left: 3px solid var(--green-bright);
+      padding-left: 0.75rem;
+      margin-top: 0.2rem;
+    }
 
-    .empty-orders { text-align: center; padding: 2rem; color: var(--text-muted); font-size: 0.85rem; }
+    /* Share card - premium */
+    .share-card {
+      background: linear-gradient(125deg, #0c5734, #0f6e3f);
+      border-radius: var(--radius-xl);
+      padding: 1.5rem;
+      margin: 1.5rem 0;
+      color: white;
+      box-shadow: var(--shadow-md);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      transition: transform 0.2s ease;
+    }
 
-    /* Toast */
-    .toast-modern { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(40px); background: #1e2f1c; color: white; padding: 0.7rem 1.5rem; border-radius: 60px; font-weight: 600; font-size: 0.8rem; opacity: 0; transition: transform 0.25s ease, opacity 0.2s; z-index: 2000; pointer-events: none; white-space: nowrap; }
-    .toast-modern.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+    .share-card:hover {
+      transform: translateY(-3px);
+    }
 
-    footer { margin-top: auto; text-align: center; padding: 1.2rem; font-size: 0.7rem; color: var(--text-muted); border-top: 1px solid rgba(34, 197, 94, 0.2); }
+    .share-card h3 {
+      font-size: 1.2rem;
+      font-weight: 800;
+      margin-bottom: 0.2rem;
+      letter-spacing: -0.2px;
+    }
+
+    .share-card p {
+      font-size: 0.8rem;
+      opacity: 0.85;
+      margin-bottom: 1.2rem;
+    }
+
+    .link-display-modern {
+      background: rgba(255, 255, 255, 0.18);
+      backdrop-filter: blur(4px);
+      border-radius: 60px;
+      padding: 0.45rem 0.45rem 0.45rem 1.2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .link-text {
+      font-family: 'SF Mono', monospace;
+      font-size: 0.85rem;
+      font-weight: 600;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      letter-spacing: -0.2px;
+    }
+
+    .btn-copy-glass {
+      background: white;
+      border: none;
+      border-radius: 40px;
+      padding: 0.45rem 1rem;
+      font-size: 0.75rem;
+      font-weight: 800;
+      color: var(--green-dark);
+      transition: all 0.2s;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    }
+
+    .btn-copy-glass:active {
+      transform: scale(0.94);
+    }
+
+    .btn-share-wa-modern {
+      background: var(--wa-green);
+      width: 100%;
+      border: none;
+      border-radius: 60px;
+      padding: 0.8rem;
+      font-weight: 700;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+      color: #1e3a2f;
+      transition: all 0.2s;
+      text-decoration: none;
+      box-shadow: 0 4px 10px rgba(37, 211, 102, 0.3);
+    }
+
+    .btn-share-wa-modern:hover {
+      background: #20bd59;
+      transform: scale(0.98);
+      color: #0c2f1c;
+    }
+
+    /* Stats row */
+    .stats-mini-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1.8rem;
+    }
+
+    .stat-fresh-card {
+      background: var(--card-white);
+      border-radius: var(--radius-lg);
+      padding: 1rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border-light);
+      transition: all 0.2s;
+    }
+
+    .stat-icon-round {
+      width: 48px;
+      height: 48px;
+      background: var(--green-soft);
+      border-radius: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      color: var(--green-primary);
+    }
+
+    .stat-val {
+      font-size: 1.6rem;
+      font-weight: 800;
+      line-height: 1.2;
+      color: var(--green-dark);
+    }
+
+    .stat-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+    }
+
+    /* Action grid */
+    .action-modern-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+      gap: 0.8rem;
+      margin-bottom: 2rem;
+    }
+
+    .action-modern-card {
+      background: var(--card-white);
+      border-radius: var(--radius-md);
+      padding: 0.9rem 0.3rem;
+      text-align: center;
+      text-decoration: none;
+      color: var(--text-dark);
+      border: 1px solid var(--border-light);
+      transition: all 0.2s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .action-modern-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--green-bright);
+      background: #ffffff;
+      box-shadow: 0 12px 22px rgba(34, 197, 94, 0.12);
+    }
+
+    .action-icon-lg {
+      font-size: 1.8rem;
+      color: var(--green-primary);
+      margin-bottom: 0.4rem;
+      display: inline-block;
+    }
+
+    .action-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: -0.2px;
+    }
+
+    /* Recent orders panel */
+    .orders-panel {
+      background: var(--card-white);
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--border-light);
+      padding: 1.4rem;
+      box-shadow: var(--shadow-sm);
+      margin-top: 0.2rem;
+    }
+
+    .section-title-modern {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 1.2rem;
+      flex-wrap: wrap;
+    }
+
+    .section-title-modern h4 {
+      font-weight: 800;
+      font-size: 1.2rem;
+      margin: 0;
+      font-family: 'Raleway', sans-serif;
+    }
+
+    .view-all-link {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--green-primary);
+      text-decoration: none;
+      border-bottom: 1.5px dotted var(--green-bright);
+    }
+
+    /* order rows (maintaining compatibility with dashboard.js generated classes) */
+    .order-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 0;
+      border-bottom: 1px solid var(--border-light);
+      transition: background 0.1s;
+    }
+    .order-row:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+    .order-info {
+      display: flex;
+      flex-direction: column;
+    }
+    .order-id {
+      font-size: 0.85rem;
+      font-weight: 800;
+      color: var(--text-dark);
+    }
+    .order-date {
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+    .order-right {
+      text-align: right;
+    }
+    .order-amount {
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: var(--green-primary);
+    }
+    .badge-status {
+      font-size: 0.6rem;
+      padding: 0.25rem 0.6rem;
+      border-radius: 50px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      display: inline-block;
+      margin-top: 5px;
+    }
+    .status-new { background: #fef9e3; color: #b45309; }
+    .status-processing { background: #f1f0ff; color: #4f46e5; }
+    .status-shipped { background: #e0f2fe; color: #0c6b8c; }
+    .status-delivered { background: var(--green-soft); color: #166534; }
+
+    /* empty state */
+    .empty-orders {
+      text-align: center;
+      padding: 2rem 0;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+
+    /* toast notification */
+    .toast-vendor {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%) translateY(40px);
+      background: #1e2f1c;
+      backdrop-filter: blur(8px);
+      color: white;
+      padding: 0.7rem 1.5rem;
+      border-radius: 60px;
+      font-weight: 600;
+      font-size: 0.8rem;
+      opacity: 0;
+      transition: transform 0.25s ease, opacity 0.2s;
+      z-index: 2000;
+      pointer-events: none;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.2);
+    }
+    .toast-vendor.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    footer {
+      margin-top: 2rem;
+      text-align: center;
+      padding: 1.2rem;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      border-top: 1px solid rgba(34, 197, 94, 0.2);
+      background: transparent;
+    }
+
+    footer a {
+      color: var(--green-primary);
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    @media (max-width: 480px) {
+      .action-modern-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+      .stat-fresh-card {
+        padding: 0.8rem;
+      }
+      .stat-val {
+        font-size: 1.3rem;
+      }
+      .share-card {
+        padding: 1.2rem;
+      }
+    }
   </style>
 </head>
 <body>
 
-<nav class="orders-nav">
-  <div class="nav-container">
-    <a href="/dashboard/home.html" class="mv-logo-modern">my<span>vendor</span></a>
-    <div class="nav-actions-modern">
-      <a href="/dashboard/home.html" class="active"><i class="bi bi-house-door"></i></a>
-      <a href="/dashboard/orders.html"><i class="bi bi-box-seam"></i></a>
-      <a href="/dashboard/products.html"><i class="bi bi-grid"></i></a>
-    </div>
+<nav class="dash-nav">
+  <div class="dashboard-container d-flex justify-content-between align-items-center" style="max-width: 680px; padding: 0 1rem;">
+    <a href="/dashboard/home.html" class="mv-logo">my<span>vendor</span></a>
+    <button class="btn-logout" onclick="handleLogout()"><i class="bi bi-door-open me-1"></i> Exit</button>
   </div>
 </nav>
 
 <main class="dashboard-container">
-  
-  <div class="welcome-card">
-    <div class="welcome-text">
-      <h1 id="welcomeName">Welcome back 👋</h1>
-      <p>Manage your inventory, track orders, and grow your business.</p>
-    </div>
-    
-    <div class="share-link-box">
-      <div class="link-text" id="storeLink">Loading your link...</div>
-      <button class="btn-copy" onclick="copyStoreLink()"><i class="bi bi-files"></i> Copy</button>
-    </div>
+  <!-- greeting area -->
+  <div class="greeting-block mb-3">
+    <h1 id="welcomeName">Welcome back 👋</h1>
+    <div class="greeting-sub">Smart insights, one dashboard</div>
+  </div>
 
-    <a href="#" id="waShareBtn" target="_blank" class="btn-wa-share">
-      <i class="bi bi-whatsapp"></i> Share Store on WhatsApp
+  <!-- premium share card -->
+  <div class="share-card">
+    <h3><i class="bi bi-shop me-2"></i> Your store is live</h3>
+    <p>Share your catalog link & get instant orders</p>
+    <div class="link-display-modern">
+      <span class="link-text" id="storeLink">Loading store...</span>
+      <button class="btn-copy-glass" onclick="copyLink()"><i class="bi bi-copy me-1"></i> Copy</button>
+    </div>
+    <a href="#" class="btn-share-wa-modern" id="waShareBtn">
+      <i class="bi bi-whatsapp fs-5"></i> Post to WhatsApp Status
     </a>
   </div>
 
-  <div class="stats-grid">
-    <div class="stat-card">
-      <div class="stat-icon"><i class="bi bi-box-seam"></i></div>
-      <div class="stat-details">
-        <h3 id="statProducts">0</h3>
-        <p>Products</p>
+  <!-- stats cards -->
+  <div class="stats-mini-grid">
+    <div class="stat-fresh-card">
+      <div class="stat-icon-round"><i class="bi bi-tags-fill"></i></div>
+      <div>
+        <div class="stat-val" id="statProducts">0</div>
+        <div class="stat-label">Live products</div>
       </div>
     </div>
-    <div class="stat-card">
-      <div class="stat-icon" style="background: #e0f2fe; color: #0284c7;"><i class="bi bi-receipt"></i></div>
-      <div class="stat-details">
-        <h3 id="statOrders">0</h3>
-        <p>Orders</p>
+    <div class="stat-fresh-card">
+      <div class="stat-icon-round"><i class="bi bi-basket2-fill"></i></div>
+      <div>
+        <div class="stat-val" id="statOrders">0</div>
+        <div class="stat-label">Total orders</div>
       </div>
     </div>
   </div>
 
-  <h2 class="section-title">Quick Actions</h2>
-  <div class="actions-grid">
-    <a href="/dashboard/products.html" class="action-card">
-      <div class="action-icon"><i class="bi bi-grid"></i></div>
-      <h3 class="action-title">Inventory</h3>
-      <p class="action-desc">Add & edit products</p>
+  <!-- quick actions refined -->
+  <div class="action-modern-grid">
+    <a href="/dashboard/add-product.html" class="action-modern-card">
+      <i class="bi bi-plus-circle-fill action-icon-lg"></i>
+      <div class="action-label">Add Product</div>
     </a>
-    <a href="/dashboard/analytics.html" class="action-card">
-      <div class="action-icon"><i class="bi bi-graph-up-arrow"></i></div>
-      <h3 class="action-title">Insights</h3>
-      <p class="action-desc">View your revenue</p>
+    <a href="/dashboard/orders.html" class="action-modern-card">
+      <i class="bi bi-box-seam-fill action-icon-lg"></i>
+      <div class="action-label">Orders</div>
     </a>
-    <a href="/dashboard/settings.html" class="action-card">
-      <div class="action-icon"><i class="bi bi-gear"></i></div>
-      <h3 class="action-title">Settings</h3>
-      <p class="action-desc">Update store details</p>
+    <a href="/dashboard/products.html" class="action-modern-card">
+      <i class="bi bi-grid-3x3-gap-fill action-icon-lg"></i>
+      <div class="action-label">Inventory</div>
     </a>
-    <a href="/dashboard/referrals.html" class="action-card" style="background: #fefce8; border-color: #fef3c7;">
-      <div class="action-icon" style="color: #d97706;"><i class="bi bi-gift"></i></div>
-      <h3 class="action-title" style="color: #b45309;">Refer & Earn</h3>
-      <p class="action-desc" style="color: #92400e;">Get +3 free slots</p>
+    <a href="/dashboard/analytics.html" class="action-modern-card">
+      <i class="bi bi-graph-up action-icon-lg"></i>
+      <div class="action-label">Analytics</div>
+    </a>
+    <a href="/dashboard/settings.html" class="action-modern-card">
+      <i class="bi bi-sliders2 action-icon-lg"></i>
+      <div class="action-label">Settings</div>
     </a>
   </div>
 
-  <h2 class="section-title d-flex justify-content-between align-items-center">
-    Recent Orders
-    <a href="/dashboard/orders.html" class="text-decoration-none" style="font-size: 0.8rem; font-weight: 600; color: var(--green-primary);">View All <i class="bi bi-arrow-right"></i></a>
-  </h2>
-  <div class="recent-orders-card" id="recentOrdersList">
-    <div class="text-center py-4">
-      <div class="spinner-border text-success spinner-border-sm" role="status"></div>
+  <!-- recent orders panel -->
+  <div class="orders-panel">
+    <div class="section-title-modern">
+      <h4><i class="bi bi-clock-history me-2" style="color: var(--green-primary);"></i> Recent orders</h4>
+      <a href="/dashboard/orders.html" class="view-all-link">View all →</a>
+    </div>
+    <div id="recentOrdersList">
+      <!-- dynamic orders injected by dashboard.js -->
+      <div class="empty-orders" style="padding: 1.5rem 0;">Loading latest orders...</div>
     </div>
   </div>
-
 </main>
 
 <footer>
-  © 2026 myvendor &nbsp;·&nbsp; <a href="#" style="color: var(--green-primary); text-decoration: none;">Help Center</a>
+  © 2026 myvendor — empowering local sellers 
+  <a href="#">Help Center</a> &nbsp;•&nbsp; 
+  <a href="/terms.html">Terms</a>
 </footer>
 
-<div id="toastMsg" class="toast-modern">Store link copied!</div>
+<div class="toast-vendor" id="toastMsg">
+  <i class="bi bi-check2-circle me-1"></i> Link copied!
+</div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-  // Simple helper to copy store link directly from Home page
-  window.copyStoreLink = function() {
-    const linkText = document.getElementById('storeLink').innerText;
-    if(linkText && linkText !== 'Loading your link...') {
-      navigator.clipboard.writeText(`https://${linkText}`);
-      const toast = document.getElementById('toastMsg');
-      toast.classList.add('show');
-      setTimeout(() => toast.classList.remove('show'), 2500);
-    }
-  }
-</script>
+<!-- external dashboard logic (populates stats, store link, orders, whatsapp) -->
 <script type="module" src="/assets/js/dashboard.js"></script>
 
+<script type="module">
+  import { supabase } from '/assets/js/supabase.js';
+
+  // Enhanced copy handler with modern toast
+  window.copyLink = function() {
+    const linkSpan = document.getElementById('storeLink');
+    let rawLink = linkSpan.innerText;
+    if (rawLink && rawLink !== 'Loading store...' && rawLink !== 'Loading...') {
+      let fullUrl = `https://${rawLink}`;
+      navigator.clipboard.writeText(fullUrl).then(() => {
+        const toast = document.getElementById('toastMsg');
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 2200);
+      }).catch(() => {
+        alert("Press manually: " + fullUrl);
+      });
+    } else {
+      // fallback
+      const fallbackUrl = window.location.origin + "/store";
+      navigator.clipboard.writeText(fallbackUrl);
+      const toast = document.getElementById('toastMsg');
+      toast.innerText = "Store link ready!";
+      toast.classList.add('show');
+      setTimeout(() => {
+        toast.classList.remove('show');
+        toast.innerText = "Link copied!";
+      }, 2000);
+    }
+  };
+
+  window.handleLogout = async function() {
+    await supabase.auth.signOut();
+    window.location.href = '/dashboard/index.html';
+  };
+
+  // If there is any scenario where dashboard.js sets storeLink as raw domain, we enhance WhatsApp share
+  // the external script also configures waShareBtn href — we just keep compatibility.
+  // Small extra: ensure the toast style is consistent
+</script>
+
+<!-- additional style compatibility to make sure existing dashboard.js generated order rows look perfect -->
+<style>
+  /* elegant adjustment for order items */
+  #recentOrdersList .order-row {
+    transition: 0.1s ease;
+  }
+  #recentOrdersList .order-row:hover {
+    background: #f9fff7;
+    border-radius: 14px;
+    padding-left: 6px;
+    padding-right: 6px;
+  }
+  .btn-copy-glass:focus-visible, .btn-share-wa-modern:focus-visible {
+    outline: 2px solid white;
+    outline-offset: 2px;
+  }
+  /* better spacing for empty state injected by js */
+  #recentOrdersList .empty-orders i {
+    opacity: 0.6;
+  }
+  .action-modern-card:active {
+    transform: scale(0.97);
+  }
+  /* modern shadow for share button */
+  .btn-share-wa-modern i {
+    font-size: 1.2rem;
+  }
+  /* responsive table behavior */
+  @media (max-width: 480px) {
+    .order-id {
+      font-size: 0.75rem;
+    }
+    .order-amount {
+      font-size: 0.85rem;
+    }
+  }
+</style>
 </body>
 </html>
