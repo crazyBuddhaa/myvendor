@@ -47,7 +47,7 @@
     /* Navbar – glass */
     .auth-nav { background: rgba(255, 255, 255, 0.96); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(34, 197, 94, 0.2); padding: 0.75rem 0; position: sticky; top: 0; z-index: 1000; }
     .nav-container { max-width: 640px; margin: 0 auto; padding: 0 1rem; display: flex; justify-content: space-between; align-items: center; }
-    
+
     .mv-logo-modern { font-family: 'Raleway', sans-serif; font-weight: 800; font-size: 1.5rem; background: linear-gradient(135deg, var(--green-dark), var(--green-primary)); -webkit-background-clip: text; color: transparent; text-decoration: none; }
     .mv-logo-modern span { background: linear-gradient(135deg, var(--green-bright), #2b9348); -webkit-background-clip: text; color: transparent; }
 
@@ -76,16 +76,16 @@
     .form-label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 0.4rem; display: flex; align-items: center; gap: 0.4rem; }
     .input-icon-wrapper { position: relative; }
     .input-icon { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.9rem; pointer-events: none; }
-    
+
     .form-control-modern { width: 100%; padding: 0.8rem 1rem 0.8rem 2.5rem; border: 1.5px solid var(--border-light); border-radius: var(--radius-sm); font-size: 0.9rem; background: var(--gray-bg); transition: all 0.2s; }
     .form-control-modern:focus { border-color: var(--green-bright); background: white; outline: none; box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1); }
-    
+
     .toggle-password { position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); background: transparent; border: none; color: var(--text-muted); cursor: pointer; padding: 0; }
     .forgot-link { font-size: 0.7rem; color: var(--green-primary); text-decoration: none; font-weight: 600; transition: all 0.2s; }
-    
+
     .slug-preview { background: var(--gray-bg); border-radius: var(--radius-sm); padding: 0.5rem 0.8rem; font-size: 0.7rem; color: var(--text-muted); margin-top: 0.4rem; display: flex; align-items: center; gap: 0.4rem; }
     .slug-preview span { font-weight: 700; color: var(--green-dark); }
-    
+
     .terms-check { display: flex; gap: 0.6rem; align-items: flex-start; margin: 1rem 0; }
     .terms-check input { width: 16px; height: 16px; margin-top: 2px; accent-color: var(--green-primary); }
     .terms-check label { font-size: 0.75rem; color: var(--text-muted); line-height: 1.4; cursor: pointer; }
@@ -311,7 +311,7 @@
     if (type === 'success') {
       icon.innerHTML = '<i class="bi bi-check-circle-fill"></i>';
       icon.className = 'modal-icon success';
-      
+
       if (action === 'verify') {
         // Tells user to check email, then switches to login tab when clicked
         btn.innerHTML = 'Got It';
@@ -369,7 +369,7 @@
     window.setLoading('login', true)
     const { error } = await supabase.auth.signInWithPassword({ email, password })
     window.setLoading('login', false)
-    
+
     if (error) {
       // Supabase returns a specific error if the email isn't confirmed yet
       if (error.message.includes("Email not confirmed")) {
@@ -424,52 +424,36 @@
       return
     }
 
-    // 🌟 REFERRAL REWARD TRIGGER 🌟
-    // Check if they signed up using a promo link
-    const urlParams = new URLSearchParams(window.location.search);
-    const referrerId = urlParams.get('ref');
-
-    if (referrerId) {
-        try {
-            // Secretly ping the database to give the referrer their +3 slots
-            await supabase.rpc('reward_referral', { referrer_id: referrerId });
-            console.log("Promo reward granted to:", referrerId);
-        } catch (err) {
-            console.error("Promo reward failed:", err);
-        }
-    }
-    // 🌟 END REFERRAL BLOCK 🌟
-
-    // Triggers the 'verify' action in the modal
+    // 🌟 MODIFIED: Triggers the new 'verify' action in the modal
     if (authData.user) {
-      window.showResultModal('success', 'Check Your Email 📧', 'Your store is almost ready! We just sent a verification link to your email. If you can't find it in your inbox. Please check spam. Click it to activate your account.', 'verify')
+      window.showResultModal('success', 'Check Your Email 📧', 'Your store is almost ready! We just sent a verification link to your email. Please click it to activate your account.', 'verify')
     }
   }
 
   window.handleForgotPassword = async (e) => {
     e.preventDefault()
     const email = document.getElementById('loginEmail').value.trim()
-    
+
     if (!email) {
       window.showMessage('loginMsg', 'Enter your email address first.', 'error')
       return
     }
-    
+
     const forgotLink = e.target;
     const originalText = forgotLink.innerText;
-    
+
     forgotLink.innerText = 'Sending...';
     forgotLink.style.pointerEvents = 'none'; 
     forgotLink.style.opacity = '0.6';
-    
+
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: window.location.origin + '/reset-password.html'
     })
-    
+
     forgotLink.innerText = originalText;
     forgotLink.style.pointerEvents = 'auto';
     forgotLink.style.opacity = '1';
-    
+
     if (error) {
       window.showResultModal('error', 'Reset Failed', error.message)
     } else {
