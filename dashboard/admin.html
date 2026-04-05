@@ -2,35 +2,142 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Super Admin | myvendor</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300..800&family=Raleway:wght@600..900&display=swap" rel="stylesheet" />
+
   <style>
-    body { font-family: sans-serif; padding: 2rem; background: #f0f7ec; }
-    .card { background: white; padding: 2rem; border-radius: 12px; max-width: 400px; margin: 0 auto; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-    input { width: 100%; padding: 0.8rem; margin-bottom: 1rem; border: 1px solid #ccc; border-radius: 8px; }
-    button { width: 100%; padding: 0.8rem; background: #0f6e3f; color: white; border: none; border-radius: 8px; cursor: pointer; }
-    #dashboard { display: none; margin-top: 2rem; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --green-primary: #0f6e3f; --green-bright: #22c55e; --green-dark: #0a4a2a; --green-soft: #e9f7ef;
+      --gray-bg: #fafcf9; --card-white: #ffffff; --text-dark: #1a2e1f; --text-muted: #4a6741;
+      --border-light: #e9eee5; --shadow-sm: 0 8px 20px rgba(0, 32, 0, 0.04);
+      --radius-lg: 20px; --radius-md: 16px;
+    }
+
+    body { background: linear-gradient(145deg, #f6fcf5 0%, #f0f7ec 100%); font-family: 'Inter', sans-serif; color: var(--text-dark); min-height: 100vh; }
+    h1, h2, h3, h4 { font-family: 'Raleway', sans-serif; font-weight: 800; letter-spacing: -0.02em; }
+
+    /* Nav */
+    .dash-nav { background: rgba(255, 255, 255, 0.92); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(34, 197, 94, 0.2); padding: 0.9rem 0; position: sticky; top: 0; z-index: 1000; }
+    .nav-container { max-width: 900px; margin: 0 auto; padding: 0 1rem; display: flex; justify-content: space-between; align-items: center; }
+    .mv-logo { font-size: 1.5rem; font-weight: 900; background: linear-gradient(135deg, var(--green-dark), var(--green-primary)); -webkit-background-clip: text; color: transparent; text-decoration: none; }
+    .mv-logo span { background: linear-gradient(135deg, var(--green-bright), #2b9348); -webkit-background-clip: text; color: transparent; }
+
+    /* Login View */
+    #loginView { display: flex; align-items: center; justify-content: center; min-height: 80vh; padding: 1rem; }
+    .login-card { background: var(--card-white); padding: 2.5rem 2rem; border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); border: 1px solid var(--border-light); width: 100%; max-width: 400px; text-align: center; }
+    .form-control-modern { width: 100%; padding: 0.8rem 1rem; border: 1.5px solid var(--border-light); border-radius: 12px; font-size: 0.9rem; background: var(--gray-bg); margin-bottom: 1rem; outline: none; }
+    .form-control-modern:focus { border-color: var(--green-bright); background: white; }
+    .btn-submit { width: 100%; background: linear-gradient(105deg, var(--green-primary), var(--green-dark)); border: none; padding: 0.85rem; border-radius: 12px; font-weight: 700; color: white; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: all 0.2s; }
+    
+    /* Dashboard View */
+    #dashboardView { display: none; max-width: 900px; margin: 0 auto; padding: 2rem 1rem; }
+    
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+    .stat-card { background: var(--card-white); border: 1px solid var(--border-light); border-radius: var(--radius-md); padding: 1.5rem; display: flex; align-items: center; gap: 1rem; box-shadow: var(--shadow-sm); }
+    .stat-icon { width: 50px; height: 50px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
+    .stat-details h3 { font-size: 1.6rem; margin: 0; line-height: 1; color: var(--text-dark); }
+    .stat-details p { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; margin: 0; color: var(--text-muted); }
+
+    /* Directory Table */
+    .table-container { background: var(--card-white); border-radius: var(--radius-lg); border: 1px solid var(--border-light); box-shadow: var(--shadow-sm); overflow: hidden; }
+    .table-header { padding: 1.2rem 1.5rem; border-bottom: 1px solid var(--border-light); background: #fefce8; }
+    .table-header h4 { margin: 0; color: #b45309; font-size: 1.1rem; }
+    
+    .modern-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    .modern-table th { text-align: left; padding: 1rem 1.5rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; font-size: 0.7rem; border-bottom: 1px solid var(--border-light); }
+    .modern-table td { padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-light); color: var(--text-dark); }
+    .modern-table tr:last-child td { border-bottom: none; }
+    .modern-table tr:hover { background: var(--gray-bg); }
+    
+    .vendor-name { font-weight: 700; color: var(--green-dark); display: flex; align-items: center; gap: 0.5rem; }
+    .link-badge { background: var(--green-soft); color: var(--green-dark); padding: 0.2rem 0.6rem; border-radius: 40px; font-weight: 600; font-size: 0.75rem; text-decoration: none; }
+    .link-badge:hover { background: var(--green-bright); color: white; }
   </style>
 </head>
 <body>
 
-  <div class="card" id="loginCard">
-    <h2>Admin Login</h2>
-    <input type="password" id="adminPass" placeholder="Enter Master Password">
-    <button onclick="loadAdminData()">Access Platform</button>
+<nav class="dash-nav">
+  <div class="nav-container">
+    <a href="#" class="mv-logo">my<span>vendor</span></a>
+    <span class="badge bg-danger rounded-pill" id="adminBadge" style="display: none;">SUPER ADMIN</span>
+  </div>
+</nav>
+
+<div id="loginView">
+  <div class="login-card">
+    <i class="bi bi-shield-lock-fill" style="font-size: 2.5rem; color: var(--green-primary); margin-bottom: 1rem; display: inline-block;"></i>
+    <h2 style="margin-bottom: 1.5rem;">System Access</h2>
+    <input type="password" id="adminPass" class="form-control-modern" placeholder="Enter Master Password">
+    <button class="btn-submit" onclick="loadAdminData()" id="loginBtn">Authenticate</button>
+    <div id="loginError" style="color: #dc2626; font-size: 0.8rem; font-weight: 600; margin-top: 1rem; display: none;"></div>
+  </div>
+</div>
+
+<div id="dashboardView">
+  <h2 style="margin-bottom: 1.5rem; color: var(--green-dark);">Platform Overview</h2>
+  
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon" style="background: #e0f2fe; color: #0284c7;"><i class="bi bi-shop"></i></div>
+      <div class="stat-details">
+        <h3 id="valVendors">0</h3>
+        <p>Total Stores</p>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon" style="background: var(--green-soft); color: var(--green-primary);"><i class="bi bi-box-seam"></i></div>
+      <div class="stat-details">
+        <h3 id="valProducts">0</h3>
+        <p>Total Products</p>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon" style="background: #fefce8; color: #d97706;"><i class="bi bi-receipt"></i></div>
+      <div class="stat-details">
+        <h3 id="valOrders">0</h3>
+        <p>Total Orders</p>
+      </div>
+    </div>
   </div>
 
-  <div class="card" id="dashboard">
-    <h2>Platform Stats</h2>
-    <p>Total Vendors: <strong id="valVendors">...</strong></p>
-    <p>Total Products: <strong id="valProducts">...</strong></p>
-    <p>Total Orders: <strong id="valOrders">...</strong></p>
+  <div class="table-container">
+    <div class="table-header">
+      <h4><i class="bi bi-people-fill me-2"></i> Vendor Directory</h4>
+    </div>
+    <div style="overflow-x: auto;">
+      <table class="modern-table">
+        <thead>
+          <tr>
+            <th>Store Name</th>
+            <th>Owner</th>
+            <th>WhatsApp</th>
+            <th>Store Link</th>
+            <th>Bonus Slots</th>
+          </tr>
+        </thead>
+        <tbody id="vendorTableBody">
+          </tbody>
+      </table>
+    </div>
   </div>
+</div>
 
-  <script>
-    async function loadAdminData() {
-      const pass = document.getElementById('adminPass').value;
-      
-      // Ping your hidden Vercel backend
+<script>
+  async function loadAdminData() {
+    const pass = document.getElementById('adminPass').value;
+    const btn = document.getElementById('loginBtn');
+    const errDiv = document.getElementById('loginError');
+    
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Verifying...';
+    btn.disabled = true;
+    errDiv.style.display = 'none';
+
+    try {
       const response = await fetch('/api/get-admin-stats', {
         headers: { 'Authorization': `Bearer ${pass}` }
       });
@@ -38,20 +145,46 @@
       const data = await response.json();
 
       if (!response.ok) {
-        alert(data.error);
-        return;
+        throw new Error(data.error || 'Authentication failed');
       }
 
       // Hide login, show dashboard
-      document.getElementById('loginCard').style.display = 'none';
-      document.getElementById('dashboard').style.display = 'block';
+      document.getElementById('loginView').style.display = 'none';
+      document.getElementById('adminBadge').style.display = 'inline-block';
+      document.getElementById('dashboardView').style.display = 'block';
 
-      // Update UI
-      document.getElementById('valVendors').innerText = data.vendors;
+      // Update Top Stats
+      document.getElementById('valVendors').innerText = data.vendorCount;
       document.getElementById('valProducts').innerText = data.products;
       document.getElementById('valOrders').innerText = data.orders;
+
+      // Populate Vendor Table
+      const tableBody = document.getElementById('vendorTableBody');
+      if (data.vendorList.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="5" style="text-align:center; color: var(--text-muted); padding: 2rem;">No vendors found.</td></tr>';
+      } else {
+        tableBody.innerHTML = data.vendorList.map(v => `
+          <tr>
+            <td>
+              <div class="vendor-name"><i class="bi bi-shop-window text-success"></i> ${v.business_name || 'N/A'}</div>
+            </td>
+            <td>${v.full_name || 'Unknown'}</td>
+            <td>${v.wa_number ? `<a href="https://wa.me/${v.wa_number.replace(/\D/g,'')}" target="_blank" style="color:var(--text-dark); text-decoration:none;"><i class="bi bi-whatsapp" style="color: #25D366;"></i> ${v.wa_number}</a>` : 'N/A'}</td>
+            <td><a href="/${v.slug}" target="_blank" class="link-badge">/${v.slug}</a></td>
+            <td><strong>+${v.bonus_slots || 0}</strong></td>
+          </tr>
+        `).join('');
+      }
+
+    } catch (error) {
+      errDiv.innerText = error.message;
+      errDiv.style.display = 'block';
+    } finally {
+      btn.innerHTML = 'Authenticate';
+      btn.disabled = false;
     }
-  </script>
+  }
+</script>
 
 </body>
 </html>
