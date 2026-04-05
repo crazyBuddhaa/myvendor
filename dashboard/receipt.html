@@ -768,13 +768,27 @@
     try {
       const card = document.querySelector('.receipt-card');
 
-      // Capture receipt card at 2× (retina quality)
+      // Capture receipt card at 2× (retina quality).
+      // onclone runs on html2canvas's internal DOM clone before rendering —
+      // we inject a style that kills the fixed body::before noise overlay
+      // and strips the body radial gradients so they don't bleed onto the card.
       const cardCanvas = await html2canvas(card, {
         scale: 2,
         useCORS: true,
+        allowTaint: true,
         backgroundColor: '#fffef9',
         logging: false,
         removeContainer: true,
+        onclone(clonedDoc) {
+          const s = clonedDoc.createElement('style');
+          s.textContent = `
+            body::before { display: none !important; }
+            body { background: #f5f1e8 !important; background-image: none !important; }
+            .receipt-card { box-shadow: none !important; animation: none !important; }
+            .action-row { display: none !important; }
+          `;
+          clonedDoc.head.appendChild(s);
+        },
       });
 
       // Build a framed output canvas with padding + watermark
