@@ -1,26 +1,40 @@
 import { createClient } from '@supabase/supabase-js';
 
 export default async function handler(req, res) {
-    // Only allow POST requests
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
-
-    const authHeader = req.headers.authorization;
-    if (authHeader !== `Bearer ${process.env.ADMIN_PASSWORD}`) return res.status(401).json({ error: 'Unauthorized' });
+    if (req.headers.authorization !== `Bearer ${process.env.ADMIN_PASSWORD}`) return res.status(401).json({ error: 'Unauthorized' });
 
     const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
-    const { action, vendorId, amount } = req.body;
+    const { action, vendorId, payload } = req.body;
 
     try {
-        if (action === 'add_slots') {
-            // Get current slots
-            const { data: vendor } = await supabase.from('vendor_profiles').select('bonus_slots').eq('id', vendorId).single();
-            const newSlots = (vendor.bonus_slots || 0) + (amount || 3);
-
-            // Update DB
-            const { error } = await supabase.from('vendor_profiles').update({ bonus_slots: newSlots }).eq('id', vendorId);
+        if (action === 'update_tier') {
+            const { error } = await supabase.from('vendor_profiles').update({ tier: payload.tier }).eq('id', vendorId);
             if (error) throw error;
+            return res.status(200).json({ success: true, message: `Upgraded to ${payload.tier}` });
+        }
 
-            return res.status(200).json({ success: true, newSlots });
+        if (action === 'edit_store') {
+            const { error } = await supabase.from('vendor_profiles').update({
+                business_name: payload.name,
+                slug: payload.slug,
+                wa_number: payload.phone
+            }).eq('id', vendorId);
+            if (error) throw error;
+            return res.status(200).json({ success: true, message: 'Store updated' });
+        }
+
+        if (action === 'delete_store') {
+            // Because we use the master key, deleting them from auth.users 
+            // completely wipes their login credentials from the platform.
+            const { error } = await supabase.auth.admin.deleteUser(vendorId);
+            if (error) throw error;
+            
+            // Note: If you set up cascading deletes in Supabase, their profile 
+            // and products will auto-delete. If not, we explicitly delete the profile here.
+            await supabase.from('vendor_profiles').delete().eq('id', vendorId);
+            
+            return res.status(200).json({ success: true, message: 'Store permanently deleted' });
         }
         
         return res.status(400).json({ error: 'Invalid action' });
