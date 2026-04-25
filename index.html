@@ -96,173 +96,29 @@
     }
     .btn-nav-cta:hover { transform: translateY(-2px); filter: brightness(1.03); color: white; }
 
-    /* ═══════════════════════════════════════════
-       HERO — REDESIGNED WITH STOCK PHOTO SPLIT
-    ═══════════════════════════════════════════ */
+    /* Hero */
     .hero-section {
-      min-height: 92vh;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      position: relative;
-      overflow: hidden;
+      padding: 4rem 0 3rem;
+      background: linear-gradient(115deg, #eaf6e6, #fff7ef);
+      border-bottom: 1px solid var(--border-light);
     }
-
-    /* Left pane — copy */
-    .hero-left {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      padding: 5rem 3rem 5rem 0;
-      background: linear-gradient(130deg, #f4fbf0 0%, #eaf6e4 100%);
-      position: relative;
-      z-index: 2;
-    }
-
-    /* Diagonal clip — left pane bleeds into photo */
-    .hero-left::after {
-      content: '';
-      position: absolute;
-      top: 0; right: -60px;
-      width: 120px; height: 100%;
-      background: linear-gradient(130deg, #eaf6e4 0%, #f4fbf0 100%);
-      clip-path: polygon(0 0, 40% 0, 100% 100%, 0 100%);
-      z-index: 3;
-    }
-
-    /* Right pane — full bleed photo */
-    .hero-right {
-      position: relative;
-      overflow: hidden;
-    }
-
-    .hero-photo-wrap {
-      position: absolute;
-      inset: 0;
-    }
-
-    .hero-photo-wrap img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      object-position: center top;
-      display: block;
-    }
-
-    /* Scrim so text floats in front of photo */
-    .hero-photo-wrap::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(to right, rgba(234,246,228,0.5) 0%, transparent 35%),
-                  linear-gradient(to top, rgba(10,74,42,0.45) 0%, transparent 55%);
-    }
-
-    /* Floating stats cards on the photo */
-    .hero-stat-cards {
-      position: absolute;
-      bottom: 2.5rem;
-      left: 50%;
-      transform: translateX(-50%);
-      display: flex;
-      gap: 0.75rem;
-      z-index: 4;
-      width: max-content;
-    }
-
-    .hero-stat-pill {
-      background: rgba(255,255,255,0.92);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255,255,255,0.6);
-      border-radius: 40px;
-      padding: 0.55rem 1.1rem;
-      display: flex;
-      align-items: center;
-      gap: 0.45rem;
-      font-size: 0.75rem;
-      font-weight: 700;
-      color: var(--green-dark);
-      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
-      white-space: nowrap;
-    }
-    .hero-stat-pill .dot-live {
-      width: 7px; height: 7px;
-      background: var(--green-bright);
-      border-radius: 50%;
-      animation: pulse 1.8s infinite;
-    }
-    .hero-stat-pill i { color: var(--green-primary); font-size: 0.9rem; }
-
-    /* Top-right vendor badge on photo */
-    .hero-vendor-badge {
-      position: absolute;
-      top: 2.5rem; right: 2rem;
-      background: rgba(255,255,255,0.92);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255,255,255,0.6);
-      border-radius: var(--radius-md);
-      padding: 0.75rem 1rem;
-      display: flex; align-items: center; gap: 0.75rem;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
-      z-index: 4;
-      animation: floatY 4s ease-in-out infinite;
-    }
-    .hero-vendor-avatar {
-      width: 40px; height: 40px;
-      background: var(--green-soft);
-      border-radius: 10px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.2rem;
-    }
-    .hero-vendor-badge strong { font-size: 0.8rem; display: block; color: var(--green-dark); }
-    .hero-vendor-badge span { font-size: 0.68rem; color: var(--text-muted); }
-
-    /* Second floating badge */
-    .hero-order-badge {
-      position: absolute;
-      top: 45%; left: 2rem;
-      background: var(--green-dark);
-      border-radius: var(--radius-md);
-      padding: 0.7rem 1rem;
-      display: flex; align-items: center; gap: 0.6rem;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-      z-index: 4;
-      animation: floatY 3.5s ease-in-out 0.8s infinite;
-    }
-    .hero-order-badge .order-icon {
-      width: 32px; height: 32px;
-      background: rgba(34,197,94,0.2);
-      border-radius: 8px;
-      display: flex; align-items: center; justify-content: center;
-      color: var(--green-bright); font-size: 0.9rem;
-    }
-    .hero-order-badge strong { font-size: 0.75rem; display: block; color: white; }
-    .hero-order-badge span { font-size: 0.65rem; color: #86efac; }
-
-    @keyframes floatY {
-      0%,100% { transform: translateY(0); }
-      50% { transform: translateY(-7px); }
-    }
-    @keyframes pulse {
-      0%,100% { opacity:1; transform:scale(1); }
-      50% { opacity:0.5; transform:scale(0.8); }
-    }
-
-    /* Copy elements */
     .hero-badge {
       display: inline-flex; align-items: center; gap: 0.4rem;
       background: var(--green-soft); border: 1px solid var(--border-light);
       border-radius: 40px; padding: 0.3rem 0.9rem;
-      font-size: 0.75rem; font-weight: 600; color: var(--green-primary); margin-bottom: 1.4rem;
-      width: fit-content;
+      font-size: 0.75rem; font-weight: 600; color: var(--green-primary); margin-bottom: 1.2rem;
     }
     .hero-badge .dot {
       width: 6px; height: 6px; background: var(--green-bright);
       border-radius: 50%; animation: pulse 1.8s infinite;
     }
-
+    @keyframes pulse {
+      0%,100% { opacity:1; transform:scale(1); }
+      50% { opacity:0.5; transform:scale(0.8); }
+    }
     .hero-headline {
-      font-size: clamp(2rem, 3.5vw, 3.2rem); font-weight: 800;
-      line-height: 1.1; color: var(--green-dark); margin-bottom: 1.1rem;
+      font-size: clamp(2.2rem, 6vw, 3.8rem); font-weight: 800;
+      line-height: 1.1; color: var(--green-dark); margin-bottom: 1rem;
     }
     .hero-headline .accent {
       color: var(--green-primary); position: relative; display: inline-block;
@@ -272,43 +128,23 @@
       height: 3px; background: var(--green-bright); opacity: 0.4; border-radius: 2px;
     }
     .hero-sub {
-      font-size: 1rem; color: var(--text-muted); line-height: 1.65;
-      max-width: 460px; margin-bottom: 2rem;
+      font-size: 1rem; color: var(--text-muted); line-height: 1.6;
+      max-width: 500px; margin-bottom: 2rem;
     }
-
-    /* Social proof avatars row */
-    .hero-social-proof {
-      display: flex; align-items: center; gap: 0.75rem;
-      margin-bottom: 2rem;
-    }
-    .proof-avatars {
-      display: flex;
-    }
-    .proof-avatars img {
-      width: 32px; height: 32px;
-      border-radius: 50%;
-      border: 2px solid white;
-      object-fit: cover;
-      margin-left: -8px;
-    }
-    .proof-avatars img:first-child { margin-left: 0; }
-    .proof-text { font-size: 0.78rem; color: var(--text-muted); line-height: 1.3; }
-    .proof-text strong { color: var(--green-dark); font-weight: 700; }
-
-    .hero-actions { display: flex; gap: 0.8rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+    .hero-actions { display: flex; gap: 0.8rem; flex-wrap: wrap; }
 
     .btn-primary-mv {
       background: linear-gradient(105deg, var(--green-primary), var(--green-dark));
-      border: none; padding: 0.85rem 1.8rem; border-radius: 40px;
+      border: none; padding: 0.8rem 1.8rem; border-radius: 40px;
       font-weight: 700; font-size: 0.9rem; color: white; text-decoration: none;
       display: inline-flex; align-items: center; gap: 0.5rem;
       transition: all 0.2s; box-shadow: var(--shadow-sm);
     }
-    .btn-primary-mv:hover { transform: translateY(-2px); filter: brightness(1.06); color: white; box-shadow: 0 12px 28px rgba(10,74,42,0.28); }
+    .btn-primary-mv:hover { transform: translateY(-2px); filter: brightness(1.03); color: white; }
 
     .btn-outline-mv {
       background: transparent; border: 1.5px solid var(--border-light);
-      padding: 0.85rem 1.8rem; border-radius: 40px; font-weight: 700;
+      padding: 0.8rem 1.8rem; border-radius: 40px; font-weight: 700;
       font-size: 0.9rem; color: var(--text-muted); text-decoration: none;
       display: inline-flex; align-items: center; gap: 0.5rem; transition: all 0.2s;
     }
@@ -316,34 +152,60 @@
       border-color: var(--green-primary); color: var(--green-primary); background: var(--green-soft);
     }
 
-    .hero-trust-chips {
-      display: flex; gap: 0.5rem; flex-wrap: wrap;
+    /* Phone mockup */
+    .phone-frame {
+      width: 260px; margin: 0 auto; background: var(--green-dark); border-radius: 36px;
+      padding: 12px; box-shadow: 0 30px 60px rgba(0,0,0,0.2), 0 0 0 1px rgba(255,255,255,0.1) inset;
+      position: relative;
     }
-    .trust-chip {
-      display: inline-flex; align-items: center; gap: 0.3rem;
-      font-size: 0.72rem; font-weight: 500; color: var(--text-muted);
+    .phone-screen { background: var(--gray-bg); border-radius: 26px; overflow: hidden; }
+    .store-header {
+      background: linear-gradient(135deg, var(--green-primary), var(--green-dark));
+      padding: 1rem; text-align: center; color: white;
     }
-    .trust-chip i { color: var(--green-bright); font-size: 0.7rem; }
+    .store-avatar {
+      width: 48px; height: 48px; background: white; border-radius: 50%;
+      margin: 0 auto 0.5rem; display: flex; align-items: center; justify-content: center;
+      font-size: 1.2rem; color: var(--green-primary);
+    }
+    .store-header h6 { font-weight: 700; margin: 0; font-size: 0.85rem; }
+    .store-header small { font-size: 0.7rem; opacity: 0.9; }
+    .phone-products { padding: 0.75rem; display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+    .phone-product-card {
+      background: var(--card-white); border-radius: var(--radius-sm);
+      overflow: hidden; box-shadow: var(--shadow-sm);
+    }
+    .product-img-placeholder {
+      height: 70px; display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem; background: var(--green-soft);
+    }
+    .card-body-mini { padding: 0.4rem 0.5rem 0.5rem; }
+    .item-name { font-size: 0.7rem; font-weight: 600; margin-bottom: 0.2rem; }
+    .item-price { font-size: 0.7rem; font-weight: 700; color: var(--green-primary); }
+    .phone-wa-btn {
+      background: var(--wa-green); border: none;
+      width: calc(100% - 1.5rem); margin: 0 0.75rem 0.75rem;
+      padding: 0.5rem; border-radius: 40px; font-weight: 600; font-size: 0.7rem; color: white;
+      display: flex; align-items: center; justify-content: center; gap: 0.3rem;
+    }
+    .phone-notch {
+      position: absolute; top: 16px; left: 50%; transform: translateX(-50%);
+      width: 70px; height: 8px; background: var(--green-dark); border-radius: 4px; z-index: 2;
+    }
 
-    /* ── Responsive hero ── */
-    @media (max-width: 900px) {
-      .hero-section {
-        grid-template-columns: 1fr;
-        min-height: auto;
-      }
-      .hero-left {
-        padding: 3rem 1.5rem 2.5rem;
-        order: 1;
-      }
-      .hero-left::after { display: none; }
-      .hero-right {
-        order: 2;
-        height: 55vw;
-        min-height: 280px;
-        max-height: 420px;
-      }
-      .hero-order-badge { display: none; }
-      .hero-stat-cards { flex-wrap: wrap; justify-content: center; width: 90%; }
+    /* Floating badges */
+    .float-badge {
+      position: absolute; background: white; border-radius: 12px;
+      padding: 0.4rem 0.7rem; box-shadow: var(--shadow-md);
+      font-size: 0.7rem; font-weight: 600; display: flex; align-items: center;
+      gap: 0.4rem; white-space: nowrap; border: 1px solid var(--border-light);
+    }
+    .badge-orders { top:10%; right:-20px; animation: floatY 3s ease-in-out infinite; }
+    .badge-free { top:50%; right:-15px; animation: floatY 4s ease-in-out 1s infinite; }
+    .badge-track { bottom:20%; left:-25px; animation: floatY 3.5s ease-in-out 0.5s infinite; }
+    @keyframes floatY {
+      0%,100% { transform:translateY(0); }
+      50% { transform:translateY(-6px); }
     }
 
     /* Trust bar */
@@ -410,45 +272,67 @@
     .reviewer-name { font-weight: 700; font-size: 0.8rem; margin-bottom: 0.1rem; }
     .reviewer-location { font-size: 0.7rem; color: var(--text-muted); }
 
-    /* ── PRICING ── */
+    /* ─────────────────────────────────────────
+       PRICING SECTION
+    ───────────────────────────────────────── */
     .pricing-section { background: var(--gray-bg); }
+
     .pricing-card {
-      background: var(--card-white); border: 1.5px solid var(--border-light);
-      border-radius: var(--radius-xl); padding: 2rem;
-      position: relative; height: 100%; transition: all 0.25s;
+      background: var(--card-white);
+      border: 1.5px solid var(--border-light);
+      border-radius: var(--radius-xl);
+      padding: 2rem;
+      position: relative;
+      height: 100%;
+      transition: all 0.25s;
     }
-    .pricing-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-md); }
+    .pricing-card:hover {
+      transform: translateY(-6px);
+      box-shadow: var(--shadow-md);
+    }
     .pricing-card.pro {
       background: linear-gradient(145deg, var(--green-dark), #072e18);
       border-color: var(--green-primary);
       box-shadow: 0 20px 48px rgba(10, 74, 42, 0.28);
     }
-    .pricing-card.pro:hover { transform: translateY(-8px); box-shadow: 0 28px 56px rgba(10, 74, 42, 0.38); }
+    .pricing-card.pro:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 28px 56px rgba(10, 74, 42, 0.38);
+    }
+
     .pricing-popular-badge {
-      position: absolute; top: -14px; left: 50%; transform: translateX(-50%);
+      position: absolute;
+      top: -14px; left: 50%; transform: translateX(-50%);
       background: var(--green-bright); color: var(--green-dark);
       font-size: 0.7rem; font-weight: 800;
-      padding: 0.25rem 1rem; border-radius: 40px; white-space: nowrap; letter-spacing: 0.3px;
+      padding: 0.25rem 1rem; border-radius: 40px; white-space: nowrap;
+      letter-spacing: 0.3px;
     }
+
     .pricing-plan-name {
       font-family: 'Raleway', sans-serif; font-weight: 800;
       font-size: 0.75rem; color: var(--text-muted);
-      text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 0.75rem;
+      text-transform: uppercase; letter-spacing: 1.5px;
+      margin-bottom: 0.75rem;
     }
     .pricing-card.pro .pricing-plan-name { color: #86efac; }
+
     .pricing-price {
       font-family: 'Raleway', sans-serif; font-weight: 900;
-      font-size: 2.6rem; color: var(--green-dark); line-height: 1; margin-bottom: 0.25rem;
+      font-size: 2.6rem; color: var(--green-dark);
+      line-height: 1; margin-bottom: 0.25rem;
     }
     .pricing-price span { font-size: 1rem; font-weight: 500; color: var(--text-muted); }
     .pricing-card.pro .pricing-price { color: white; }
     .pricing-card.pro .pricing-price span { color: #86efac; }
+
     .pricing-desc {
       font-size: 0.8rem; color: var(--text-muted);
       padding-bottom: 1.25rem; margin-bottom: 1.25rem;
       border-bottom: 1px solid var(--border-light);
     }
     .pricing-card.pro .pricing-desc { color: #bbf7d0; border-bottom-color: rgba(255,255,255,0.1); }
+
     .pricing-features {
       list-style: none; padding: 0; margin-bottom: 1.75rem;
       display: flex; flex-direction: column; gap: 0.65rem;
@@ -463,30 +347,44 @@
     .pricing-features li i.bi-check-circle-fill { color: var(--green-primary); }
     .pricing-card.pro .pricing-features li i.bi-check-circle-fill { color: var(--green-bright); }
     .pricing-features li.feat-off i { color: #ccdacc; }
-    .pricing-card.pro .btn-outline-mv { border-color: rgba(255,255,255,0.25); color: white; }
-    .pricing-card.pro .btn-outline-mv:hover { border-color: rgba(255,255,255,0.6); background: rgba(255,255,255,0.08); color: white; }
 
-    /* ── REFERRAL ── */
+    .pricing-card.pro .btn-outline-mv {
+      border-color: rgba(255,255,255,0.25); color: white;
+    }
+    .pricing-card.pro .btn-outline-mv:hover {
+      border-color: rgba(255,255,255,0.6); background: rgba(255,255,255,0.08); color: white;
+    }
+
+    /* ─────────────────────────────────────────
+       REFERRAL SECTION
+    ───────────────────────────────────────── */
     .referral-section {
       background: linear-gradient(130deg, #fffbf2 0%, #edf7e8 100%);
       border-top: 1px solid var(--border-light);
       border-bottom: 1px solid var(--border-light);
-      position: relative; overflow: hidden;
+      position: relative;
+      overflow: hidden;
     }
     .referral-section::before {
       content: '';
-      position: absolute; top: -100px; right: -100px;
+      position: absolute;
+      top: -100px; right: -100px;
       width: 400px; height: 400px;
       background: radial-gradient(circle, rgba(34,197,94,0.08), transparent 70%);
-      border-radius: 50%; pointer-events: none;
+      border-radius: 50%;
+      pointer-events: none;
     }
+
     .referral-steps { display: flex; flex-direction: column; gap: 1.1rem; margin-top: 1.5rem; }
+
     .referral-step {
       display: flex; align-items: flex-start; gap: 1rem;
       background: white; border: 1px solid var(--border-light);
-      border-radius: var(--radius-md); padding: 1rem 1.1rem; transition: all 0.2s;
+      border-radius: var(--radius-md); padding: 1rem 1.1rem;
+      transition: all 0.2s;
     }
     .referral-step:hover { border-color: var(--green-bright); box-shadow: var(--shadow-sm); }
+
     .ref-step-num {
       width: 36px; height: 36px; min-width: 36px;
       background: var(--green-soft); border: 1.5px solid var(--border-light);
@@ -495,37 +393,42 @@
     }
     .ref-step-title { font-weight: 700; font-size: 0.9rem; color: var(--text-dark); margin-bottom: 0.15rem; }
     .ref-step-desc { font-size: 0.78rem; color: var(--text-muted); line-height: 1.4; }
+
     .referral-visual { display: flex; justify-content: center; }
+
     .ref-reward-card {
-      background: var(--card-white); border: 1.5px solid var(--border-light);
+      background: var(--card-white);
+      border: 1.5px solid var(--border-light);
       border-radius: var(--radius-xl); padding: 2rem;
       text-align: center; width: 100%; max-width: 360px;
-      box-shadow: var(--shadow-md); position: relative; overflow: hidden;
+      box-shadow: var(--shadow-md);
+      position: relative; overflow: hidden;
     }
     .ref-reward-card::before {
       content: '';
       position: absolute; top: 0; left: 0; right: 0; height: 4px;
       background: linear-gradient(90deg, var(--green-primary), var(--green-bright));
     }
+
     .ref-reward-emoji { font-size: 2.8rem; margin-bottom: 0.75rem; line-height: 1; }
     .ref-reward-title {
       font-family: 'Raleway', sans-serif; font-weight: 800; font-size: 1.25rem;
       color: var(--green-dark); margin-bottom: 0.2rem;
     }
     .ref-reward-sub { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 1.5rem; }
+
     .ref-progress-wrap {
       background: var(--green-soft); border-radius: var(--radius-md);
       padding: 1.2rem; margin-bottom: 1rem;
     }
     .ref-progress-items {
-      display: flex; gap: 0.45rem; justify-content: center;
-      flex-wrap: wrap; margin-bottom: 1rem;
+      display: flex; gap: 0.8rem; justify-content: center; margin-bottom: 1rem;
     }
     .ref-dot {
-      width: 32px; height: 32px; border-radius: 50%;
+      width: 44px; height: 44px; border-radius: 50%;
       background: #dce9dc; border: 2px solid #c8dac8;
       display: flex; align-items: center; justify-content: center;
-      color: #a0b8a0; font-size: 0.75rem; transition: all 0.4s;
+      color: #a0b8a0; font-size: 1rem; transition: all 0.4s;
     }
     .ref-dot.filled {
       background: var(--green-primary); border-color: var(--green-primary); color: white;
@@ -535,6 +438,7 @@
       background: white; border-color: var(--green-bright);
       border-style: dashed; color: var(--green-primary); animation: pulse 2s infinite;
     }
+
     .ref-bar-row { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.5rem; }
     .ref-progress-bar {
       flex: 1; height: 7px; background: #dce9dc; border-radius: 4px; overflow: hidden;
@@ -547,6 +451,7 @@
     }
     .ref-bar-label { font-size: 0.7rem; font-weight: 700; color: var(--green-primary); white-space: nowrap; }
     .ref-progress-note { font-size: 0.72rem; color: var(--text-muted); }
+
     .ref-unlock-tag {
       background: linear-gradient(105deg, var(--green-dark), var(--green-primary));
       color: #c6f6d5; font-size: 0.75rem; font-weight: 700;
@@ -555,6 +460,7 @@
       box-shadow: 0 4px 12px rgba(10,74,42,0.25);
     }
     .ref-unlock-tag i { font-size: 0.9rem; color: var(--green-bright); }
+
     .ref-cta-link {
       display: inline-flex; align-items: center; gap: 0.4rem;
       margin-top: 1rem; font-size: 0.78rem; font-weight: 600;
@@ -591,11 +497,12 @@
     .mv-footer a:hover { color: var(--green-bright); }
 
     @media (max-width: 768px) {
+      .hero-section { padding: 2rem 0; }
+      .float-badge { display: none; }
+      .phone-frame { width: 220px; }
       .section-pad { padding: 2.5rem 0; }
       .pricing-card.pro { margin-top: 1.5rem; }
       .ref-reward-card { max-width: 100%; }
-      .ref-progress-items { gap: 0.3rem; }
-      .ref-dot { width: 26px; height: 26px; font-size: 0.65rem; }
     }
   </style>
 </head>
@@ -614,103 +521,93 @@
 
 <main id="main-content">
 
-  <!-- ══════════════════════════════════════════
-       HERO — SPLIT LAYOUT WITH STOCK PHOTO
-  ══════════════════════════════════════════ -->
-  <section class="hero-section" aria-label="Hero">
-
-    <!-- LEFT: Copy -->
-    <div class="hero-left container-fluid ps-lg-5 ps-3">
-      <div style="max-width:520px;">
-
-        <div class="hero-badge">
-          <span class="dot"></span>
-          Built for Nigerian vendors
-        </div>
-
-        <h1 class="hero-headline">
-          Your WhatsApp shop,<br/>now <span class="accent">beautiful</span>
-        </h1>
-
-        <p class="hero-sub">
-          Create a stunning product catalog, share a clean link on WhatsApp Status, and let customers track their orders — all free. No tech knowledge needed.
-        </p>
-
-        <!-- Social proof -->
-        <div class="hero-social-proof">
-          <div class="proof-avatars">
-            <img src="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=64&h=64&fit=crop&crop=face" alt="Vendor 1" />
-            <img src="https://images.unsplash.com/photo-1520813792240-56fc4a3765a7?w=64&h=64&fit=crop&crop=face" alt="Vendor 2" />
-            <img src="https://images.unsplash.com/photo-1554151228-14d9def656e4?w=64&h=64&fit=crop&crop=face" alt="Vendor 3" />
-            <img src="https://images.unsplash.com/photo-1567532939604-b6b5b0db2604?w=64&h=64&fit=crop&crop=face" alt="Vendor 4" />
+  <!-- ── Hero ─────────────────────────────── -->
+  <section class="hero-section">
+    <div class="container">
+      <div class="row align-items-center gy-5">
+        <div class="col-lg-6">
+          <div class="hero-badge">
+            <span class="dot"></span>
+            Built for Lagos vendors
           </div>
-          <div class="proof-text">
-            <strong>1,200+ vendors</strong> already selling smarter<br/>
-            <span>⭐⭐⭐⭐⭐ 4.9 average rating</span>
+          <h1 class="hero-headline">
+            Your WhatsApp shop,<br/>now <span class="accent">beautiful</span>
+          </h1>
+          <p class="hero-sub">
+            Create a stunning product catalog, share clean links on WhatsApp, and let customers track their orders — all for free. No tech knowledge needed.
+          </p>
+          <div class="hero-actions">
+            <a href="/dashboard/" class="btn-primary-mv">
+              <i class="bi bi-shop"></i> Create Your Store
+            </a>
+            <a href="#how-it-works" class="btn-outline-mv">
+              <i class="bi bi-play-circle"></i> How It Works
+            </a>
           </div>
+          <p class="mt-3 text-muted" style="font-size:0.8rem;">
+            <i class="bi bi-check-circle-fill text-success me-1"></i> Free to start &nbsp;·&nbsp;
+            <i class="bi bi-check-circle-fill text-success me-1"></i> No downloads &nbsp;·&nbsp;
+            <i class="bi bi-check-circle-fill text-success me-1"></i> Works on any phone
+          </p>
         </div>
-
-        <div class="hero-actions">
-          <a href="/dashboard/" class="btn-primary-mv">
-            <i class="bi bi-shop"></i> Create Your Free Store
-          </a>
-          <a href="#how-it-works" class="btn-outline-mv">
-            <i class="bi bi-play-circle"></i> How It Works
-          </a>
-        </div>
-
-        <div class="hero-trust-chips">
-          <span class="trust-chip"><i class="bi bi-check-circle-fill"></i>Free to start</span>
-          <span class="trust-chip"><i class="bi bi-check-circle-fill"></i>No downloads</span>
-          <span class="trust-chip"><i class="bi bi-check-circle-fill"></i>Live in 10 mins</span>
-          <span class="trust-chip"><i class="bi bi-check-circle-fill"></i>Works on any phone</span>
+        <div class="col-lg-6 d-flex justify-content-center">
+          <div style="position:relative;">
+            <div class="float-badge badge-orders" aria-hidden="true">
+              <i class="bi bi-bag-check-fill" style="color:var(--green-primary)"></i> 12 orders today
+            </div>
+            <div class="float-badge badge-free" aria-hidden="true">
+              <i class="bi bi-star-fill" style="color:#f59e0b;"></i> 4.9 rating
+            </div>
+            <div class="float-badge badge-track" aria-hidden="true">
+              <i class="bi bi-truck" style="color:var(--green-primary)"></i> Order tracked
+            </div>
+            <div class="phone-frame">
+              <div class="phone-notch" aria-hidden="true"></div>
+              <div class="phone-screen">
+                <div class="store-header">
+                  <div class="store-avatar" aria-hidden="true"><i class="bi bi-bag-heart-fill"></i></div>
+                  <h6>GlamStore NG</h6>
+                  <small>Lekki, Lagos · ⭐ 4.9</small>
+                </div>
+                <div class="phone-products">
+                  <div class="phone-product-card">
+                    <div class="product-img-placeholder" aria-hidden="true">👗</div>
+                    <div class="card-body-mini">
+                      <div class="item-name">Silk Blouse</div>
+                      <div class="item-price">₦8,500</div>
+                    </div>
+                  </div>
+                  <div class="phone-product-card">
+                    <div class="product-img-placeholder" aria-hidden="true">👠</div>
+                    <div class="card-body-mini">
+                      <div class="item-name">Block Heels</div>
+                      <div class="item-price">₦12,000</div>
+                    </div>
+                  </div>
+                  <div class="phone-product-card">
+                    <div class="product-img-placeholder" aria-hidden="true">👜</div>
+                    <div class="card-body-mini">
+                      <div class="item-name">Mini Bag</div>
+                      <div class="item-price">₦6,200</div>
+                    </div>
+                  </div>
+                  <div class="phone-product-card">
+                    <div class="product-img-placeholder" aria-hidden="true">💄</div>
+                    <div class="card-body-mini">
+                      <div class="item-name">Lip Kit</div>
+                      <div class="item-price">₦3,800</div>
+                    </div>
+                  </div>
+                </div>
+                <button class="phone-wa-btn" aria-label="Order on WhatsApp" disabled>
+                  <i class="bi bi-whatsapp"></i> Order on WhatsApp
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
-
-    <!-- RIGHT: Stock photo -->
-    <div class="hero-right" aria-hidden="true">
-      <div class="hero-photo-wrap">
-        <!-- Primary stock photo: woman entrepreneur on phone, Unsplash free -->
-        <img
-          src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=900&h=1100&fit=crop&crop=top&q=85"
-          alt="Nigerian vendor managing her WhatsApp store on her phone"
-          loading="eager"
-        />
-      </div>
-
-      <!-- Vendor card top-right -->
-      <div class="hero-vendor-badge">
-        <div class="hero-vendor-avatar">🛍️</div>
-        <div>
-          <strong>GlamStore NG</strong>
-          <span>Lekki · ⭐ 4.9 · 240 orders</span>
-        </div>
-      </div>
-
-      <!-- Order update badge mid-left -->
-      <div class="hero-order-badge">
-        <div class="order-icon"><i class="bi bi-bag-check-fill"></i></div>
-        <div>
-          <strong>12 orders today</strong>
-          <span>Last order: 4 mins ago</span>
-        </div>
-      </div>
-
-      <!-- Stats pills bottom -->
-      <div class="hero-stat-cards">
-        <div class="hero-stat-pill">
-          <span class="dot-live"></span> Live orders now
-        </div>
-        <div class="hero-stat-pill">
-          <i class="bi bi-truck"></i> Order tracked ✓
-        </div>
-        <div class="hero-stat-pill">
-          <i class="bi bi-whatsapp"></i> Payments on WhatsApp
-        </div>
-      </div>
-    </div>
-
   </section>
 
   <!-- ── Trust Bar ──────────────────────────── -->
@@ -762,7 +659,7 @@
           <div class="step-card">
             <div class="step-number">03</div>
             <div class="step-icon"><i class="bi bi-share-fill"></i></div>
-            <h5>Share &amp; Sell</h5>
+            <h5>Share & Sell</h5>
             <p>Post your store link on WhatsApp Status or broadcast. Customers browse, pick their variants, and tap <strong>Order on WhatsApp</strong> — straight to your chat.</p>
           </div>
         </div>
@@ -878,7 +775,7 @@
       <div class="text-center mb-5">
         <div class="section-label">Pricing</div>
         <h2 class="section-title">Start free. Scale when ready.</h2>
-        <p class="text-muted" style="max-width:460px;margin:0 auto;">No hidden fees. No card to start. Upgrade only when you need more — or refer 10 friends and unlock it free.</p>
+        <p class="text-muted" style="max-width:460px;margin:0 auto;">No hidden fees. No card to start. Upgrade only when you need more — or refer friends and unlock it free.</p>
       </div>
       <div class="row g-4 justify-content-center align-items-stretch">
 
@@ -902,7 +799,7 @@
               <i class="bi bi-shop"></i> Get Started Free
             </a>
             <p style="font-size:0.7rem;color:var(--text-muted);text-align:center;margin-top:0.75rem;">
-              Or <a href="#referral" style="color:var(--green-primary);font-weight:600;">refer 10 vendors</a> to unlock unlimited products free
+              Or <a href="#referral" style="color:var(--green-primary);font-weight:600;">refer 10 friends</a> to unlock unlimited products free
             </p>
           </div>
         </div>
@@ -971,47 +868,41 @@
             <div class="referral-step">
               <div class="ref-step-num">3</div>
               <div>
-                <div class="ref-step-title">10 vendors join → you unlock unlimited</div>
+                <div class="ref-step-title">They join → you unlock unlimited</div>
                 <div class="ref-step-desc">Once 10 vendors create a store through your link, your 10-product cap is gone. No monthly fee, ever.</div>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Right: progress card — showing 7/10 as a realistic mid-progress example -->
+        <!-- Right: progress card -->
         <div class="col-lg-6">
           <div class="referral-visual">
             <div class="ref-reward-card">
               <div class="ref-reward-emoji">🎁</div>
-              <div class="ref-reward-title">Refer 10 · Unlock Unlimited</div>
+              <div class="ref-reward-title">Refer 3 · Unlock Unlimited</div>
               <div class="ref-reward-sub">Here's what your progress looks like</div>
 
               <div class="ref-progress-wrap">
-                <!-- 10 dots: 7 filled, 1 pending, 2 empty -->
-                <div class="ref-progress-items" aria-label="Referral progress: 7 of 10 vendors referred">
+                <div class="ref-progress-items" aria-label="Referral progress: 2 of 3 vendors referred">
+                  <!-- filled = referred & signed up -->
                   <div class="ref-dot filled" title="Vendor 1 joined"><i class="bi bi-person-fill"></i></div>
                   <div class="ref-dot filled" title="Vendor 2 joined"><i class="bi bi-person-fill"></i></div>
-                  <div class="ref-dot filled" title="Vendor 3 joined"><i class="bi bi-person-fill"></i></div>
-                  <div class="ref-dot filled" title="Vendor 4 joined"><i class="bi bi-person-fill"></i></div>
-                  <div class="ref-dot filled" title="Vendor 5 joined"><i class="bi bi-person-fill"></i></div>
-                  <div class="ref-dot filled" title="Vendor 6 joined"><i class="bi bi-person-fill"></i></div>
-                  <div class="ref-dot filled" title="Vendor 7 joined"><i class="bi bi-person-fill"></i></div>
-                  <div class="ref-dot pending" title="Still needed"><i class="bi bi-person-fill"></i></div>
-                  <div class="ref-dot" title="Still needed"><i class="bi bi-person-fill"></i></div>
-                  <div class="ref-dot" title="Still needed"><i class="bi bi-person-fill"></i></div>
+                  <!-- pending = still needed -->
+                  <div class="ref-dot pending" title="1 more vendor needed"><i class="bi bi-person-fill"></i></div>
                 </div>
 
                 <div class="ref-bar-row">
-                  <div class="ref-progress-bar" role="progressbar" aria-valuenow="70" aria-valuemin="0" aria-valuemax="100">
-                    <div class="ref-progress-fill" style="width:70%"></div>
+                  <div class="ref-progress-bar" role="progressbar" aria-valuenow="66" aria-valuemin="0" aria-valuemax="100">
+                    <div class="ref-progress-fill" style="width:66%"></div>
                   </div>
-                  <span class="ref-bar-label">7 / 10</span>
+                  <span class="ref-bar-label">2 / 3</span>
                 </div>
-                <div class="ref-progress-note">3 more referrals until you unlock unlimited products</div>
+                <div class="ref-progress-note">1 more referral until you unlock unlimited products</div>
               </div>
 
               <div class="ref-unlock-tag">
-                <i class="bi bi-infinity"></i> Unlimited Products — unlocked on your 10th referral
+                <i class="bi bi-infinity"></i> Unlimited Products — unlocked on your 3rd referral
               </div>
 
               <a href="/dashboard/" class="ref-cta-link">
@@ -1069,7 +960,7 @@
       </div>
       <div class="col-md-4">
         <p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#3d5c3d;">theosnnetwork</p>
-        <p style="font-size:0.75rem;">Built with ❤️ for Nigerian vendors.<br/><a href="mailto:hello@myvendor.ng">hello@myvendor.ng</a></p>
+        <p style="font-size:0.75rem;">Built with ❤️ for Nigerian vendors.<br/><a href="mailto:hello@support.myvendor.qzz.io">hello@myvendor.ng</a></p>
       </div>
     </div>
     <div class="text-center mt-3 pt-3" style="border-top:1px solid #1a2e1a;font-size:0.7rem;color:#4a6741;">
@@ -1113,7 +1004,7 @@
     const barObserver = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
-          setTimeout(() => { progressFill.style.width = '70%'; }, 300);
+          setTimeout(() => { progressFill.style.width = '66%'; }, 300);
           barObserver.disconnect();
         }
       });
