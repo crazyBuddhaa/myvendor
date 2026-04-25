@@ -286,7 +286,7 @@
             position: relative;
             z-index: 2;
             flex-shrink: 0;
-            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .tl-dot-inner {
@@ -577,6 +577,12 @@
                     </div>
                 </div>
 
+            </div>
+
+            <div style="margin-top: 1.5rem; text-align: center;">
+                <button onclick="navigator.clipboard.writeText(window.location.href); alert('Tracking link copied!');" class="btn-home" style="margin-top: 0; border: 1px solid var(--border); background: var(--fog); color: var(--emerald);">
+                    <i class="bi bi-link-45deg"></i> Copy Link
+                </button>
             </div>
         </div>
     </div>

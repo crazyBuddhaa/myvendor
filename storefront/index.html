@@ -258,7 +258,7 @@
         /* product grid – uniform card size */
         #productGrid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
             gap: 0.9rem;
             padding: 0 1rem 1rem;
         }
@@ -301,7 +301,7 @@
         }
 
         .product-card:hover .prod-img img {
-            transform: scale(1.03);
+            transform: scale(1.05);
         }
 
         .sold-out-tag {
