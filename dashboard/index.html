@@ -89,6 +89,22 @@
     .auth-footer { text-align: center; padding: 1rem; font-size: 0.7rem; color: var(--text-muted); border-top: 1px solid rgba(34, 197, 94, 0.2); position: relative; z-index: 1;}
     .auth-footer a { color: var(--green-primary); text-decoration: none; font-weight: 600; }
 
+    /* ── Proactive resend banner ───────────────────────────── */
+    .expired-banner { max-width: 480px; margin: 1.2rem auto 0; padding: 0 1rem; position: relative; z-index: 1; }
+    .expired-banner-inner { background: #fffbeb; border: 1.5px solid #fcd34d; border-radius: var(--radius-md); padding: 1.1rem 1rem; display: flex; gap: 0.75rem; align-items: flex-start; }
+    .expired-banner-icon { font-size: 1.5rem; line-height: 1; flex-shrink: 0; margin-top: 0.1rem; }
+    .expired-banner-body { flex: 1; min-width: 0; }
+    .expired-banner-title { font-weight: 800; font-size: 0.88rem; color: #92400e; margin: 0 0 0.15rem; }
+    .expired-banner-sub { font-size: 0.76rem; color: #78350f; margin: 0 0 0.65rem; }
+    .expired-banner-form { display: flex; gap: 0.4rem; }
+    .expired-banner-form .form-control-modern { flex: 1; font-size: 0.82rem; padding: 0.55rem 0.75rem; min-width: 0; }
+    .btn-expired-send { background: #d97706; color: white; border: none; border-radius: var(--radius-sm); padding: 0.55rem 0.9rem; font-weight: 700; font-size: 0.78rem; white-space: nowrap; cursor: pointer; transition: all 0.2s; flex-shrink: 0; }
+    .btn-expired-send:hover { background: #b45309; }
+    .btn-expired-send:disabled { opacity: 0.55; cursor: not-allowed; }
+    .expired-banner-status { font-size: 0.76rem; margin-top: 0.4rem; min-height: 1rem; color: #166534; }
+    .expired-banner-close { background: none; border: none; color: #92400e; cursor: pointer; padding: 0; font-size: 0.82rem; flex-shrink: 0; opacity: 0.5; line-height: 1; margin-top: 0.1rem; }
+    .expired-banner-close:hover { opacity: 1; }
+
     /* Modal Tweaks */
     .modal-content-modern { border-radius: var(--radius-lg); border: none; padding: 1.5rem 1rem; text-align: center; box-shadow: var(--shadow-md); }
     .modal-icon { font-size: 3.5rem; margin-bottom: 1rem; line-height: 1; }
@@ -109,6 +125,27 @@
     <a href="/" class="btn-back-home"><i class="bi bi-arrow-left-short"></i> Back to Home</a>
   </div>
 </nav>
+
+<!-- Proactive resend banner — shown when arriving from an expired link or after a previous unverified login -->
+<div id="expiredBanner" class="expired-banner" style="display:none;">
+  <div class="expired-banner-inner">
+    <div class="expired-banner-icon">✉️</div>
+    <div class="expired-banner-body">
+      <p class="expired-banner-title" id="expiredBannerTitle">Your verification link has expired</p>
+      <p class="expired-banner-sub">Enter your email to get a fresh one instantly.</p>
+      <div class="expired-banner-form">
+        <input type="email" id="expiredEmail" class="form-control-modern" placeholder="you@example.com" autocomplete="email">
+        <button type="button" id="expiredResendBtn" class="btn-expired-send" onclick="window.handleBannerResend()">
+          <i class="bi bi-send-fill"></i> Send
+        </button>
+      </div>
+      <p id="expiredBannerStatus" class="expired-banner-status"></p>
+    </div>
+    <button type="button" class="expired-banner-close" onclick="window.dismissExpiredBanner()" title="Dismiss">
+      <i class="bi bi-x-lg"></i>
+    </button>
+  </div>
+</div>
 
 <main class="auth-container">
   <div class="auth-card">
@@ -234,6 +271,11 @@
       <h4 id="modalTitle" style="font-weight: 800; color: var(--text-dark); margin-bottom: 0.5rem;"></h4>
       <p id="modalDesc" style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;"></p>
       <button type="button" id="modalBtn" class="btn-submit" style="margin-top: 0;"></button>
+      <div id="modalResendSlot" style="margin-top: 0.9rem; display: none; text-align: center;">
+        <button type="button" id="modalResendBtn" style="background: none; border: none; color: var(--green-primary); font-size: 0.8rem; font-weight: 600; cursor: pointer; padding: 0; text-decoration: underline;">
+          Didn't get it? Resend verification email
+        </button>
+      </div>
     </div>
   </div>
 </div>
@@ -261,7 +303,81 @@
     document.getElementById('signupPassword').addEventListener('keydown', e => {
       if (e.key === 'Enter') { e.preventDefault(); window.handleSignup(); }
     });
+
+    // ── Proactive resend banner detection ──────────────────────
+    // Two signals trigger the banner:
+    //   1. ?expired=1  — user clicked an expired confirmation link (redirected here from home.html)
+    //   2. sessionStorage.pendingVerifyEmail — user previously hit "Email not confirmed" on login
+    const params = new URLSearchParams(window.location.search);
+    const pendingEmail = sessionStorage.getItem('pendingVerifyEmail');
+
+    if (params.get('expired') === '1') {
+      // Clean the URL param so a refresh doesn't re-show it
+      history.replaceState(null, '', window.location.pathname);
+      window.showExpiredBanner('Your verification link has expired', pendingEmail);
+    } else if (pendingEmail) {
+      window.showExpiredBanner('Your email isn\'t verified yet', pendingEmail);
+    }
   });
+
+  window.showExpiredBanner = function(title, prefillEmail) {
+    document.getElementById('expiredBannerTitle').textContent = title;
+    if (prefillEmail) document.getElementById('expiredEmail').value = prefillEmail;
+    document.getElementById('expiredBanner').style.display = 'block';
+  };
+
+  window.dismissExpiredBanner = function() {
+    document.getElementById('expiredBanner').style.display = 'none';
+    sessionStorage.removeItem('pendingVerifyEmail');
+  };
+
+  window.handleBannerResend = async function() {
+    const email = document.getElementById('expiredEmail').value.trim();
+    const btn = document.getElementById('expiredResendBtn');
+    const status = document.getElementById('expiredBannerStatus');
+
+    if (!email) {
+      status.style.color = '#dc2626';
+      status.textContent = 'Please enter your email address.';
+      document.getElementById('expiredEmail').focus();
+      return;
+    }
+
+    btn.disabled = true;
+    status.style.color = '#78350f';
+    status.textContent = 'Sending…';
+
+    const { error } = await supabase.auth.resend({ type: 'signup', email });
+
+    if (error) {
+      status.style.color = '#dc2626';
+      status.textContent = 'Failed — please try again.';
+      btn.disabled = false;
+      return;
+    }
+
+    // Clear the pending flag — they've been resent
+    sessionStorage.removeItem('pendingVerifyEmail');
+
+    // 60-second cooldown
+    const COOLDOWN = 60;
+    let remaining = COOLDOWN;
+    status.style.color = '#166534';
+
+    const tick = () => {
+      if (remaining <= 0) {
+        status.textContent = '';
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-send-fill"></i> Send';
+        return;
+      }
+      status.textContent = `✓ Sent! You can resend again in ${remaining}s`;
+      btn.innerHTML = `${remaining}s`;
+      remaining--;
+      setTimeout(tick, 1000);
+    };
+    tick();
+  };
 
   // Check if already logged in
   const { data: { session } } = await supabase.auth.getSession()
@@ -286,29 +402,35 @@
     setTimeout(() => msgDiv.classList.remove('show'), 5000)
   }
 
-  // 🌟 MODIFIED: Now handles different actions for verify vs dashboard
-  window.showResultModal = function(type, title, message, action = 'dashboard') {
+  window.showResultModal = function(type, title, message, action = 'dashboard', resendEmail = null) {
     const icon = document.getElementById('modalIcon');
     const titleEl = document.getElementById('modalTitle');
     const descEl = document.getElementById('modalDesc');
     const btn = document.getElementById('modalBtn');
+    const resendSlot = document.getElementById('modalResendSlot');
+    const resendBtn = document.getElementById('modalResendBtn');
 
     titleEl.textContent = title;
     descEl.textContent = message;
+
+    // Reset resend slot
+    resendSlot.style.display = 'none';
+    resendBtn.textContent = 'Didn\'t get it? Resend verification email';
+    resendBtn.disabled = false;
+    resendBtn.style.textDecoration = 'underline';
+    resendBtn.style.color = 'var(--green-primary)';
 
     if (type === 'success') {
       icon.innerHTML = '<i class="bi bi-check-circle-fill"></i>';
       icon.className = 'modal-icon success';
 
       if (action === 'verify') {
-        // Tells user to check email, then switches to login tab when clicked
         btn.innerHTML = 'Got It';
         btn.onclick = () => {
           resultModalInstance.hide();
           window.switchTab('login');
         };
       } else {
-        // Standard login success redirect
         btn.innerHTML = 'Go to Dashboard <i class="bi bi-arrow-right"></i>';
         btn.onclick = () => window.location.href = '/dashboard/home.html';
       }
@@ -319,7 +441,50 @@
       btn.onclick = () => resultModalInstance.hide();
     }
 
+    // Show resend link whenever we're in verify mode and have an email
+    if (action === 'verify' && resendEmail) {
+      resendSlot.style.display = 'block';
+      resendBtn.onclick = () => window.handleResendVerification(resendEmail, resendBtn);
+    }
+
     resultModalInstance.show();
+  }
+
+  window.handleResendVerification = async function(email, btn) {
+    btn.disabled = true;
+    btn.style.textDecoration = 'none';
+    btn.textContent = 'Sending…';
+
+    const { error } = await supabase.auth.resend({ type: 'signup', email });
+
+    if (error) {
+      btn.textContent = 'Failed — tap to try again';
+      btn.disabled = false;
+      btn.style.textDecoration = 'underline';
+      btn.style.color = 'var(--green-primary)';
+      return;
+    }
+
+    // Success — run 60-second cooldown so they can't spam
+    const COOLDOWN = 60;
+    let remaining = COOLDOWN;
+
+    btn.style.color = '#6b7280';
+    btn.style.textDecoration = 'none';
+
+    const tick = () => {
+      btn.textContent = `✓ Sent! Resend again in ${remaining}s`;
+      if (remaining <= 0) {
+        btn.textContent = 'Resend verification email';
+        btn.disabled = false;
+        btn.style.textDecoration = 'underline';
+        btn.style.color = 'var(--green-primary)';
+        return;
+      }
+      remaining--;
+      setTimeout(tick, 1000);
+    };
+    tick();
   }
 
   window.switchTab = function(tab) {
@@ -376,7 +541,9 @@
 
     if (error) {
       if (error.message.includes('Email not confirmed')) {
-        window.showResultModal('error', 'Email Not Verified', friendlyError(error.message))
+        // Save so the banner pre-fills their email if they navigate away and come back
+        sessionStorage.setItem('pendingVerifyEmail', email);
+        window.showResultModal('error', 'Email Not Verified', friendlyError(error.message), 'verify', email)
       } else {
         window.showResultModal('error', 'Login Failed', friendlyError(error.message))
       }
@@ -434,6 +601,7 @@
       email,
       password,
       options: {
+        emailRedirectTo: 'https://myvendor.qzz.io/dashboard/home.html',
         data: {
           full_name: name,
           slug: slug,
@@ -452,7 +620,7 @@
     }
 
     if (authData.user) {
-      window.showResultModal('success', 'Check Your Email 📧', 'Your store is almost ready! We just sent a verification link to your email. Please click it to activate your account.', 'verify')
+      window.showResultModal('success', 'Check Your Email 📧', 'Your store is almost ready! We just sent a verification link to your email. Please click it to activate your account.', 'verify', email)
     }
   }
 
@@ -473,7 +641,7 @@
     forgotLink.style.opacity = '0.6';
 
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: window.location.origin + '/reset-password.html'
+      redirectTo: 'https://myvendor.qzz.io/reset-password.html'
     })
 
     forgotLink.innerText = originalText;
