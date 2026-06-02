@@ -28,7 +28,7 @@ export default async function handler(req, res) {
 
   try {
     const response = await fetch(
-      `${SUPABASE_URL}/rest/v1/products?id=eq.${encodeURIComponent(safeId)}&select=id,title,name,description,price,image_url`,
+      `${SUPABASE_URL}/rest/v1/products?id=eq.${encodeURIComponent(safeId)}&select=*`,
       {
         headers: {
           apikey: SUPABASE_KEY,
