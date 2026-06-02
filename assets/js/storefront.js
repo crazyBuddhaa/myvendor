@@ -1,15 +1,5 @@
 import { supabase } from '/assets/js/supabase.js';
-
-// 🛡️ XSS SECURITY: Escapes malicious characters from user input
-const escapeHTML = (str) => {
-    if (!str) return '';
-    return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
-};
+import { escapeHTML } from '/assets/js/utils.js';
 
 async function initStore() {
     // 1. EXTRACT SLUG
@@ -30,7 +20,6 @@ async function initStore() {
 
     if (slug) slug = slug.trim().toLowerCase();
 
-    // SHOW ERROR IF NO SLUG
     if (!slug) {
         document.body.innerHTML = `
             <div class="text-center py-5" style="background: var(--cream-bg); min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center;">
@@ -61,14 +50,12 @@ async function initStore() {
     // 3. UPDATE UI WITH VENDOR INFO
     document.title = `${vendor.business_name} - myvendor`;
     const storeNameEl = document.getElementById('displayStoreName');
-    
-    // Using escapeHTML for safety when setting UI elements
-    if(storeNameEl) storeNameEl.innerHTML = escapeHTML(vendor.business_name);
+    if (storeNameEl) storeNameEl.innerHTML = escapeHTML(vendor.business_name);
 
     const navLinkEl = document.getElementById('navStoreLink');
-    if(navLinkEl) navLinkEl.href = `/${vendor.slug}`;
+    if (navLinkEl) navLinkEl.href = `/${vendor.slug}`;
 
-    // 🌟 BACKGROUND ANALYTICS
+    // BACKGROUND ANALYTICS
     supabase.from('analytics_events').insert([{ vendor_id: vendor.id, event_type: 'store_view', product_id: null }]).then();
 
     // 4. FETCH VENDOR'S PRODUCTS
@@ -78,22 +65,22 @@ async function initStore() {
         .eq('vendor_id', vendor.id)
         .order('created_at', { ascending: false });
 
-    const grid = document.getElementById('productGrid');
-    const empty = document.getElementById('emptyState');
+    const grid            = document.getElementById('productGrid');
+    const empty           = document.getElementById('emptyState');
     const filterContainer = document.getElementById('categoryFilters');
-    const countEl = document.getElementById('productCount');
+    const countEl         = document.getElementById('productCount');
 
     if (pError || !products || products.length === 0) {
-        if(grid) grid.innerHTML = '';
-        if(empty) empty.classList.remove('hidden');
-        if(countEl) countEl.innerText = '0 items';
+        if (grid)    grid.innerHTML = '';
+        if (empty)   empty.classList.remove('hidden');
+        if (countEl) countEl.innerText = '0 items';
         return;
     }
 
-    if(empty) empty.classList.add('hidden');
-    if(countEl) countEl.innerText = `${products.length} items`;
+    if (empty)   empty.classList.add('hidden');
+    if (countEl) countEl.innerText = `${products.length} items`;
 
-    // 🌟 GENERATE CATEGORY PILLS 🌟
+    // GENERATE CATEGORY PILLS
     if (filterContainer) {
         const categories = ['All', ...new Set(products.map(p => p.category).filter(c => c && c.trim() !== 'Other' && c.trim() !== ''))];
 
@@ -107,16 +94,17 @@ async function initStore() {
         }
     }
 
-    // 🌟 RENDER PRODUCT GRID 🌟
-    if(grid) {
+    // RENDER PRODUCT GRID
+    if (grid) {
         grid.innerHTML = products.map((p, i) => {
-            const delay = i * 0.05; 
-            const isOut = !p.in_stock;
-            const badge = isOut ? `<div class="sold-out-tag">SOLD OUT</div>` : '';
-            const imgHtml = p.image_url ? `<img src="${p.image_url}" alt="${escapeHTML(p.title)}" style="${isOut ? 'filter: grayscale(1); opacity: 0.8;' : ''}">` : '<i class="bi bi-box" style="font-size:2rem; color:var(--text-muted);"></i>';
+            const delay   = i * 0.05;
+            const isOut   = !p.in_stock;
+            const badge   = isOut ? `<div class="sold-out-tag">SOLD OUT</div>` : '';
+            const imgHtml = p.image_url
+                ? `<img src="${p.image_url}" alt="${escapeHTML(p.title)}" style="${isOut ? 'filter: grayscale(1); opacity: 0.8;' : ''}">`
+                : '<i class="bi bi-box" style="font-size:2rem; color:var(--text-muted);"></i>';
             const catData = p.category ? p.category : 'Other';
 
-            // Clean path that matches vercel.json rewrite rules
             return `
             <a href="/product/${p.id}" class="product-item text-decoration-none" data-category="${escapeHTML(catData)}" style="animation-delay: ${delay}s;">
                 <div class="product-card">
@@ -134,9 +122,9 @@ async function initStore() {
     }
 }
 
-// 🌟 SEARCH & FILTER LOGIC 🌟
-window.searchStore = function() {
-    const term = document.getElementById('searchInput').value.toLowerCase();
+// SEARCH & FILTER LOGIC
+window.searchStore = function () {
+    const term  = document.getElementById('searchInput').value.toLowerCase();
     const items = document.querySelectorAll('.product-item');
     let visibleCount = 0;
 
@@ -151,7 +139,7 @@ window.searchStore = function() {
     });
 
     const countEl = document.getElementById('productCount');
-    if(countEl) countEl.innerText = `${visibleCount} item${visibleCount !== 1 ? 's' : ''}`;
+    if (countEl) countEl.innerText = `${visibleCount} item${visibleCount !== 1 ? 's' : ''}`;
 
     const empty = document.getElementById('emptyState');
     if (visibleCount === 0) {
@@ -161,7 +149,7 @@ window.searchStore = function() {
     }
 };
 
-window.filterStorefront = function(category, buttonElement) {
+window.filterStorefront = function (category, buttonElement) {
     document.querySelectorAll('.filter-pill').forEach(btn => btn.classList.remove('active'));
     buttonElement.classList.add('active');
 
@@ -183,7 +171,7 @@ window.filterStorefront = function(category, buttonElement) {
     });
 
     const countEl = document.getElementById('productCount');
-    if(countEl) countEl.innerText = `${visibleCount} item${visibleCount !== 1 ? 's' : ''}`;
+    if (countEl) countEl.innerText = `${visibleCount} item${visibleCount !== 1 ? 's' : ''}`;
 
     const empty = document.getElementById('emptyState');
     if (visibleCount === 0) {

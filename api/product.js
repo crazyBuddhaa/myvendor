@@ -1,63 +1,48 @@
-// Escapes user-sourced values before injecting into HTML
-function escapeHtml(str) {
-  if (!str) return '';
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#x27;');
-}
-
-// Only allows UUIDs or numeric IDs — nothing else goes into the JS redirect
-function sanitizeId(str) {
-  if (!str) return '';
-  return String(str).replace(/[^a-zA-Z0-9_-]/g, '');
-}
+import { escapeHtml, sanitizeId } from './_utils.js';
 
 export default async function handler(req, res) {
-  const { id } = req.query;
+    const { id } = req.query;
 
-  const SUPABASE_URL = process.env.SUPABASE_URL;
-  const SUPABASE_KEY = process.env.SUPABASE_ANON_KEY;
+    const SUPABASE_URL = process.env.SUPABASE_URL;
+    const SUPABASE_KEY = process.env.SUPABASE_ANON_KEY;
 
-  const safeId = sanitizeId(id);
-  if (!safeId) {
-    return res.redirect(302, '/');
-  }
-
-  try {
-    const response = await fetch(
-      `${SUPABASE_URL}/rest/v1/products?id=eq.${encodeURIComponent(safeId)}&select=*`,
-      {
-        headers: {
-          apikey: SUPABASE_KEY,
-          Authorization: `Bearer ${SUPABASE_KEY}`,
-        },
-      }
-    );
-
-    const data = await response.json();
-    const productData = data[0];
-
-    if (!productData) {
-      return res.redirect(302, '/');
+    const safeId = sanitizeId(id);
+    if (!safeId) {
+        return res.redirect(302, '/');
     }
 
-    const productName  = escapeHtml(productData.title || productData.name || 'Product');
-    const productDesc  = escapeHtml(productData.description || 'Tap to view details and order via WhatsApp.');
-    const productImage = escapeHtml(productData.image_url || 'https://myvendor.ng/assets/img/logo.png');
+    try {
+        const response = await fetch(
+            `${SUPABASE_URL}/rest/v1/products?id=eq.${encodeURIComponent(safeId)}&select=*`,
+            {
+                headers: {
+                    apikey:        SUPABASE_KEY,
+                    Authorization: `Bearer ${SUPABASE_KEY}`,
+                },
+            }
+        );
 
-    const formattedPrice = new Intl.NumberFormat('en-NG', {
-      style: 'currency',
-      currency: 'NGN',
-      maximumFractionDigits: 0,
-    }).format(productData.price || 0);
+        const data        = await response.json();
+        const productData = data[0];
 
-    const ogTitle = escapeHtml(`${productData.title || productData.name} — ${formattedPrice}`);
+        if (!productData) {
+            return res.redirect(302, '/');
+        }
 
-    // "Bot trap": crawlers get OG/JSON-LD here; real users are JS-redirected instantly.
-    const html = `<!DOCTYPE html>
+        const productName  = escapeHtml(productData.title || productData.name || 'Product');
+        const productDesc  = escapeHtml(productData.description || 'Tap to view details and order via WhatsApp.');
+        const productImage = escapeHtml(productData.image_url || 'https://myvendor.ng/assets/img/logo.png');
+
+        const formattedPrice = new Intl.NumberFormat('en-NG', {
+            style:                'currency',
+            currency:             'NGN',
+            maximumFractionDigits: 0,
+        }).format(productData.price || 0);
+
+        const ogTitle = escapeHtml(`${productData.title || productData.name} — ${formattedPrice}`);
+
+        // "Bot trap": crawlers get OG/JSON-LD here; real users are JS-redirected instantly.
+        const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -97,10 +82,10 @@ export default async function handler(req, res) {
 <body>Loading product...</body>
 </html>`;
 
-    res.setHeader('Content-Type', 'text/html');
-    res.status(200).send(html);
-  } catch (error) {
-    console.error('product API error:', error);
-    res.redirect(302, '/');
-  }
+        res.setHeader('Content-Type', 'text/html');
+        res.status(200).send(html);
+    } catch (error) {
+        console.error('product API error:', error);
+        res.redirect(302, '/');
+    }
 }
