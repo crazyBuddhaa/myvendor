@@ -375,14 +375,9 @@
     status.style.color = '#78350f';
     status.textContent = 'Sending…';
 
-    const resendRes = await fetch('/api/auth/resend', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email })
-    });
-    const resendData = await resendRes.json();
+    const { error: resendErr } = await supabase.auth.resend({ type: 'signup', email });
 
-    if (!resendRes.ok || resendData.error) {
+    if (resendErr) {
       status.style.color = '#dc2626';
       status.textContent = 'Failed — please try again.';
       btn.disabled = false;
@@ -488,14 +483,9 @@
     btn.style.textDecoration = 'none';
     btn.textContent = 'Sending…';
 
-    const resendRes2 = await fetch('/api/auth/resend', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email })
-    });
-    const resendData2 = await resendRes2.json();
+    const { error: resendErr2 } = await supabase.auth.resend({ type: 'signup', email });
 
-    if (!resendRes2.ok || resendData2.error) {
+    if (resendErr2) {
       btn.textContent = 'Failed — tap to try again';
       btn.disabled = false;
       btn.style.textDecoration = 'underline';
@@ -623,40 +613,43 @@
       return
     }
 
+    const { data: existing } = await supabase.from('vendor_profiles').select('slug').eq('slug', slug).maybeSingle()
+    if (existing) {
+      window.showResultModal('error', 'Store Name Taken', 'That store link is already being used. Please choose another name.')
+      return
+    }
+
     window.setLoading('signup', true)
 
     // Capture referrer from URL — stored in metadata so the DB trigger can
     // award the bonus slots only after the new user confirms their email.
     const referrerId = new URLSearchParams(window.location.search).get('ref') || null;
 
-    let signupRes, signupData;
-    try {
-      signupRes = await fetch('/api/auth/signup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, name, business, wa: waClean, slug, referrerId })
-      });
-      signupData = await signupRes.json();
-    } catch (e) {
-      window.setLoading('signup', false)
-      window.showResultModal('error', 'Signup Failed', 'Network error — please check your connection and try again.')
-      return
-    }
+    const { data: authData, error: authError } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: 'https://myvendor.qzz.io/dashboard/home.html',
+        data: {
+          full_name: name,
+          slug: slug,
+          business_name: business,
+          whatsapp_number: waClean,
+          referrer_id: referrerId
+        }
+      }
+    })
 
     window.setLoading('signup', false)
 
-    if (!signupRes.ok) {
-      if (signupData.error === 'store_name_taken') {
-        window.showResultModal('error', 'Store Name Taken', 'That store link is already being used. Please choose another name.')
-      } else if (signupData.error === 'email_taken') {
-        window.showResultModal('error', 'Email Already Registered', 'An account with this email already exists. Try logging in instead.')
-      } else {
-        window.showResultModal('error', 'Signup Failed', signupData.error || 'Something went wrong. Please try again.')
-      }
+    if (authError) {
+      window.showResultModal('error', 'Signup Failed', friendlyError(authError.message))
       return
     }
 
-    window.showResultModal('success', 'Check Your Email 📧', 'Your store is almost ready! We just sent a verification link to your email. Please click it to activate your account.', 'verify', email)
+    if (authData.user) {
+      window.showResultModal('success', 'Check Your Email 📧', 'Your store is almost ready! We just sent a verification link to your email. Please click it to activate your account.', 'verify', email)
+    }
   }
 
   window.handleForgotPassword = async (e) => {
