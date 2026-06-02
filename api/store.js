@@ -30,7 +30,7 @@ export default async function handler(req, res) {
 
   try {
     const response = await fetch(
-      `${SUPABASE_URL}/rest/v1/vendor_profiles?slug=eq.${encodeURIComponent(safeSlug)}&select=business_name,bio,logo_url,slug`,
+      `${SUPABASE_URL}/rest/v1/vendor_profiles?slug=eq.${encodeURIComponent(safeSlug)}&select=*`,
       {
         headers: {
           apikey: SUPABASE_KEY,
