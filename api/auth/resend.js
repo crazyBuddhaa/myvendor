@@ -39,12 +39,17 @@ export default async function handler(req, res) {
   const resend = new Resend(process.env.RESEND_API_KEY);
   const verifyUrl = `https://myvendor.qzz.io/verify?token=${token}`;
 
-  await resend.emails.send({
+  const { error: emailError } = await resend.emails.send({
     from: 'myvendor <hello@myvendor.qzz.io>',
     to: email,
     subject: 'Your new verification link — myvendor',
     html: buildResendHtml(verifyUrl),
   });
+
+  if (emailError) {
+    console.error('resend email send failed:', emailError.message);
+    return res.status(500).json({ error: 'email_send_failed' });
+  }
 
   return res.status(200).json({ success: true });
 }
