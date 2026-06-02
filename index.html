@@ -786,7 +786,7 @@
             <div class="pricing-price">Free</div>
             <div class="pricing-desc">Perfect for vendors just getting started</div>
             <ul class="pricing-features">
-              <li><i class="bi bi-check-circle-fill"></i> Up to 10 products</li>
+              <li><i class="bi bi-check-circle-fill"></i> Up to 20 products</li>
               <li><i class="bi bi-check-circle-fill"></i> Public store link</li>
               <li><i class="bi bi-check-circle-fill"></i> Order tracking per order</li>
               <li><i class="bi bi-check-circle-fill"></i> Basic variants (size, color)</li>
@@ -799,7 +799,7 @@
               <i class="bi bi-shop"></i> Get Started Free
             </a>
             <p style="font-size:0.7rem;color:var(--text-muted);text-align:center;margin-top:0.75rem;">
-              Or <a href="#referral" style="color:var(--green-primary);font-weight:600;">refer 10 friends</a> to unlock unlimited products free
+              Or <a href="#referral" style="color:var(--green-primary);font-weight:600;">refer vendors</a> to earn +3 bonus slots each, for free
             </p>
           </div>
         </div>
@@ -809,7 +809,7 @@
           <div class="pricing-card pro">
             <div class="pricing-popular-badge">⚡ Most Popular</div>
             <div class="pricing-plan-name">Pro</div>
-            <div class="pricing-price">₦1,500 <span>/ month</span></div>
+            <div class="pricing-price">₦900 <span>/ month</span></div>
             <div class="pricing-desc">For serious vendors ready to scale</div>
             <ul class="pricing-features">
               <li><i class="bi bi-check-circle-fill"></i> <strong>Unlimited products</strong></li>
@@ -842,9 +842,9 @@
         <!-- Left: copy -->
         <div class="col-lg-6">
           <div class="section-label">Refer &amp; Earn</div>
-          <h2 class="section-title">Can't pay? Refer 10 vendors<br/>and unlock Pro — free.</h2>
+          <h2 class="section-title">Refer vendors and earn<br/>+3 bonus slots each time.</h2>
           <p style="color:var(--text-muted);font-size:0.9rem;line-height:1.65;margin-bottom:0.5rem;">
-            Love myvendor? Share it with fellow vendors in your market, your WhatsApp group, or your broadcast list. When <strong>10 of them sign up</strong> using your referral link, your product limit disappears — permanently.
+            Love myvendor? Share it with fellow vendors in your market, your WhatsApp group, or your broadcast list. For <strong>every vendor who signs up</strong> using your referral link, you permanently earn +3 extra product slots — no payment needed.
           </p>
           <p style="color:var(--text-muted);font-size:0.82rem;margin-bottom:1.5rem;">
             No payments. No tricks. It's how we grow together.
@@ -868,8 +868,8 @@
             <div class="referral-step">
               <div class="ref-step-num">3</div>
               <div>
-                <div class="ref-step-title">They join → you unlock unlimited</div>
-                <div class="ref-step-desc">Once 10 vendors create a store through your link, your 10-product cap is gone. No monthly fee, ever.</div>
+                <div class="ref-step-title">They join → you earn +3 slots</div>
+                <div class="ref-step-desc">For every vendor who signs up with your link, 3 extra product slots are permanently added to your account. Refer 10 and you've added 30 slots to your free plan.</div>
               </div>
             </div>
           </div>
@@ -880,29 +880,29 @@
           <div class="referral-visual">
             <div class="ref-reward-card">
               <div class="ref-reward-emoji">🎁</div>
-              <div class="ref-reward-title">Refer 3 · Unlock Unlimited</div>
-              <div class="ref-reward-sub">Here's what your progress looks like</div>
+              <div class="ref-reward-title">Each Referral = +3 Slots</div>
+              <div class="ref-reward-sub">Here's what your progress could look like</div>
 
               <div class="ref-progress-wrap">
-                <div class="ref-progress-items" aria-label="Referral progress: 2 of 3 vendors referred">
+                <div class="ref-progress-items" aria-label="Referral progress: 2 of 10 vendors referred">
                   <!-- filled = referred & signed up -->
                   <div class="ref-dot filled" title="Vendor 1 joined"><i class="bi bi-person-fill"></i></div>
                   <div class="ref-dot filled" title="Vendor 2 joined"><i class="bi bi-person-fill"></i></div>
                   <!-- pending = still needed -->
-                  <div class="ref-dot pending" title="1 more vendor needed"><i class="bi bi-person-fill"></i></div>
+                  <div class="ref-dot pending" title="Next referral needed"><i class="bi bi-person-fill"></i></div>
                 </div>
 
                 <div class="ref-bar-row">
-                  <div class="ref-progress-bar" role="progressbar" aria-valuenow="66" aria-valuemin="0" aria-valuemax="100">
-                    <div class="ref-progress-fill" style="width:66%"></div>
+                  <div class="ref-progress-bar" role="progressbar" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100">
+                    <div class="ref-progress-fill" style="width:20%"></div>
                   </div>
-                  <span class="ref-bar-label">2 / 3</span>
+                  <span class="ref-bar-label">2 / 10</span>
                 </div>
-                <div class="ref-progress-note">1 more referral until you unlock unlimited products</div>
+                <div class="ref-progress-note">2 referrals = +6 bonus slots earned so far · 8 more to go</div>
               </div>
 
               <div class="ref-unlock-tag">
-                <i class="bi bi-infinity"></i> Unlimited Products — unlocked on your 3rd referral
+                <i class="bi bi-plus-circle-fill"></i> +3 slots permanently added per referral
               </div>
 
               <a href="/dashboard/" class="ref-cta-link">
@@ -1004,7 +1004,7 @@
     const barObserver = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
-          setTimeout(() => { progressFill.style.width = '66%'; }, 300);
+          setTimeout(() => { progressFill.style.width = '20%'; }, 300);
           barObserver.disconnect();
         }
       });

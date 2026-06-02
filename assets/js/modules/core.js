@@ -24,7 +24,7 @@ function injectUpgradeModal() {
                 <li style="margin-bottom: 0.5rem;"><i class="bi bi-check-circle-fill text-success me-2"></i> Remove 'myvendor' Watermark</li>
             </ul>
             <button class="w-100" style="background: #0f6e3f; color: white; padding: 0.9rem; border: none; border-radius: 12px; font-weight: 700;" onclick="alert('Payment Gateway Integration Coming Soon!')">
-                Upgrade Now - ₦3,000/mo
+                Upgrade Now - ₦900/mo
             </button>
           </div>
         </div>
