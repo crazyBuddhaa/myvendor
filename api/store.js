@@ -1,68 +1,84 @@
+// Escapes user-sourced values before injecting into HTML
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;');
+}
+
+// Strips everything except alphanumeric, hyphens, and underscores from the slug
+// so it is safe to embed in a JS string literal
+function sanitizeSlug(str) {
+  if (!str) return '';
+  return String(str).replace(/[^a-zA-Z0-9_-]/g, '');
+}
+
 export default async function handler(req, res) {
-  // Grab the vendor slug from your vercel.json rewrite
   const { vendor } = req.query;
 
   const SUPABASE_URL = process.env.SUPABASE_URL;
   const SUPABASE_KEY = process.env.SUPABASE_ANON_KEY;
 
+  // Reject obviously invalid slugs early
+  const safeSlug = sanitizeSlug(vendor);
+  if (!safeSlug) {
+    return res.redirect(302, '/');
+  }
+
   try {
-    // 🌟 FIXED: Query the 'vendor_profiles' table using the 'slug' column
-    const response = await fetch(`${SUPABASE_URL}/rest/v1/vendor_profiles?slug=eq.${vendor}&select=*`, {
-      headers: {
-        'apikey': SUPABASE_KEY,
-        'Authorization': `Bearer ${SUPABASE_KEY}`
+    const response = await fetch(
+      `${SUPABASE_URL}/rest/v1/vendor_profiles?slug=eq.${encodeURIComponent(safeSlug)}&select=business_name,bio,logo_url,slug`,
+      {
+        headers: {
+          apikey: SUPABASE_KEY,
+          Authorization: `Bearer ${SUPABASE_KEY}`,
+        },
       }
-    });
+    );
 
     const data = await response.json();
     const storeData = data[0];
 
-    // If the store doesn't exist, send them to the landing page
     if (!storeData) {
       return res.redirect(302, '/');
     }
 
-    // 🌟 FIXED: Use 'business_name' instead of 'display_name'
-    const storeName = storeData.business_name || 'myvendor Store';
-    const storeBio = storeData.bio || 'Shop our latest collection and order directly via WhatsApp.';
-    const storeImage = 'https://myvendor.qzz.io/assets/img/logo.png'; // Fallback to your app logo
+    const storeName  = escapeHtml(storeData.business_name || 'myvendor Store');
+    const storeBio   = escapeHtml(storeData.bio || 'Shop our latest collection and order directly via WhatsApp.');
+    const storeImage = escapeHtml(storeData.logo_url || 'https://myvendor.ng/assets/img/logo.png');
 
-    // Build the "Bot Trap" HTML for WhatsApp/Twitter previews
-    const html = `
-      <!DOCTYPE html>
-      <html lang="en">
-      <head>
-        <meta charset="UTF-8">
-        <title>${storeName} — myvendor</title>
-        
-        <meta property="og:type" content="website">
-        <meta property="og:title" content="${storeName}">
-        <meta property="og:description" content="${storeBio}">
-        <meta property="og:image" content="${storeImage}">
-        
-        <meta name="twitter:card" content="summary_large_image">
-        <meta name="twitter:title" content="${storeName}">
-        <meta name="twitter:description" content="${storeBio}">
-        <meta name="twitter:image" content="${storeImage}">
+    // "Bot trap": crawlers (WhatsApp, Twitter, Google) get OG meta tags here.
+    // Real users are JS-redirected to the actual storefront page immediately.
+    const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>${storeName} — myvendor</title>
+  <meta name="description" content="${storeBio}">
 
-        <script>
-          // Send real users to your actual storefront HTML file
-          // Note: Ensure your storefront HTML file is actually located at /storefront/index.html!
-          // If it's just 'storefront.html' in your root, change this to: '/storefront/index.html?vendor=${vendor}'
-          window.location.replace('/storefront.html?vendor=${vendor}');
-        </script>
-      </head>
-      <body>
-        Redirecting to store...
-      </body>
-      </html>
-    `;
+  <meta property="og:type"        content="website">
+  <meta property="og:title"       content="${storeName}">
+  <meta property="og:description" content="${storeBio}">
+  <meta property="og:image"       content="${storeImage}">
+  <meta property="og:url"         content="https://myvendor.ng/${safeSlug}">
+
+  <meta name="twitter:card"        content="summary_large_image">
+  <meta name="twitter:title"       content="${storeName}">
+  <meta name="twitter:description" content="${storeBio}">
+  <meta name="twitter:image"       content="${storeImage}">
+
+  <script>window.location.replace('/storefront/index.html?vendor=${safeSlug}');</script>
+</head>
+<body>Redirecting to store...</body>
+</html>`;
 
     res.setHeader('Content-Type', 'text/html');
     res.status(200).send(html);
-
   } catch (error) {
-    console.error("API Error:", error);
+    console.error('store API error:', error);
     res.redirect(302, '/');
   }
 }
