@@ -1,0 +1,16 @@
+# Environment variables — never commit secrets
+.env
+.env.local
+.env.production
+.env*.local
+
+# Dependencies
+node_modules/
+
+# Vercel build output
+.vercel/
+.output/
+
+# OS files
+.DS_Store
+Thumbs.db
