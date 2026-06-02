@@ -1,68 +1,106 @@
+// Escapes user-sourced values before injecting into HTML
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;');
+}
+
+// Only allows UUIDs or numeric IDs — nothing else goes into the JS redirect
+function sanitizeId(str) {
+  if (!str) return '';
+  return String(str).replace(/[^a-zA-Z0-9_-]/g, '');
+}
+
 export default async function handler(req, res) {
-  // Grab the product ID from the URL
   const { id } = req.query;
 
   const SUPABASE_URL = process.env.SUPABASE_URL;
   const SUPABASE_KEY = process.env.SUPABASE_ANON_KEY;
 
+  const safeId = sanitizeId(id);
+  if (!safeId) {
+    return res.redirect(302, '/');
+  }
+
   try {
-    // Fetch the product data. 
-    // IMPORTANT: Make sure 'products' and 'id' match your Supabase table!
-    const response = await fetch(`${SUPABASE_URL}/rest/v1/products?id=eq.${id}&select=*`, {
-      headers: {
-        'apikey': SUPABASE_KEY,
-        'Authorization': `Bearer ${SUPABASE_KEY}`
+    const response = await fetch(
+      `${SUPABASE_URL}/rest/v1/products?id=eq.${encodeURIComponent(safeId)}&select=id,title,name,description,price,image_url`,
+      {
+        headers: {
+          apikey: SUPABASE_KEY,
+          Authorization: `Bearer ${SUPABASE_KEY}`,
+        },
       }
-    });
-    
+    );
+
     const data = await response.json();
     const productData = data[0];
 
-    // If the product doesn't exist, send them back to the home page
     if (!productData) {
       return res.redirect(302, '/');
     }
 
-    // Format the price nicely (assuming it's in Naira)
-    const formattedPrice = new Intl.NumberFormat('en-NG', { 
-      style: 'currency', 
+    const productName  = escapeHtml(productData.title || productData.name || 'Product');
+    const productDesc  = escapeHtml(productData.description || 'Tap to view details and order via WhatsApp.');
+    const productImage = escapeHtml(productData.image_url || 'https://myvendor.ng/assets/img/logo.png');
+
+    const formattedPrice = new Intl.NumberFormat('en-NG', {
+      style: 'currency',
       currency: 'NGN',
-      maximumFractionDigits: 0 
+      maximumFractionDigits: 0,
     }).format(productData.price || 0);
 
-    // Build the "Bot Trap" HTML for the specific product
-    const html = `
-      <!DOCTYPE html>
-      <html lang="en">
-      <head>
-        <meta charset="UTF-8">
-        <title>${productData.name} — ${formattedPrice}</title>
-        
-        <meta property="og:type" content="product">
-        <meta property="og:title" content="${productData.name} — ${formattedPrice}">
-        <meta property="og:description" content="${productData.description || 'Tap to view details and order via WhatsApp.'}">
-        <meta property="og:image" content="${productData.image_url || 'https://myvendor.qzz.io/assets/default-product.jpg'}">
-        
-        <meta name="twitter:card" content="summary_large_image">
-        <meta name="twitter:title" content="${productData.name} — ${formattedPrice}">
-        <meta name="twitter:description" content="${productData.description || 'Tap to view details and order via WhatsApp.'}">
-        <meta name="twitter:image" content="${productData.image_url || 'https://myvendor.qzz.io/assets/default-product.jpg'}">
+    const ogTitle = escapeHtml(`${productData.title || productData.name} — ${formattedPrice}`);
 
-        <script>
-          // Send real users to your actual product HTML file
-          window.location.replace('/product/index.html?id=${id}');
-        </script>
-      </head>
-      <body>
-        Loading product...
-      </body>
-      </html>
-    `;
+    // "Bot trap": crawlers get OG/JSON-LD here; real users are JS-redirected instantly.
+    const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>${ogTitle}</title>
+  <meta name="description" content="${productDesc}">
+
+  <meta property="og:type"        content="product">
+  <meta property="og:title"       content="${ogTitle}">
+  <meta property="og:description" content="${productDesc}">
+  <meta property="og:image"       content="${productImage}">
+  <meta property="og:url"         content="https://myvendor.ng/product/${safeId}">
+
+  <meta name="twitter:card"        content="summary_large_image">
+  <meta name="twitter:title"       content="${ogTitle}">
+  <meta name="twitter:description" content="${productDesc}">
+  <meta name="twitter:image"       content="${productImage}">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "name": ${JSON.stringify(productData.title || productData.name || '')},
+    "description": ${JSON.stringify(productData.description || '')},
+    "image": ${JSON.stringify(productData.image_url || '')},
+    "offers": {
+      "@type": "Offer",
+      "priceCurrency": "NGN",
+      "price": ${JSON.stringify(String(productData.price || 0))},
+      "availability": "https://schema.org/InStock",
+      "url": "https://myvendor.ng/product/${safeId}"
+    }
+  }
+  </script>
+
+  <script>window.location.replace('/product/index.html?id=${safeId}');</script>
+</head>
+<body>Loading product...</body>
+</html>`;
 
     res.setHeader('Content-Type', 'text/html');
     res.status(200).send(html);
-
   } catch (error) {
+    console.error('product API error:', error);
     res.redirect(302, '/');
   }
 }
