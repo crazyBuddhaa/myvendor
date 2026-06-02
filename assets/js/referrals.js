@@ -1,22 +1,12 @@
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
-
-// ⚠️ IMPORTANT: Verify your actual Supabase URL and Anon Key here
-const SUPABASE_URL = 'https://sotdghhayztnpwnrzjzu.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_OcOKwSDnoCGm_rt725Bi-g_rV6tjGlK';
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+import { supabase, checkAuth } from '/assets/js/supabase.js';
 
 let currentUser = null;
 const BASE_PRODUCT_LIMIT = 20;
 
 async function initReferrals() {
-    // 1. Authenticate
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-        window.location.href = '/dashboard/index.html';
-        return;
-    }
+    const user = await checkAuth();
+    if (!user) return;
 
-    // 2. Fetch User Profile
     const { data: profile } = await supabase
         .from('vendor_profiles')
         .select('*')
