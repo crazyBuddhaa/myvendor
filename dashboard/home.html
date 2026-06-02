@@ -329,6 +329,104 @@
       opacity: 1;
     }
 
+    /* ── Welcome modal ─────────────────────────────────────── */
+    .welcome-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(10, 30, 15, 0.72);
+      backdrop-filter: blur(6px);
+      z-index: 3000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    .welcome-overlay.visible { opacity: 1; }
+
+    .welcome-card {
+      background: #fff;
+      border-radius: 24px;
+      padding: 2.2rem 1.8rem 1.8rem;
+      max-width: 380px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.25);
+      transform: translateY(20px);
+      transition: transform 0.35s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+    }
+    .welcome-overlay.visible .welcome-card { transform: translateY(0); }
+
+    .welcome-badge {
+      width: 72px;
+      height: 72px;
+      background: linear-gradient(135deg, #0c5734, #22c55e);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1.2rem;
+      font-size: 2rem;
+      box-shadow: 0 8px 20px rgba(34, 197, 94, 0.35);
+    }
+
+    .welcome-card h2 {
+      font-family: 'Raleway', sans-serif;
+      font-weight: 800;
+      font-size: 1.5rem;
+      color: #14532d;
+      margin-bottom: 0.5rem;
+    }
+
+    .welcome-card p {
+      font-size: 0.88rem;
+      color: #4b5563;
+      line-height: 1.6;
+      margin-bottom: 1.5rem;
+    }
+
+    .welcome-card p strong {
+      color: #14532d;
+    }
+
+    .btn-welcome-primary {
+      display: block;
+      width: 100%;
+      background: linear-gradient(125deg, #0c5734, #16a34a);
+      color: white;
+      border: none;
+      border-radius: 60px;
+      padding: 0.85rem;
+      font-weight: 800;
+      font-size: 0.95rem;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(22, 163, 74, 0.4);
+      transition: all 0.2s;
+      text-decoration: none;
+      margin-bottom: 0.7rem;
+    }
+    .btn-welcome-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgba(22, 163, 74, 0.5);
+      color: white;
+    }
+
+    .btn-welcome-secondary {
+      display: block;
+      width: 100%;
+      background: transparent;
+      color: #6b7280;
+      border: none;
+      border-radius: 60px;
+      padding: 0.65rem;
+      font-weight: 600;
+      font-size: 0.82rem;
+      cursor: pointer;
+      transition: color 0.15s;
+    }
+    .btn-welcome-secondary:hover { color: #14532d; }
+
     footer {
       margin-top: 2rem;
       text-align: center;
@@ -459,6 +557,40 @@
   <i class="bi bi-check2-circle me-1"></i> Link copied!
 </div>
 
+<!-- ── Post-confirmation welcome modal ───────────────────── -->
+<div class="welcome-overlay" id="welcomeOverlay" style="display:none;">
+  <div class="welcome-card">
+    <div class="welcome-badge">🎉</div>
+    <h2 id="welcomeModalTitle">Your store is live!</h2>
+    <p id="welcomeModalBody">
+      Your email is verified and your store is ready to go.<br><br>
+      Add your first product and share your link — your first order could come in today.
+    </p>
+    <a href="/dashboard/add-product.html" class="btn-welcome-primary">
+      <i class="bi bi-plus-circle-fill me-2"></i> Add your first product
+    </a>
+    <button class="btn-welcome-secondary" onclick="closeWelcome()">I'll explore on my own</button>
+  </div>
+</div>
+
+<!-- Intercept expired/invalid confirmation link hashes BEFORE dashboard.js runs its auth check.
+     Supabase appends #error=access_denied&error_code=otp_expired when a link has expired.
+     We catch it here and redirect to the login page with ?expired=1 so the resend banner shows up. -->
+<script>
+  (function interceptExpiredLink() {
+    const hash = window.location.hash;
+    if (!hash) return;
+    const params = new URLSearchParams(hash.replace(/^#/, ''));
+    const isExpired =
+      params.get('error') === 'access_denied' ||
+      params.get('error_code') === 'otp_expired' ||
+      (params.get('error_description') || '').toLowerCase().includes('expired');
+    if (isExpired) {
+      window.location.replace('/dashboard/index.html?expired=1');
+    }
+  })();
+</script>
+
 <!-- external dashboard logic (populates stats, store link, orders, whatsapp) -->
 <script type="module" src="/assets/js/dashboard.js"></script>
 
@@ -497,9 +629,39 @@
     window.location.href = '/dashboard/index.html';
   };
 
-  // If there is any scenario where dashboard.js sets storeLink as raw domain, we enhance WhatsApp share
-  // the external script also configures waShareBtn href — we just keep compatibility.
-  // Small extra: ensure the toast style is consistent
+  // ── Post-confirmation welcome detection ───────────────────
+  // Supabase appends #access_token=...&type=signup to the redirectTo URL
+  // after the user clicks their confirmation link. We use that to show
+  // a one-time welcome modal, then strip the hash so it never fires again.
+  (function checkEmailConfirmed() {
+    const hash = window.location.hash;
+    if (!hash) return;
+
+    const params = new URLSearchParams(hash.replace(/^#/, ''));
+    if (params.get('type') !== 'signup') return;
+
+    // Clean hash from the URL immediately so a refresh won't retrigger
+    history.replaceState(null, '', window.location.pathname + window.location.search);
+
+    // Try to personalise with the user's name once the session resolves
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      const name = session?.user?.user_metadata?.full_name?.split(' ')[0];
+      if (name) {
+        document.getElementById('welcomeModalTitle').textContent = `Welcome, ${name}! 🎉`;
+      }
+    });
+
+    // Show the modal with a brief delay so the page paints first
+    const overlay = document.getElementById('welcomeOverlay');
+    overlay.style.display = 'flex';
+    requestAnimationFrame(() => requestAnimationFrame(() => overlay.classList.add('visible')));
+  })();
+
+  window.closeWelcome = function() {
+    const overlay = document.getElementById('welcomeOverlay');
+    overlay.classList.remove('visible');
+    overlay.addEventListener('transitionend', () => { overlay.style.display = 'none'; }, { once: true });
+  };
 </script>
 
 <!-- additional style compatibility to make sure existing dashboard.js generated order rows look perfect -->
