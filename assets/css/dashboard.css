@@ -1,0 +1,302 @@
+/* ============================================================
+   myvendor — Shared Dashboard Stylesheet
+   Loaded by all dashboard pages. Do not duplicate these rules.
+   ============================================================ */
+
+/* Reset */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Design tokens */
+:root {
+  --green-primary:  #0f6e3f;
+  --green-bright:   #22c55e;
+  --green-dark:     #0a4a2a;
+  --green-soft:     #e9f7ef;
+  --gray-bg:        #fafcf9;
+  --card-white:     #ffffff;
+  --text-dark:      #1a2e1f;
+  --text-muted:     #4a6741;
+  --border-light:   #e9eee5;
+  --shadow-sm:      0 8px 20px rgba(0, 32, 0, 0.04), 0 2px 4px rgba(0, 0, 0, 0.02);
+  --shadow-md:      0 12px 28px rgba(0, 20, 0, 0.08);
+  --wa-green:       #25D366;
+  --radius-xl:      28px;
+  --radius-lg:      20px;
+  --radius-md:      16px;
+  --radius-sm:      12px;
+  --danger:         #ef4444;
+  --danger-soft:    #fee2e2;
+  --error:          #dc2626;
+  --error-bg:       #fee2e2;
+  --success-bg:     #dcfce7;
+}
+
+/* Base */
+body {
+  background: linear-gradient(145deg, #f6fcf5 0%, #f0f7ec 100%);
+  font-family: 'Inter', sans-serif;
+  color: var(--text-dark);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+h1, h2, h3, h4, .logo-font {
+  font-family: 'Raleway', sans-serif;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+/* ── Navbar ──────────────────────────────────────────────── */
+/* All per-page nav classes resolve to the same glass style  */
+.dash-nav,
+.inventory-nav,
+.orders-nav,
+.settings-nav,
+.analytics-nav,
+.add-nav,
+.edit-nav,
+.auth-nav,
+.referrals-nav {
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(34, 197, 94, 0.2);
+  padding: 0.75rem 0;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.02);
+}
+
+.nav-container {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 0 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* ── Logo ────────────────────────────────────────────────── */
+.mv-logo-modern {
+  font-family: 'Raleway', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 900;
+  background: linear-gradient(135deg, var(--green-dark), var(--green-primary));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.mv-logo-modern span {
+  background: linear-gradient(135deg, var(--green-bright), #2b9348);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* home.html uses .mv-logo (legacy class) */
+.mv-logo {
+  font-size: 1.5rem;
+  font-weight: 900;
+  background: linear-gradient(135deg, var(--green-dark), var(--green-primary));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-decoration: none;
+  transition: 0.2s;
+}
+
+.mv-logo span {
+  background: linear-gradient(135deg, var(--green-bright), #2b9348);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* ── Nav icon buttons (products / orders) ────────────────── */
+.nav-actions-modern {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.nav-actions-modern a {
+  background: rgba(100, 116, 100, 0.08);
+  border-radius: 40px;
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.nav-actions-modern a:hover,
+.nav-actions-modern a.active {
+  background: rgba(34, 197, 94, 0.15);
+  color: var(--green-primary);
+}
+
+/* ── Back button ─────────────────────────────────────────── */
+.btn-back-modern {
+  background: rgba(100, 116, 100, 0.08);
+  border-radius: 40px;
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: all 0.2s;
+  backdrop-filter: blur(4px);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.btn-back-modern:hover {
+  background: rgba(34, 197, 94, 0.15);
+  color: var(--green-primary);
+  transform: translateX(-2px);
+}
+
+/* ── Logout button (home) ────────────────────────────────── */
+.btn-logout {
+  background: rgba(100, 116, 100, 0.1);
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 40px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  transition: all 0.2s;
+  backdrop-filter: blur(4px);
+  cursor: pointer;
+}
+
+.btn-logout:hover {
+  background: #fee2e2;
+  color: #dc2626;
+  transform: scale(0.96);
+}
+
+/* ── Nav badge (settings / analytics / referrals) ────────── */
+.nav-badge {
+  background: var(--green-soft);
+  padding: 0.3rem 1rem;
+  border-radius: 40px;
+  font-weight: 700;
+  font-size: 0.8rem;
+  color: var(--green-dark);
+}
+
+/* ── Page containers ─────────────────────────────────────── */
+.dashboard-container,
+.inventory-container,
+.orders-container,
+.settings-container,
+.analytics-container,
+.add-container,
+.edit-container,
+.referrals-container {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 2rem;
+  width: 100%;
+}
+
+/* ── Shared form controls ────────────────────────────────── */
+.form-control-modern {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  border: 1.5px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  background: var(--gray-bg);
+  transition: all 0.2s;
+  margin-bottom: 1rem;
+  font-family: 'Inter', sans-serif;
+}
+
+.form-control-modern:focus {
+  border-color: var(--green-bright);
+  background: white;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+}
+
+.form-label-modern {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  margin-bottom: 0.4rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.form-card-modern {
+  background: var(--card-white);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-light);
+}
+
+/* ── Primary action button ───────────────────────────────── */
+.btn-save-modern,
+.btn-submit {
+  width: 100%;
+  background: linear-gradient(105deg, var(--green-primary), var(--green-dark));
+  border: none;
+  padding: 0.9rem;
+  border-radius: var(--radius-md);
+  font-weight: 800;
+  font-size: 0.9rem;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.2s;
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+}
+
+.btn-save-modern:hover,
+.btn-submit:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.03);
+}
+
+.btn-submit:disabled {
+  opacity: 0.6;
+  transform: none;
+  cursor: not-allowed;
+}
+
+/* ── Utility ─────────────────────────────────────────────── */
+.hidden { display: none !important; }
+
+footer {
+  margin-top: auto;
+  text-align: center;
+  padding: 1.2rem;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  border-top: 1px solid rgba(34, 197, 94, 0.2);
+}
