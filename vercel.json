@@ -21,6 +21,10 @@
       "destination": "/api/r"
     },
     {
+      "source": "/verify",
+      "destination": "/api/auth/verify"
+    },
+    {
       "source": "/product/:id([^/.]+)",
       "destination": "/api/product?id=:id"
     },
