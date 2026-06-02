@@ -60,12 +60,17 @@ export default async function handler(req, res) {
   const verifyUrl = `https://myvendor.qzz.io/verify?token=${token}`;
   const firstName = name.split(' ')[0];
 
-  await resend.emails.send({
+  const { error: emailError } = await resend.emails.send({
     from: 'myvendor <hello@myvendor.qzz.io>',
     to: email,
     subject: 'Verify your email — myvendor',
     html: buildEmailHtml(firstName, verifyUrl),
   });
+
+  if (emailError) {
+    console.error('signup email send failed:', emailError.message);
+    return res.status(500).json({ error: 'email_send_failed' });
+  }
 
   return res.status(200).json({ success: true });
 }
