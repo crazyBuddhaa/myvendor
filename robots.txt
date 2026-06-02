@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard/
+Disallow: /api/
+Disallow: /storefront/
+
+Sitemap: https://myvendor.ng/sitemap.xml
