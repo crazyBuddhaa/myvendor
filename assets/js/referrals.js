@@ -37,11 +37,14 @@ function renderReferralUI() {
     }
 
     const bonus = currentUser.bonus_slots || 0;
+    const referralCount = Math.floor(bonus / 3);
 
-    const totalLimitEl = document.getElementById('statTotalLimit');
-    const bonusSlotsEl = document.getElementById('statBonusSlots');
-    if (totalLimitEl) totalLimitEl.innerText = BASE_PRODUCT_LIMIT + bonus;
-    if (bonusSlotsEl) bonusSlotsEl.innerText = bonus;
+    const totalLimitEl      = document.getElementById('statTotalLimit');
+    const bonusSlotsEl      = document.getElementById('statBonusSlots');
+    const referralCountEl   = document.getElementById('statReferralCount');
+    if (totalLimitEl)    totalLimitEl.innerText    = BASE_PRODUCT_LIMIT + bonus;
+    if (bonusSlotsEl)    bonusSlotsEl.innerText    = bonus;
+    if (referralCountEl) referralCountEl.innerText = referralCount;
 }
 
 window.copyReferralLink = function () {

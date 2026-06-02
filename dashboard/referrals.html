@@ -74,7 +74,8 @@
     .btn-share-wa-modern:hover { background: #20bd59; transform: scale(0.98); color: white; }
 
     /* Stats row */
-    .stats-mini-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.8rem; }
+    .stats-mini-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1.8rem; }
+    @media (max-width: 480px) { .stats-mini-grid { grid-template-columns: 1fr 1fr; } }
     .stat-fresh-card {
       background: var(--card-white); border-radius: var(--radius-lg); padding: 1.2rem 1rem;
       display: flex; align-items: center; gap: 1rem; box-shadow: var(--shadow-sm); border: 1px solid var(--border-light);
@@ -136,10 +137,17 @@
   
   <div class="stats-mini-grid">
     <div class="stat-fresh-card">
+      <div class="stat-icon-round" style="background: #f0fdf4; color: #16a34a;"><i class="bi bi-people-fill"></i></div>
+      <div>
+        <div class="stat-val" id="statReferralCount">0</div>
+        <div class="stat-label">Vendors Referred</div>
+      </div>
+    </div>
+    <div class="stat-fresh-card">
       <div class="stat-icon-round" style="background: #fefce8; color: #d97706;"><i class="bi bi-gift-fill"></i></div>
       <div>
         <div class="stat-val" id="statBonusSlots">0</div>
-        <div class="stat-label">Bonus Earned</div>
+        <div class="stat-label">Bonus Slots</div>
       </div>
     </div>
     <div class="stat-fresh-card">
