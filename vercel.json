@@ -17,8 +17,8 @@
       "destination": "/storefront/:match*"
     },
     {
-      "source": "/verify",
-      "destination": "/api/auth/verify"
+      "source": "/r",
+      "destination": "/api/r"
     },
     {
       "source": "/product/:id([^/.]+)",
