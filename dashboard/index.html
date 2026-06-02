@@ -89,6 +89,16 @@
     .auth-footer { text-align: center; padding: 1rem; font-size: 0.7rem; color: var(--text-muted); border-top: 1px solid rgba(34, 197, 94, 0.2); position: relative; z-index: 1;}
     .auth-footer a { color: var(--green-primary); text-decoration: none; font-weight: 600; }
 
+    /* ── Verified success banner ──────────────────────────── */
+    .verified-banner { max-width: 480px; margin: 1.2rem auto 0; padding: 0 1rem; position: relative; z-index: 1; }
+    .verified-banner-inner { background: #f0fdf4; border: 1.5px solid #86efac; border-radius: var(--radius-md); padding: 1rem 1.2rem; display: flex; align-items: center; gap: 0.75rem; }
+    .verified-banner-inner i { font-size: 1.4rem; color: #16a34a; flex-shrink: 0; }
+    .verified-banner-body { flex: 1; }
+    .verified-banner-title { font-weight: 800; font-size: 0.88rem; color: #14532d; margin: 0 0 0.1rem; }
+    .verified-banner-sub { font-size: 0.76rem; color: #166534; margin: 0; }
+    .verified-banner-close { background: none; border: none; color: #166534; cursor: pointer; padding: 0; font-size: 0.82rem; opacity: 0.5; flex-shrink: 0; }
+    .verified-banner-close:hover { opacity: 1; }
+
     /* ── Proactive resend banner ───────────────────────────── */
     .expired-banner { max-width: 480px; margin: 1.2rem auto 0; padding: 0 1rem; position: relative; z-index: 1; }
     .expired-banner-inner { background: #fffbeb; border: 1.5px solid #fcd34d; border-radius: var(--radius-md); padding: 1.1rem 1rem; display: flex; gap: 0.75rem; align-items: flex-start; }
@@ -125,6 +135,18 @@
     <a href="/" class="btn-back-home"><i class="bi bi-arrow-left-short"></i> Back to Home</a>
   </div>
 </nav>
+
+<!-- Email verified success banner -->
+<div id="verifiedBanner" class="verified-banner" style="display:none;">
+  <div class="verified-banner-inner">
+    <i class="bi bi-check-circle-fill"></i>
+    <div class="verified-banner-body">
+      <p class="verified-banner-title">Email verified!</p>
+      <p class="verified-banner-sub">Your account is active — log in to access your store.</p>
+    </div>
+    <button class="verified-banner-close" onclick="document.getElementById('verifiedBanner').style.display='none'"><i class="bi bi-x-lg"></i></button>
+  </div>
+</div>
 
 <!-- Proactive resend banner — shown when arriving from an expired link or after a previous unverified login -->
 <div id="expiredBanner" class="expired-banner" style="display:none;">
@@ -311,8 +333,14 @@
     const params = new URLSearchParams(window.location.search);
     const pendingEmail = sessionStorage.getItem('pendingVerifyEmail');
 
-    if (params.get('expired') === '1') {
-      // Clean the URL param so a refresh doesn't re-show it
+    if (params.get('verified') === '1') {
+      history.replaceState(null, '', window.location.pathname);
+      document.getElementById('verifiedBanner').style.display = 'block';
+      window.switchTab('login');
+    } else if (params.get('verified') === 'invalid') {
+      history.replaceState(null, '', window.location.pathname);
+      window.showExpiredBanner('That verification link is invalid or already used', pendingEmail);
+    } else if (params.get('expired') === '1') {
       history.replaceState(null, '', window.location.pathname);
       window.showExpiredBanner('Your verification link has expired', pendingEmail);
     } else if (pendingEmail) {
@@ -347,9 +375,14 @@
     status.style.color = '#78350f';
     status.textContent = 'Sending…';
 
-    const { error } = await supabase.auth.resend({ type: 'signup', email });
+    const resendRes = await fetch('/api/auth/resend', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    });
+    const resendData = await resendRes.json();
 
-    if (error) {
+    if (!resendRes.ok || resendData.error) {
       status.style.color = '#dc2626';
       status.textContent = 'Failed — please try again.';
       btn.disabled = false;
@@ -455,9 +488,14 @@
     btn.style.textDecoration = 'none';
     btn.textContent = 'Sending…';
 
-    const { error } = await supabase.auth.resend({ type: 'signup', email });
+    const resendRes2 = await fetch('/api/auth/resend', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    });
+    const resendData2 = await resendRes2.json();
 
-    if (error) {
+    if (!resendRes2.ok || resendData2.error) {
       btn.textContent = 'Failed — tap to try again';
       btn.disabled = false;
       btn.style.textDecoration = 'underline';
@@ -585,43 +623,40 @@
       return
     }
 
-    const { data: existing } = await supabase.from('vendor_profiles').select('slug').eq('slug', slug).maybeSingle()
-    if (existing) {
-      window.showResultModal('error', 'Store Name Taken', 'That store link is already being used. Please choose another name.')
-      return
-    }
-
     window.setLoading('signup', true)
 
     // Capture referrer from URL — stored in metadata so the DB trigger can
     // award the bonus slots only after the new user confirms their email.
     const referrerId = new URLSearchParams(window.location.search).get('ref') || null;
 
-    const { data: authData, error: authError } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: 'https://myvendor.qzz.io/dashboard/home.html',
-        data: {
-          full_name: name,
-          slug: slug,
-          business_name: business,
-          whatsapp_number: wa,
-          referrer_id: referrerId   // picked up by on_email_confirmed_reward_referral trigger
-        }
-      }
-    })
-
-    window.setLoading('signup', false)
-
-    if (authError) {
-      window.showResultModal('error', 'Signup Failed', friendlyError(authError.message))
+    let signupRes, signupData;
+    try {
+      signupRes = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, name, business, wa: waClean, slug, referrerId })
+      });
+      signupData = await signupRes.json();
+    } catch (e) {
+      window.setLoading('signup', false)
+      window.showResultModal('error', 'Signup Failed', 'Network error — please check your connection and try again.')
       return
     }
 
-    if (authData.user) {
-      window.showResultModal('success', 'Check Your Email 📧', 'Your store is almost ready! We just sent a verification link to your email. Please click it to activate your account.', 'verify', email)
+    window.setLoading('signup', false)
+
+    if (!signupRes.ok) {
+      if (signupData.error === 'store_name_taken') {
+        window.showResultModal('error', 'Store Name Taken', 'That store link is already being used. Please choose another name.')
+      } else if (signupData.error === 'email_taken') {
+        window.showResultModal('error', 'Email Already Registered', 'An account with this email already exists. Try logging in instead.')
+      } else {
+        window.showResultModal('error', 'Signup Failed', signupData.error || 'Something went wrong. Please try again.')
+      }
+      return
     }
+
+    window.showResultModal('success', 'Check Your Email 📧', 'Your store is almost ready! We just sent a verification link to your email. Please click it to activate your account.', 'verify', email)
   }
 
   window.handleForgotPassword = async (e) => {
