@@ -1,9 +1,4 @@
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
-
-// ⚠️ IMPORTANT: Verify your actual Supabase URL and Anon Key here
-const SUPABASE_URL = 'https://sotdghhayztnpwnrzjzu.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_OcOKwSDnoCGm_rt725Bi-g_rV6tjGlK';
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+import { supabase } from '/assets/js/supabase.js';
 
 // 🛡️ XSS SECURITY: Escapes malicious characters from user input
 const escapeHTML = (str) => {
