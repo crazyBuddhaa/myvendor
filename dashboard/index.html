@@ -246,9 +246,21 @@
 
   let resultModalInstance = null;
 
-  // Initialize modal after DOM loads
+  // Initialize modal + Enter-key handlers after DOM loads
   document.addEventListener('DOMContentLoaded', () => {
     resultModalInstance = new bootstrap.Modal(document.getElementById('resultModal'));
+
+    // Submit login on Enter key from either login field
+    ['loginEmail', 'loginPassword'].forEach(id => {
+      document.getElementById(id).addEventListener('keydown', e => {
+        if (e.key === 'Enter') { e.preventDefault(); window.handleLogin(); }
+      });
+    });
+
+    // Submit signup on Enter from password field (last field before terms)
+    document.getElementById('signupPassword').addEventListener('keydown', e => {
+      if (e.key === 'Enter') { e.preventDefault(); window.handleSignup(); }
+    });
   });
 
   // Check if already logged in
@@ -318,7 +330,11 @@
   }
 
   window.updateSlug = function(value) {
-    const slug = value.toLowerCase().replace(/[^a-z0-9-]/g, '').replace(/-+/g, '-').substring(0, 30)
+    const slug = value.toLowerCase()
+      .replace(/[^a-z0-9-]/g, '')
+      .replace(/-+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .substring(0, 30)
     document.getElementById('slugValue').textContent = slug || 'yourstore'
   }
 
@@ -334,6 +350,18 @@
     }
   }
 
+  // Maps raw Supabase error strings to friendly messages
+  function friendlyError(msg) {
+    if (!msg) return 'Something went wrong. Please try again.';
+    if (msg.includes('Invalid login credentials'))  return 'Wrong email or password. Please try again.';
+    if (msg.includes('Email not confirmed'))        return 'Please verify your email first. Check your inbox for the link we sent.';
+    if (msg.includes('User already registered'))    return 'An account with this email already exists. Try logging in instead.';
+    if (msg.includes('Password should be'))         return 'Password must be at least 8 characters.';
+    if (msg.includes('Unable to validate'))         return 'Session expired. Please log in again.';
+    if (msg.includes('rate limit'))                 return 'Too many attempts. Please wait a moment and try again.';
+    return msg;
+  }
+
   // Auth Functions
   window.handleLogin = async () => {
     const email = document.getElementById('loginEmail').value.trim()
@@ -347,11 +375,10 @@
     window.setLoading('login', false)
 
     if (error) {
-      // Supabase returns a specific error if the email isn't confirmed yet
-      if (error.message.includes("Email not confirmed")) {
-        window.showResultModal('error', 'Email Not Verified', 'Please check your inbox and verify your email address before logging in.')
+      if (error.message.includes('Email not confirmed')) {
+        window.showResultModal('error', 'Email Not Verified', friendlyError(error.message))
       } else {
-        window.showResultModal('error', 'Login Failed', error.message)
+        window.showResultModal('error', 'Login Failed', friendlyError(error.message))
       }
     } else {
       window.location.href = '/dashboard/home.html'
@@ -369,6 +396,25 @@
 
     if (!name || !business || !wa || !email || !password || !terms) {
       window.showMessage('signupMsg', 'Please fill all fields and accept the terms.', 'error')
+      return
+    }
+
+    // Slug must be a real value, not the placeholder fallback
+    if (!slug || slug === 'yourstore') {
+      window.showMessage('signupMsg', 'Please enter a valid store name using letters or numbers.', 'error')
+      return
+    }
+
+    // Password length check before hitting the network
+    if (password.length < 8) {
+      window.showMessage('signupMsg', 'Password must be at least 8 characters.', 'error')
+      return
+    }
+
+    // WhatsApp number: digits only, 10–15 characters
+    const waClean = wa.replace(/\s+/g, '')
+    if (!/^\d{10,15}$/.test(waClean)) {
+      window.showMessage('signupMsg', 'Enter a valid WhatsApp number with country code, digits only (e.g. 2348012345678).', 'error')
       return
     }
 
@@ -401,7 +447,7 @@
     window.setLoading('signup', false)
 
     if (authError) {
-      window.showResultModal('error', 'Signup Failed', authError.message)
+      window.showResultModal('error', 'Signup Failed', friendlyError(authError.message))
       return
     }
 
