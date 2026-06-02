@@ -629,29 +629,31 @@
     window.location.href = '/dashboard/index.html';
   };
 
-  // ── Post-confirmation welcome detection ───────────────────
-  // Supabase appends #access_token=...&type=signup to the redirectTo URL
-  // after the user clicks their confirmation link. We use that to show
-  // a one-time welcome modal, then strip the hash so it never fires again.
-  (function checkEmailConfirmed() {
-    const hash = window.location.hash;
-    if (!hash) return;
+  // ── First-login welcome modal ─────────────────────────────
+  // Shows once per user on their first visit to the dashboard after account
+  // creation. Keyed by user ID in localStorage so it only ever fires once,
+  // regardless of how the user arrived (hash, redirect, direct navigation).
+  (async function checkFirstVisit() {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
 
-    const params = new URLSearchParams(hash.replace(/^#/, ''));
-    if (params.get('type') !== 'signup') return;
+    const storageKey = `mv_welcomed_${session.user.id}`;
+    if (localStorage.getItem(storageKey)) return;
 
-    // Clean hash from the URL immediately so a refresh won't retrigger
-    history.replaceState(null, '', window.location.pathname + window.location.search);
+    // Only show for accounts created within the last hour to avoid
+    // popping up for existing users who have never seen this code before
+    const createdAt = new Date(session.user.created_at);
+    if (Date.now() - createdAt.getTime() > 60 * 60 * 1000) return;
 
-    // Try to personalise with the user's name once the session resolves
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      const name = session?.user?.user_metadata?.full_name?.split(' ')[0];
-      if (name) {
-        document.getElementById('welcomeModalTitle').textContent = `Welcome, ${name}! 🎉`;
-      }
-    });
+    // Mark shown immediately before displaying so a fast double-load
+    // never shows it twice
+    localStorage.setItem(storageKey, '1');
 
-    // Show the modal with a brief delay so the page paints first
+    const name = session.user.user_metadata?.full_name?.split(' ')[0];
+    if (name) {
+      document.getElementById('welcomeModalTitle').textContent = `Welcome, ${name}! 🎉`;
+    }
+
     const overlay = document.getElementById('welcomeOverlay');
     overlay.style.display = 'flex';
     requestAnimationFrame(() => requestAnimationFrame(() => overlay.classList.add('visible')));
