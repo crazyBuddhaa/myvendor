@@ -29,6 +29,10 @@
       "destination": "/product/:match*"
     },
     {
+      "source": "/r",
+      "destination": "/api/r"
+    },
+    {
       "source": "/:vendor([^/.]+)",
       "destination": "/api/store?vendor=:vendor"
     }
