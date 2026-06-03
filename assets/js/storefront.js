@@ -262,7 +262,7 @@ async function initStore() {
     if (grid) {
         grid.innerHTML = products.map((p, i) => {
             const delay   = i * 0.05;
-            const isOut   = !p.in_stock;
+            const isOut   = p.in_stock === false || p.status === 'out_of_stock';
             const badge   = isOut ? `<div class="sold-out-tag">SOLD OUT</div>` : '';
             const atcBtn  = !isOut
                 ? `<button class="atc-btn" onclick="event.stopPropagation();event.preventDefault();mvAddToCart('${p.id}')" title="Add to cart" aria-label="Add to cart"><i class="bi bi-bag-plus-fill"></i></button>`
