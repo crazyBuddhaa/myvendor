@@ -125,6 +125,12 @@ window.loadEditProduct = async function (id) {
         return;
     }
 
+    if (p.vendor_id !== state.currentUser.id) {
+        alert('You do not have permission to edit this product.');
+        window.location.href = '/dashboard/products.html';
+        return;
+    }
+
     const setVal = (id1, id2, val) => {
         if (document.getElementById(id1))      document.getElementById(id1).value = val || '';
         else if (document.getElementById(id2)) document.getElementById(id2).value = val || '';
@@ -211,7 +217,7 @@ window.updateProduct = async function (e) {
         in_stock:     statusVal !== 'out_of_stock',
     };
 
-    const { error } = await supabase.from('products').update(productData).eq('id', productId);
+    const { error } = await supabase.from('products').update(productData).eq('id', productId).eq('vendor_id', state.currentUser.id);
 
     if (error) {
         alert('Error updating product: ' + error.message);
