@@ -53,7 +53,7 @@ window.showPremiumModal = function (reasonText) {
 export async function initDashboard() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-        window.location.href = '/login.html';
+        window.location.href = '/dashboard/index.html';
         return;
     }
 
@@ -64,7 +64,7 @@ export async function initDashboard() {
         .single();
 
     if (!profile) {
-        window.location.href = '/onboarding.html';
+        window.location.href = '/dashboard/onboarding.html';
         return;
     }
 
@@ -95,5 +95,5 @@ export async function initDashboard() {
 
 window.logout = async function () {
     await supabase.auth.signOut();
-    window.location.href = '/login.html';
+    window.location.href = '/dashboard/index.html';
 };
