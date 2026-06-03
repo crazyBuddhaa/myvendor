@@ -17,10 +17,6 @@
       "destination": "/storefront/:match*"
     },
     {
-      "source": "/r",
-      "destination": "/api/r"
-    },
-    {
       "source": "/verify",
       "destination": "/api/auth/verify"
     },
