@@ -360,6 +360,41 @@
       display: none !important;
     }
 
+    /* Bulk-select mode */
+    .bulk-toolbar {
+      display: none;
+      align-items: center;
+      gap: .6rem;
+      background: var(--green-soft);
+      border: 1.5px solid var(--green-bright);
+      border-radius: var(--radius-md);
+      padding: .7rem 1rem;
+      margin-bottom: 1rem;
+    }
+    .bulk-toolbar.visible { display: flex; }
+    .bulk-count { font-weight: 700; font-size: .82rem; color: var(--green-dark); flex: 1; }
+    .bulk-btn {
+      padding: .38rem .85rem;
+      border-radius: 30px;
+      font-size: .72rem;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      transition: all .2s;
+      white-space: nowrap;
+    }
+    .bulk-btn-danger { background: var(--danger-soft); color: var(--danger); }
+    .bulk-btn-stock  { background: white; color: var(--green-dark); border: 1.5px solid var(--green-bright); }
+    .bulk-btn-out    { background: white; color: var(--text-muted); border: 1.5px solid var(--border-light); }
+    .product-card.bulk-selected { outline: 2.5px solid var(--green-bright); outline-offset: -2px; }
+    #productGrid.select-mode .product-card { cursor: pointer; }
+    #productGrid.select-mode .product-image::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: transparent;
+    }
+
     @media (max-width: 500px) {
       .product-grid {
         gap: 0.8rem;
@@ -399,12 +434,24 @@
 <main class="inventory-container">
   <div class="inventory-header">
     <h1>Inventory <i class="bi bi-box-seam text-success"></i></h1>
-    <a href="/dashboard/add-product.html" class="btn-add-modern">
-      <i class="bi bi-plus-circle"></i> Add Product
-    </a>
+    <div style="display:flex;gap:.5rem;align-items:center;">
+      <button id="btnSelectMode" class="btn-add-modern" style="background:white;border:1.5px solid var(--border-light);color:var(--text-muted);box-shadow:none;" onclick="toggleSelectMode()">
+        <i class="bi bi-check2-square"></i> Select
+      </button>
+      <a href="/dashboard/add-product.html" class="btn-add-modern">
+        <i class="bi bi-plus-circle"></i> Add Product
+      </a>
+    </div>
   </div>
 
   <div id="slotUsageBar" style="display:none; margin-bottom:1rem;"></div>
+
+  <div id="bulkToolbar" class="bulk-toolbar">
+    <span class="bulk-count" id="bulkCount">0 selected</span>
+    <button class="bulk-btn bulk-btn-stock" onclick="bulkSetStock(true)"><i class="bi bi-check-circle me-1"></i>In Stock</button>
+    <button class="bulk-btn bulk-btn-out"   onclick="bulkSetStock(false)"><i class="bi bi-slash-circle me-1"></i>Sold Out</button>
+    <button class="bulk-btn bulk-btn-danger" onclick="bulkDelete()"><i class="bi bi-trash me-1"></i>Delete</button>
+  </div>
 
   <div class="d-flex gap-2 mb-4">
     <div class="search-wrapper mb-0 flex-grow-1">
