@@ -19,12 +19,10 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'missing_fields' });
   }
 
-  // Validate slug format
   if (!/^[a-z0-9-]{2,30}$/.test(slug)) {
     return res.status(400).json({ error: 'invalid_slug' });
   }
 
-  // Validate WhatsApp number
   if (!/^\d{10,15}$/.test(wa)) {
     return res.status(400).json({ error: 'invalid_wa' });
   }
@@ -38,7 +36,7 @@ export default async function handler(req, res) {
 
   if (existing) return res.status(409).json({ error: 'store_name_taken' });
 
-  // Check if they already have a profile (idempotency guard)
+  // Check if vendor_profiles row already exists (idempotency guard)
   const { data: existingProfile } = await supabase
     .from('vendor_profiles')
     .select('id')
@@ -47,29 +45,33 @@ export default async function handler(req, res) {
 
   if (existingProfile) return res.status(409).json({ error: 'profile_exists' });
 
-  // Update user metadata so the profile trigger has full info
-  await supabase.auth.admin.updateUserById(user.id, {
-    user_metadata: {
-      ...user.user_metadata,
-      full_name: user.user_metadata?.full_name || user.email.split('@')[0],
-      slug,
-      business_name: business,
-      whatsapp_number: wa,
-    }
-  });
+  const fullName = user.user_metadata?.full_name || user.email.split('@')[0];
 
-  // Insert vendor_profiles row directly
+  // Step 1: ensure profiles row exists (vendor_profiles FK chain: auth.users → profiles → vendor_profiles)
+  // The trigger should have created this on sign-in, but upsert is safe either way.
+  const { error: profileError } = await supabase
+    .from('profiles')
+    .upsert({ id: user.id, full_name: fullName }, { onConflict: 'id' });
+
+  if (profileError) {
+    console.error('google-onboard profiles upsert error:', profileError.message);
+    return res.status(500).json({ error: profileError.message });
+  }
+
+  // Step 2: insert the vendor_profiles row
   const { error: insertError } = await supabase
     .from('vendor_profiles')
     .insert({
       id: user.id,
       slug,
       business_name: business,
-      wa_number: wa,
+      whatsapp_number: wa,   // NOT NULL column
+      wa_number: wa,          // nullable duplicate — keep in sync
+      full_name: fullName,
     });
 
   if (insertError) {
-    console.error('google-onboard insert error:', insertError.message);
+    console.error('google-onboard vendor_profiles insert error:', insertError.message);
     return res.status(500).json({ error: insertError.message });
   }
 
