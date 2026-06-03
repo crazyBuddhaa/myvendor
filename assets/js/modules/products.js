@@ -125,6 +125,11 @@ window.saveProduct = async function (e) {
     const statusVal = document.getElementById('prodStatus') ? document.getElementById('prodStatus').value : 'active';
     const qtyVal    = document.getElementById('prodQty')    ? document.getElementById('prodQty').value    : '';
 
+    const getField = id => {
+        const el = document.getElementById(id);
+        return el && el.value.trim() !== '' ? el.value.trim() : null;
+    };
+
     const productData = {
         vendor_id:    state.currentUser.id,
         title:        document.getElementById('prodTitle').value,
@@ -136,6 +141,12 @@ window.saveProduct = async function (e) {
         status:       statusVal,
         quantity:     qtyVal !== '' ? parseInt(qtyVal) : null,
         in_stock:     statusVal !== 'out_of_stock',
+        tags:         getField('prodTags'),
+        colors:       getField('prodColors'),
+        sizes:        getField('prodSizes'),
+        material:     getField('prodMaterial'),
+        weight:       getField('prodWeight'),
+        dimensions:   getField('prodDimensions'),
     };
 
     const { error } = await supabase.from('products').insert([productData]);
@@ -169,12 +180,18 @@ window.loadEditProduct = async function (id) {
         else if (document.getElementById(id2)) document.getElementById(id2).value = val || '';
     };
 
-    setVal('editProdTitle',    'prodTitle',    p.title);
-    setVal('editProdPrice',    'prodPrice',    p.price);
-    setVal('editProdDesc',     'prodDesc',     p.description);
-    setVal('editProdCategory', 'prodCategory', p.category || 'Other');
-    setVal('editProdStatus',   'prodStatus',   p.status   || 'in_stock');
-    setVal('editProdQty',      'prodQty',      p.quantity !== null ? p.quantity : '');
+    setVal('editProdTitle',      'prodTitle',      p.title);
+    setVal('editProdPrice',      'prodPrice',      p.price);
+    setVal('editProdDesc',       'prodDesc',       p.description);
+    setVal('editProdCategory',   'prodCategory',   p.category   || 'Other');
+    setVal('editProdStatus',     'prodStatus',     p.status     || 'in_stock');
+    setVal('editProdQty',        'prodQty',        p.quantity !== null ? p.quantity : '');
+    setVal('editProdTags',       'prodTags',       p.tags       || '');
+    setVal('editProdColors',     'prodColors',     p.colors     || '');
+    setVal('editProdSizes',      'prodSizes',      p.sizes      || '');
+    setVal('editProdMaterial',   'prodMaterial',   p.material   || '');
+    setVal('editProdWeight',     'prodWeight',     p.weight     || '');
+    setVal('editProdDimensions', 'prodDimensions', p.dimensions || '');
 
     if (p.image_url) {
         if (document.getElementById('imageUrl')) document.getElementById('imageUrl').value = p.image_url;
@@ -238,6 +255,11 @@ window.updateProduct = async function (e) {
     const statusVal = getVal('editProdStatus', 'prodStatus') || 'active';
     const qtyVal    = getVal('editProdQty',    'prodQty')    || '';
 
+    const nullIfEmpty = (id1, id2) => {
+        const v = getVal(id1, id2);
+        return v && v.trim() !== '' ? v.trim() : null;
+    };
+
     const productData = {
         title:        getVal('editProdTitle',    'prodTitle'),
         price:        getVal('editProdPrice',    'prodPrice'),
@@ -248,6 +270,12 @@ window.updateProduct = async function (e) {
         status:       statusVal,
         quantity:     qtyVal !== '' ? parseInt(qtyVal) : null,
         in_stock:     statusVal !== 'out_of_stock',
+        tags:         nullIfEmpty('editProdTags',       'prodTags'),
+        colors:       nullIfEmpty('editProdColors',     'prodColors'),
+        sizes:        nullIfEmpty('editProdSizes',      'prodSizes'),
+        material:     nullIfEmpty('editProdMaterial',   'prodMaterial'),
+        weight:       nullIfEmpty('editProdWeight',     'prodWeight'),
+        dimensions:   nullIfEmpty('editProdDimensions', 'prodDimensions'),
     };
 
     const { error } = await supabase.from('products').update(productData).eq('id', productId).eq('vendor_id', state.currentUser.id);

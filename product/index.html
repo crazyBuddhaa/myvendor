@@ -473,6 +473,7 @@
 
         <div class="section-label">About this product</div>
         <p class="product-description" id="prodDesc">No description provided.</p>
+        <div id="prodTagsSection" style="display:none;"></div>
 
         <a href="#" id="storeLink" class="store-link">
             <div class="store-icon"><i class="bi bi-shop"></i></div>
@@ -637,14 +638,42 @@
             badgeRow.innerHTML += `<span class="badge badge-preorder"><i class="bi bi-clock-history"></i> Pre-order</span>`;
         }
 
-        // Attributes (colors, quantity)
+        // Attributes chips
         const attrRow = document.getElementById('attributesRow');
         attrRow.innerHTML = '';
+
         if (product.colors && product.colors.trim() !== '') {
             attrRow.innerHTML += `<div class="attr-chip"><i class="bi bi-palette"></i> ${product.colors}</div>`;
         }
+        if (product.sizes && product.sizes.trim() !== '') {
+            attrRow.innerHTML += `<div class="attr-chip"><i class="bi bi-rulers"></i> ${product.sizes}</div>`;
+        }
+        if (product.material && product.material.trim() !== '') {
+            attrRow.innerHTML += `<div class="attr-chip"><i class="bi bi-layers"></i> ${product.material}</div>`;
+        }
+        if (product.weight && product.weight.trim() !== '') {
+            attrRow.innerHTML += `<div class="attr-chip"><i class="bi bi-speedometer2"></i> ${product.weight} kg</div>`;
+        }
+        if (product.dimensions && product.dimensions.trim() !== '') {
+            attrRow.innerHTML += `<div class="attr-chip"><i class="bi bi-aspect-ratio"></i> ${product.dimensions}</div>`;
+        }
         if (product.quantity !== null && product.quantity !== undefined) {
             attrRow.innerHTML += `<div class="attr-chip"><i class="bi bi-box-seam"></i> ${product.quantity} left</div>`;
+        }
+
+        // Tags — rendered below description as clickable-looking pills
+        const tagsSection = document.getElementById('prodTagsSection');
+        if (tagsSection) {
+            if (product.tags && product.tags.trim() !== '') {
+                const chips = product.tags.split(',')
+                    .map(t => t.trim()).filter(t => t)
+                    .map(t => `<span style="display:inline-block;background:var(--green-soft);color:var(--green-primary);border-radius:30px;padding:0.25rem 0.75rem;font-size:0.72rem;font-weight:600;">#${t}</span>`)
+                    .join('');
+                tagsSection.innerHTML = `<div style="margin-top:1rem;display:flex;flex-wrap:wrap;gap:0.4rem;">${chips}</div>`;
+                tagsSection.style.display = 'block';
+            } else {
+                tagsSection.style.display = 'none';
+            }
         }
 
         // Image
