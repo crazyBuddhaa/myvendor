@@ -316,6 +316,35 @@
             color: var(--text-muted);
         }
 
+        .btn-atc {
+            background: var(--green-soft);
+            border: 1.5px solid #c8e6d9;
+            padding: .9rem 1.1rem;
+            border-radius: 60px;
+            font-weight: 700;
+            font-size: .95rem;
+            color: var(--green-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: .45rem;
+            cursor: pointer;
+            transition: background .2s, color .2s;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .btn-atc:active { background: #c8e6d9; }
+        .btn-atc.added  { background: var(--green-soft); color: var(--green-primary); }
+
+        .cart-notice {
+            display: none;
+            text-align: center;
+            margin-top: .45rem;
+            font-size: .78rem;
+            color: var(--green-primary);
+            font-weight: 600;
+        }
+
         /* loading & error states */
         .loading-state, .error-state {
             display: flex;
@@ -483,9 +512,15 @@
 
     <div class="action-bar">
         <div class="container px-0">
-            <button id="orderButton" class="btn-order" data-bs-toggle="modal" data-bs-target="#orderModal">
-                <i class="bi bi-cart-plus"></i> Proceed to Order
-            </button>
+            <div style="display:flex;gap:.5rem;">
+                <button id="addToCartBtn" class="btn-atc">
+                    <i class="bi bi-bag-plus"></i> Add to Cart
+                </button>
+                <button id="orderButton" class="btn-order" style="flex:1;" data-bs-toggle="modal" data-bs-target="#orderModal">
+                    <i class="bi bi-whatsapp"></i> Order Now
+                </button>
+            </div>
+            <div id="cartNotice" class="cart-notice"></div>
         </div>
     </div>
 </div>
@@ -703,6 +738,51 @@
         };
         qtyInput.addEventListener('input', updateTotal);
         updateTotal(); // Initial call
+
+        // ── ADD TO CART ─────────────────────────────────────────────────────────
+        const cartKey  = `mv_cart_${vendor.id}`;
+        const getCart  = () => { try { return JSON.parse(localStorage.getItem(cartKey)) || []; } catch { return []; } };
+        const saveCart = c => localStorage.setItem(cartKey, JSON.stringify(c));
+
+        const atcBtn      = document.getElementById('addToCartBtn');
+        const cartNotice  = document.getElementById('cartNotice');
+        const isAvailable = product.in_stock !== false && product.status !== 'out_of_stock';
+
+        if (!isAvailable && atcBtn) {
+            atcBtn.disabled = true;
+            atcBtn.style.opacity = '0.45';
+            atcBtn.style.cursor  = 'default';
+        }
+
+        function refreshCartNotice() {
+            if (!cartNotice) return;
+            const count = getCart().reduce((s, i) => s + i.qty, 0);
+            if (count > 0) {
+                cartNotice.innerHTML = `<i class="bi bi-bag-check" style="margin-right:.25rem;"></i>${count} item${count !== 1 ? 's' : ''} in cart &nbsp;·&nbsp; <a href="/${vendor.slug}" style="color:var(--green-primary);font-weight:700;text-decoration:none;">View Cart →</a>`;
+                cartNotice.style.display = 'block';
+            } else {
+                cartNotice.style.display = 'none';
+            }
+        }
+
+        refreshCartNotice();
+
+        if (atcBtn && isAvailable) {
+            atcBtn.addEventListener('click', () => {
+                const cart = getCart();
+                const hit  = cart.find(i => i.id === product.id);
+                if (hit) hit.qty++; else cart.push({ id: product.id, title: product.title, price: product.price, image_url: product.image_url, qty: 1 });
+                saveCart(cart);
+                atcBtn.innerHTML = '<i class="bi bi-bag-check-fill"></i> Added!';
+                atcBtn.classList.add('added');
+                refreshCartNotice();
+                setTimeout(() => {
+                    atcBtn.innerHTML = '<i class="bi bi-bag-plus"></i> Add to Cart';
+                    atcBtn.classList.remove('added');
+                }, 2000);
+            });
+        }
+        // ── END ADD TO CART ─────────────────────────────────────────────────────
 
         // Hide loading, show content
         document.getElementById('loadingState').classList.add('hidden');

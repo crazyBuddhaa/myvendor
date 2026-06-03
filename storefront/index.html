@@ -455,6 +455,195 @@
         .hidden {
             display: none !important;
         }
+
+        /* Add-to-cart button on product card */
+        .atc-btn {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            border: none;
+            background: var(--green-primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+            transition: transform 0.15s, background 0.15s;
+            z-index: 3;
+        }
+        .atc-btn:active { transform: scale(0.88); }
+        .atc-btn:hover  { background: var(--green-deep); }
+
+        /* Cart FAB */
+        #mvFab {
+            position: fixed;
+            bottom: 24px;
+            right: 20px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: var(--green-primary);
+            color: white;
+            border: none;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            box-shadow: 0 4px 18px rgba(11,59,42,0.32);
+            cursor: pointer;
+            z-index: 200;
+            transition: transform 0.2s;
+        }
+        #mvBadge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            background: #dc2626;
+            color: white;
+            font-size: 0.62rem;
+            font-weight: 700;
+            min-width: 20px;
+            height: 20px;
+            border-radius: 10px;
+            padding: 0 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid white;
+        }
+
+        /* Overlay */
+        #mvOverlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.42);
+            z-index: 300;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s;
+        }
+        #mvOverlay.open { opacity: 1; pointer-events: all; }
+
+        /* Cart panel */
+        #mvPanel {
+            position: fixed;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            width: min(420px, 100vw);
+            background: var(--cream-card);
+            z-index: 400;
+            display: flex;
+            flex-direction: column;
+            transform: translateX(100%);
+            transition: transform 0.28s cubic-bezier(0.4,0,0.2,1);
+            box-shadow: -4px 0 28px rgba(0,0,0,0.12);
+        }
+        #mvPanel.open { transform: translateX(0); }
+
+        .cp-header {
+            background: var(--green-deep);
+            padding: 1.1rem 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+        .cp-footer {
+            border-top: 1px solid var(--border-light);
+            padding: 1rem 1.2rem;
+            flex-shrink: 0;
+            background: white;
+        }
+        .cp-step {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .cp-scroll {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0 1.2rem;
+            -webkit-overflow-scrolling: touch;
+        }
+        .cp-form-scroll {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem 1.2rem;
+            -webkit-overflow-scrolling: touch;
+        }
+        .cp-input {
+            width: 100%;
+            padding: .75rem 1rem;
+            border: 1.5px solid var(--border-light);
+            border-radius: 12px;
+            background: var(--cream-bg);
+            font-family: 'Inter', sans-serif;
+            font-size: .9rem;
+            color: var(--text-dark);
+            transition: border-color .2s;
+            box-sizing: border-box;
+        }
+        .cp-input:focus { outline: none; border-color: var(--green-primary); box-shadow: 0 0 0 3px rgba(31,110,67,.1); }
+        .cp-label {
+            display: block;
+            font-size: .72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            color: var(--text-muted);
+            margin-bottom: .3rem;
+        }
+        .cp-checkout-btn {
+            width: 100%;
+            background: linear-gradient(135deg, var(--green-primary), var(--green-deep));
+            border: none;
+            padding: .88rem;
+            border-radius: 60px;
+            font-weight: 700;
+            font-size: .95rem;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: .5rem;
+            transition: opacity .2s;
+        }
+        .cp-checkout-btn:disabled { opacity: .45; cursor: default; }
+        .cp-wa-btn {
+            width: 100%;
+            background: #25D366;
+            border: none;
+            padding: .88rem;
+            border-radius: 60px;
+            font-weight: 700;
+            font-size: .95rem;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: .5rem;
+        }
+        .cp-back-btn {
+            border: none;
+            background: none;
+            color: var(--green-primary);
+            font-size: .82rem;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 0 0 1rem;
+            display: flex;
+            align-items: center;
+            gap: .3rem;
+        }
     </style>
 </head>
 <body>
@@ -510,6 +699,72 @@
     <a href="#">Careers</a> &nbsp;·&nbsp;
     <a href="#">Sustainability</a>
 </footer>
+
+<!-- Cart FAB -->
+<button id="mvFab" onclick="mvOpenCart()" aria-label="View cart">
+    <i class="bi bi-bag-fill"></i>
+    <span id="mvBadge">0</span>
+</button>
+
+<!-- Cart overlay -->
+<div id="mvOverlay" onclick="mvCloseCart()"></div>
+
+<!-- Cart panel -->
+<div id="mvPanel" role="dialog" aria-label="Shopping cart">
+    <!-- Header -->
+    <div class="cp-header">
+        <span style="font-family:'Playfair Display',serif;font-weight:700;color:white;font-size:1rem;display:flex;align-items:center;gap:.5rem;">
+            <i class="bi bi-bag-check"></i> My Cart
+        </span>
+        <button onclick="mvCloseCart()" style="background:rgba(255,255,255,.15);border:none;color:white;width:32px;height:32px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;">
+            <i class="bi bi-x-lg"></i>
+        </button>
+    </div>
+
+    <!-- Step 1: Item list -->
+    <div id="stepItems" class="cp-step">
+        <div id="mvCartBody" class="cp-scroll"></div>
+        <div class="cp-footer">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.8rem;">
+                <span style="font-weight:600;font-size:.88rem;color:var(--text-muted);">Total</span>
+                <span id="mvTotal" style="font-family:'Playfair Display',serif;font-weight:700;font-size:1.2rem;color:var(--green-deep);">₦0</span>
+            </div>
+            <button id="mvCheckoutBtn" class="cp-checkout-btn" onclick="mvGoCheckout()" disabled>
+                <i class="bi bi-arrow-right-circle"></i> Proceed to Checkout
+            </button>
+        </div>
+    </div>
+
+    <!-- Step 2: Checkout form -->
+    <div id="stepCheckout" class="cp-step" style="display:none;">
+        <div class="cp-form-scroll">
+            <button class="cp-back-btn" onclick="mvBackItems()">
+                <i class="bi bi-arrow-left"></i> Back to cart
+            </button>
+            <form onsubmit="mvPlaceOrder(event)">
+                <div style="margin-bottom:.85rem;">
+                    <label class="cp-label">Your name</label>
+                    <input id="mvName" type="text" required class="cp-input">
+                </div>
+                <div style="margin-bottom:.85rem;">
+                    <label class="cp-label">Phone number</label>
+                    <input id="mvPhone" type="tel" required class="cp-input">
+                </div>
+                <div style="margin-bottom:.85rem;">
+                    <label class="cp-label">Delivery address</label>
+                    <textarea id="mvAddress" required rows="2" class="cp-input" style="resize:none;"></textarea>
+                </div>
+                <div style="margin-bottom:1.4rem;">
+                    <label class="cp-label">Notes (optional)</label>
+                    <input id="mvNotes" type="text" class="cp-input" placeholder="Colour, size, etc.">
+                </div>
+                <button type="submit" class="cp-wa-btn">
+                    <i class="bi bi-whatsapp"></i> Send Order via WhatsApp
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
 
 <!-- External storefront logic (handles data, search, filters, product rendering) -->
 <script type="module" src="/assets/js/storefront.js"></script>
