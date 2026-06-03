@@ -2,10 +2,12 @@ import { supabase } from '/assets/js/supabase.js';
 import { escapeHTML } from '/assets/js/utils.js';
 
 // ── CART ──────────────────────────────────────────────────────────────────────
-let _vendorId   = null;
-let _vendorName = '';
-let _vendorWa   = '';
-let _products   = [];
+let _vendorId        = null;
+let _vendorName      = '';
+let _vendorWa        = '';
+let _vendorTemplate  = '';
+let _vendorIsPremium = false;
+let _products        = [];
 
 const cartKey  = () => `mv_cart_${_vendorId}`;
 const getCart  = () => { try { return JSON.parse(localStorage.getItem(cartKey())) || []; } catch { return []; } };
@@ -48,17 +50,32 @@ const _showStep = step => {
 window.mvGoCheckout = () => { if (getCart().length) _showStep('checkout'); };
 window.mvBackItems  = () => _showStep('items');
 
+function _buildOrderMsg(vars) {
+    const tpl = _vendorIsPremium && _vendorTemplate ? _vendorTemplate : null;
+    if (tpl) {
+        return tpl
+            .replace(/\{vendor\}/g,  vars.vendor)
+            .replace(/\{items\}/g,   vars.items)
+            .replace(/\{total\}/g,   `₦${vars.total}`)
+            .replace(/\{name\}/g,    vars.name)
+            .replace(/\{phone\}/g,   vars.phone)
+            .replace(/\{address\}/g, vars.address)
+            .replace(/\{notes\}/g,   vars.notes || '');
+    }
+    return `Hello *${vars.vendor}*, I'd like to place an order!\n\n🛒 *ORDER SUMMARY:*\n${vars.items}\n\n💰 *Total: ₦${vars.total}*\n\n*── DETAILS ──*\n👤 *Name:* ${vars.name}\n📞 *Phone:* ${vars.phone}\n📍 *Address:* ${vars.address}${vars.notes ? `\n📝 *Notes:* ${vars.notes}` : ''}`;
+}
+
 window.mvPlaceOrder = e => {
     e.preventDefault();
-    const cart  = getCart();
+    const cart    = getCart();
     if (!cart.length) return;
     const name    = document.getElementById('mvName').value;
     const phone   = document.getElementById('mvPhone').value;
     const address = document.getElementById('mvAddress').value;
     const notes   = document.getElementById('mvNotes').value;
-    const lines   = cart.map((i, n) => `${n + 1}. ${i.title} × ${i.qty} — ₦${(i.price * i.qty).toLocaleString()}`).join('\n');
-    const total   = cart.reduce((s, i) => s + i.price * i.qty, 0);
-    const msg     = `Hello *${_vendorName}*, I'd like to place an order!\n\n🛒 *ORDER SUMMARY:*\n${lines}\n\n💰 *Total: ₦${total.toLocaleString()}*\n\n*── DETAILS ──*\n👤 *Name:* ${name}\n📞 *Phone:* ${phone}\n📍 *Address:* ${address}${notes ? `\n📝 *Notes:* ${notes}` : ''}`;
+    const items   = cart.map((i, n) => `${n + 1}. ${i.title} × ${i.qty} — ₦${(i.price * i.qty).toLocaleString()}`).join('\n');
+    const total   = cart.reduce((s, i) => s + i.price * i.qty, 0).toLocaleString();
+    const msg     = _buildOrderMsg({ vendor: _vendorName, items, total, name, phone, address, notes });
     window.open(`https://wa.me/${_vendorWa}?text=${encodeURIComponent(msg)}`, '_blank');
     saveCart([]);
     _renderItems();
@@ -137,6 +154,55 @@ function _animateFab() {
 // ── END CART ──────────────────────────────────────────────────────────────────
 
 
+// ── SEO HELPERS ───────────────────────────────────────────────────────────────
+function _setMeta(name, content) {
+    if (!content) return;
+    const prop = (name.startsWith('og:') || name.startsWith('twitter:')) ? 'property' : 'name';
+    let el = document.querySelector(`meta[${prop}="${name}"]`);
+    if (!el) { el = document.createElement('meta'); el.setAttribute(prop, name); document.head.appendChild(el); }
+    el.setAttribute('content', content);
+}
+
+function _injectLocalBusinessLD(vendor) {
+    const ld = {
+        '@context': 'https://schema.org',
+        '@type':    'LocalBusiness',
+        name:       vendor.business_name,
+        url:        window.location.href,
+    };
+    if (vendor.bio)                             ld.description = vendor.bio;
+    if (vendor.whatsapp_number || vendor.phone) ld.telephone   = vendor.whatsapp_number || vendor.phone;
+    const s = document.createElement('script');
+    s.type = 'application/ld+json';
+    s.textContent = JSON.stringify(ld);
+    document.head.appendChild(s);
+}
+// ── END SEO ───────────────────────────────────────────────────────────────────
+
+
+// ── RECENTLY VIEWED ───────────────────────────────────────────────────────────
+function _renderRecentlyViewed(vendorId) {
+    const key = `mv_recent_${vendorId}`;
+    let items = [];
+    try { items = JSON.parse(localStorage.getItem(key) || '[]'); } catch { /* noop */ }
+    if (!items.length) return;
+    const section = document.getElementById('recentlyViewedSection');
+    if (!section) return;
+    section.style.display = 'block';
+    const list = section.querySelector('.rv-list');
+    if (!list) return;
+    list.innerHTML = items.slice(0, 6).map(item => `
+        <a href="/product/${item.id}" class="rv-item text-decoration-none">
+            <div class="rv-img">
+                ${item.image_url ? `<img src="${escapeHTML(item.image_url)}" alt="">` : '<i class="bi bi-box" style="font-size:1.2rem;color:var(--text-muted);"></i>'}
+            </div>
+            <div class="rv-title">${escapeHTML(item.title)}</div>
+            <div class="rv-price">₦${parseFloat(item.price).toLocaleString()}</div>
+        </a>`).join('');
+}
+// ── END RECENTLY VIEWED ───────────────────────────────────────────────────────
+
+
 // SEARCH & FILTER
 window.searchStore = function () {
     const term  = document.getElementById('searchInput').value.toLowerCase();
@@ -209,21 +275,54 @@ async function initStore() {
     }
 
     // 3. UPDATE UI
-    document.title = `${vendor.business_name} - myvendor`;
     const storeNameEl = document.getElementById('displayStoreName');
     if (storeNameEl) storeNameEl.innerHTML = escapeHTML(vendor.business_name);
     const navLinkEl = document.getElementById('navStoreLink');
     if (navLinkEl) navLinkEl.href = `/${vendor.slug}`;
 
-    // 4. SET CART CONTEXT
-    _vendorId   = vendor.id;
-    _vendorName = vendor.business_name;
-    _vendorWa   = vendor.whatsapp_number || vendor.phone || '';
+    // 4. SEO — title, description, Open Graph, JSON-LD
+    document.title = `${vendor.business_name} | myvendor`;
+    const desc = vendor.bio || `Shop ${vendor.business_name} on myvendor — browse products and order via WhatsApp.`;
+    _setMeta('description',    desc);
+    _setMeta('og:title',       `${vendor.business_name} | myvendor`);
+    _setMeta('og:description', desc);
+    _setMeta('og:type',        'website');
+    _setMeta('og:url',         window.location.href);
+    _setMeta('twitter:card',   'summary');
+    _injectLocalBusinessLD(vendor);
+
+    // 5. SET CART CONTEXT
+    _vendorId        = vendor.id;
+    _vendorName      = vendor.business_name;
+    _vendorWa        = (vendor.whatsapp_number || vendor.phone || '').replace(/\D/g, '');
+    _vendorTemplate  = vendor.order_template  || '';
+    _vendorIsPremium = vendor.tier === 'premium';
     _updateFab();
 
     supabase.from('analytics_events').insert([{ vendor_id: vendor.id, event_type: 'store_view', product_id: null }]).then();
 
-    // 5. FETCH PRODUCTS
+    // 6. VACATION MODE
+    if (vendor.vacation_mode) {
+        const grid = document.getElementById('productGrid');
+        if (grid) grid.innerHTML = `
+            <div style="text-align:center;padding:4rem 1.5rem;color:var(--text-muted);">
+                <i class="bi bi-moon-stars-fill" style="font-size:2.8rem;display:block;margin-bottom:1rem;color:var(--green-primary);opacity:.65;"></i>
+                <div style="font-weight:800;font-size:1.05rem;margin-bottom:.6rem;color:var(--text-dark);">We're on a short break 🌿</div>
+                <div style="font-size:.85rem;max-width:260px;margin:0 auto 1.25rem;line-height:1.5;">Check back soon, or reach us directly on WhatsApp.</div>
+                ${_vendorWa ? `<a href="https://wa.me/${_vendorWa}" target="_blank" style="display:inline-flex;align-items:center;gap:.45rem;background:#25D366;color:white;padding:.65rem 1.3rem;border-radius:40px;font-weight:700;font-size:.85rem;text-decoration:none;"><i class="bi bi-whatsapp"></i> Message us</a>` : ''}
+            </div>`;
+        const searchZone    = document.querySelector('.search-zone');
+        const catFilters    = document.getElementById('categoryFilters');
+        const sectionHeader = document.querySelector('.section-header');
+        const emptyState    = document.getElementById('emptyState');
+        if (searchZone)    searchZone.style.display    = 'none';
+        if (catFilters)    catFilters.style.display    = 'none';
+        if (sectionHeader) sectionHeader.style.display = 'none';
+        if (emptyState)    emptyState.classList.add('hidden');
+        return;
+    }
+
+    // 7. FETCH PRODUCTS
     const { data: products, error: pError } = await supabase
         .from('products')
         .select('*')
@@ -281,6 +380,9 @@ async function initStore() {
             </a>`;
         }).join('');
     }
+
+    // 8. RECENTLY VIEWED
+    _renderRecentlyViewed(vendor.id);
 }
 
 initStore();
