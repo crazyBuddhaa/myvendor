@@ -18,6 +18,39 @@ window.loadProducts = async function () {
     const emptyState = document.getElementById('emptyState');
     window.currentProductsCount = prods ? prods.length : 0;
 
+    // ── Slot usage bar ────────────────────────────────────────────────────────
+    const slotBar  = document.getElementById('slotUsageBar');
+    if (slotBar) {
+        const count    = window.currentProductsCount;
+        const limit    = state.freeProductLimit;
+        const isPrem   = state.currentUser.tier === 'premium';
+
+        if (isPrem) {
+            slotBar.style.display = 'block';
+            slotBar.innerHTML = `<div style="display:flex;align-items:center;gap:0.5rem;font-size:0.75rem;color:var(--text-muted);font-weight:600;background:var(--card-white);border:1px solid var(--border-light);border-radius:var(--radius-sm);padding:0.55rem 1rem;"><i class="bi bi-star-fill" style="color:#f59e0b;font-size:0.7rem;"></i> Premium — unlimited product slots</div>`;
+        } else {
+            const pct   = Math.min((count / limit) * 100, 100);
+            const color = pct >= 90 ? '#ef4444' : pct >= 70 ? '#f59e0b' : '#22c55e';
+            const warn  = pct >= 100
+                ? `<p style="font-size:0.7rem;color:#ef4444;margin:0.4rem 0 0;font-weight:600;">⚠️ Limit reached. <a href="/dashboard/referrals.html" style="color:#ef4444;">Refer friends</a> for free slots or upgrade.</p>`
+                : pct >= 70
+                ? `<p style="font-size:0.7rem;color:#b45309;margin:0.4rem 0 0;font-weight:600;">💡 ${limit - count} slot${limit - count === 1 ? '' : 's'} left. <a href="/dashboard/referrals.html" style="color:var(--green-primary);">Refer friends</a> to earn +3 free slots.</p>`
+                : '';
+            slotBar.style.display = 'block';
+            slotBar.innerHTML = `
+            <div style="background:var(--card-white);border:1px solid var(--border-light);border-radius:var(--radius-sm);padding:0.7rem 1rem;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.4rem;">
+                    <span style="font-size:0.72rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;"><i class="bi bi-box-seam me-1"></i> Product Slots</span>
+                    <span style="font-size:0.78rem;font-weight:800;color:${color};">${count} / ${limit}</span>
+                </div>
+                <div style="background:#e9eee5;border-radius:100px;height:5px;overflow:hidden;">
+                    <div style="width:${pct}%;background:${color};height:100%;border-radius:100px;transition:width 0.4s ease;"></div>
+                </div>
+                ${warn}
+            </div>`;
+        }
+    }
+
     if (!prods || prods.length === 0) {
         if (emptyState) {
             emptyState.classList.remove('hidden');
