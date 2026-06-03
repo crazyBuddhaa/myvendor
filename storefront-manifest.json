@@ -1,0 +1,25 @@
+{
+  "name": "myvendor Store",
+  "short_name": "myvendor",
+  "description": "Shop from your favourite Nigerian vendors — browse products and order via WhatsApp.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#fefaf5",
+  "theme_color": "#1f6e43",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/assets/img/logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/assets/img/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
