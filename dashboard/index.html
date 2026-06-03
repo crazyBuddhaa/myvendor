@@ -644,43 +644,42 @@
       return
     }
 
-    const { data: existing } = await supabase.from('vendor_profiles').select('slug').eq('slug', slug).maybeSingle()
-    if (existing) {
-      window.showResultModal('error', 'Store Name Taken', 'That store link is already being used. Please choose another name.')
-      return
-    }
-
     window.setLoading('signup', true)
 
     // Capture referrer from URL — stored in metadata so the DB trigger can
     // award the bonus slots only after the new user confirms their email.
     const referrerId = new URLSearchParams(window.location.search).get('ref') || null;
 
-    const { data: authData, error: authError } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: 'https://myvendor.qzz.io/dashboard/home.html',
-        data: {
-          full_name: name,
-          slug: slug,
-          business_name: business,
-          whatsapp_number: waClean,
-          referrer_id: referrerId
-        }
-      }
-    })
+    let signupRes, signupJson;
+    try {
+      signupRes = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, name, business, wa: waClean, slug, referrerId }),
+      });
+      signupJson = await signupRes.json();
+    } catch {
+      window.setLoading('signup', false);
+      window.showResultModal('error', 'Signup Failed', 'Network error. Please check your connection and try again.');
+      return;
+    }
 
     window.setLoading('signup', false)
 
-    if (authError) {
-      window.showResultModal('error', 'Signup Failed', friendlyError(authError.message))
-      return
+    if (!signupRes.ok) {
+      const errMap = {
+        store_name_taken: 'That store link is already being used. Please choose a different name.',
+        email_taken:      'An account with this email already exists. Try logging in instead.',
+        missing_fields:   'Please fill in all required fields.',
+        email_send_failed:'Account created but we could not send your verification email. Use the resend option on the login page.',
+      };
+      const msg   = errMap[signupJson?.error] || signupJson?.error || 'Something went wrong. Please try again.';
+      const title = signupJson?.error === 'store_name_taken' ? 'Store Name Taken' : 'Signup Failed';
+      window.showResultModal('error', title, msg);
+      return;
     }
 
-    if (authData.user) {
-      window.showResultModal('success', 'Check Your Email 📧', 'Your store is almost ready! We just sent a verification link to your email. Please click it to activate your account.', 'verify', email)
-    }
+    window.showResultModal('success', 'Check Your Email 📧', 'Your store is almost ready! We just sent a verification link to your email. Please click it to activate your account.', 'verify', email)
   }
 
   window.handleGoogleSignIn = async function() {
