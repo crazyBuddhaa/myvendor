@@ -398,9 +398,13 @@
     status.style.color = '#78350f';
     status.textContent = 'Sending…';
 
-    const { error: resendErr } = await supabase.auth.resend({ type: 'signup', email });
+    const resendRes = await fetch('/api/auth/resend', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    });
 
-    if (resendErr) {
+    if (!resendRes.ok) {
       status.style.color = '#dc2626';
       status.textContent = 'Failed — please try again.';
       btn.disabled = false;
@@ -506,9 +510,13 @@
     btn.style.textDecoration = 'none';
     btn.textContent = 'Sending…';
 
-    const { error: resendErr2 } = await supabase.auth.resend({ type: 'signup', email });
+    const resendRes2 = await fetch('/api/auth/resend', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    });
 
-    if (resendErr2) {
+    if (!resendRes2.ok) {
       btn.textContent = 'Failed — tap to try again';
       btn.disabled = false;
       btn.style.textDecoration = 'underline';
