@@ -38,19 +38,27 @@ window.loadAnalytics = async function () {
     document.getElementById('totalOrders').innerText   = totalOrd;
     document.getElementById('pendingOrders').innerText = pendingOrd;
 
-    const { data: events } = await supabase
-        .from('analytics_events')
-        .select('event_type')
-        .eq('vendor_id', state.currentUser.id);
+    const [storeViewsRes, prodViewsRes, waClicksRes] = await Promise.all([
+        supabase
+            .from('analytics_events')
+            .select('*', { count: 'exact', head: true })
+            .eq('vendor_id', state.currentUser.id)
+            .eq('event_type', 'store_view'),
+        supabase
+            .from('analytics_events')
+            .select('*', { count: 'exact', head: true })
+            .eq('vendor_id', state.currentUser.id)
+            .eq('event_type', 'product_view'),
+        supabase
+            .from('analytics_events')
+            .select('*', { count: 'exact', head: true })
+            .eq('vendor_id', state.currentUser.id)
+            .eq('event_type', 'whatsapp_click'),
+    ]);
 
-    let storeViews = 0, prodViews = 0, waClicks = 0;
-    if (events) {
-        events.forEach(e => {
-            if (e.event_type === 'store_view')      storeViews++;
-            if (e.event_type === 'product_view')    prodViews++;
-            if (e.event_type === 'whatsapp_click')  waClicks++;
-        });
-    }
+    const storeViews = storeViewsRes.count || 0;
+    const prodViews  = prodViewsRes.count  || 0;
+    const waClicks   = waClicksRes.count   || 0;
 
     document.getElementById('statStoreViews').innerText   = storeViews;
     document.getElementById('statProductViews').innerText = prodViews;
