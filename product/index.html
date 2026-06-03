@@ -336,6 +336,24 @@
         .btn-atc:active { background: #c8e6d9; }
         .btn-atc.added  { background: var(--green-soft); color: var(--green-primary); }
 
+        .btn-share {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 1.5px solid var(--border-light);
+            background: white;
+            color: var(--text-muted);
+            font-size: .95rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all .2s;
+            flex-shrink: 0;
+        }
+        .btn-share:hover  { background: var(--green-soft); border-color: var(--green-bright); color: var(--green-primary); }
+        .btn-share:active { transform: scale(.92); }
+
         .cart-notice {
             display: none;
             text-align: center;
@@ -512,12 +530,15 @@
 
     <div class="action-bar">
         <div class="container px-0">
-            <div style="display:flex;gap:.5rem;">
+            <div style="display:flex;gap:.5rem;align-items:center;">
                 <button id="addToCartBtn" class="btn-atc">
                     <i class="bi bi-bag-plus"></i> Add to Cart
                 </button>
                 <button id="orderButton" class="btn-order" style="flex:1;" data-bs-toggle="modal" data-bs-target="#orderModal">
                     <i class="bi bi-whatsapp"></i> Order Now
+                </button>
+                <button id="shareBtn" class="btn-share" onclick="shareProduct()" title="Share product" aria-label="Share">
+                    <i class="bi bi-share-fill"></i>
                 </button>
             </div>
             <div id="cartNotice" class="cart-notice"></div>
@@ -790,9 +811,84 @@
             product_id: product.id,
             event_type: 'product_view'
         }]).then();
+
+        // ── SEO meta + JSON-LD ────────────────────────────────────────────────
+        const _sm = (n, v) => {
+            if (!v) return;
+            const prop = n.startsWith('og:') || n.startsWith('twitter:') ? 'property' : 'name';
+            let el = document.querySelector(`meta[${prop}="${n}"]`);
+            if (!el) { el = document.createElement('meta'); el.setAttribute(prop, n); document.head.appendChild(el); }
+            el.setAttribute('content', v);
+        };
+        document.title = `${product.title} — ${vendor.business_name} | myvendor`;
+        const pdesc = product.description
+            ? `${product.description.slice(0, 120)} — ₦${parseFloat(product.price).toLocaleString()}`
+            : `Shop ${product.title} from ${vendor.business_name} on myvendor. Order via WhatsApp.`;
+        _sm('description',    pdesc);
+        _sm('og:title',       `${product.title} — ${vendor.business_name}`);
+        _sm('og:description', pdesc);
+        _sm('og:type',        'product');
+        _sm('og:url',         window.location.href);
+        if (product.image_url) _sm('og:image', product.image_url);
+        _sm('twitter:card',   'summary_large_image');
+
+        const ldScript = document.createElement('script');
+        ldScript.type = 'application/ld+json';
+        ldScript.textContent = JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type':    'Product',
+            name:        product.title,
+            description: product.description || undefined,
+            image:       product.image_url   || undefined,
+            offers: {
+                '@type':       'Offer',
+                priceCurrency: 'NGN',
+                price:         product.price,
+                availability:  (product.in_stock !== false && product.status !== 'out_of_stock')
+                    ? 'https://schema.org/InStock'
+                    : 'https://schema.org/OutOfStock',
+                url:           window.location.href,
+            },
+            seller: { '@type': 'Organization', name: vendor.business_name },
+        });
+        document.head.appendChild(ldScript);
+
+        // ── Recently viewed (save) ────────────────────────────────────────────
+        try {
+            const rvKey   = `mv_recent_${vendor.id}`;
+            let   rvItems = JSON.parse(localStorage.getItem(rvKey) || '[]');
+            rvItems = rvItems.filter(i => i.id !== product.id);
+            rvItems.unshift({ id: product.id, title: product.title, price: product.price, image_url: product.image_url || '' });
+            if (rvItems.length > 8) rvItems = rvItems.slice(0, 8);
+            localStorage.setItem(rvKey, JSON.stringify(rvItems));
+        } catch { /* noop */ }
     }
 
     // WhatsApp order handler
+    // Share product
+    window.shareProduct = async function () {
+        const p = currentProduct;
+        const v = currentVendor;
+        if (!p || !v) return;
+        const shareData = {
+            title: p.title,
+            text:  `${p.title} — ₦${parseFloat(p.price).toLocaleString()} · Shop at ${v.business_name} on myvendor`,
+            url:   window.location.href,
+        };
+        const btn = document.getElementById('shareBtn');
+        try {
+            if (navigator.share) {
+                await navigator.share(shareData);
+            } else {
+                await navigator.clipboard.writeText(window.location.href);
+                if (btn) {
+                    btn.innerHTML = '<i class="bi bi-check2"></i>';
+                    setTimeout(() => { btn.innerHTML = '<i class="bi bi-share-fill"></i>'; }, 2200);
+                }
+            }
+        } catch { /* user cancelled or unsupported */ }
+    };
+
     window.sendOrderWhatsApp = function(e) {
         e.preventDefault();
         const name = document.getElementById('buyerName').value;
@@ -815,7 +911,7 @@
 ${notes ? `📝 *Notes:* ${notes}\n` : ''}
 🔗 *Link:* ${window.location.href}`;
 
-        const vendorWhatsApp = currentVendor.whatsapp_number || currentVendor.phone || '';
+        const vendorWhatsApp = (currentVendor.whatsapp_number || currentVendor.phone || '').replace(/\D/g, '');
         window.open(`https://wa.me/${vendorWhatsApp}?text=${encodeURIComponent(message)}`, '_blank');
 
         // Track WhatsApp click
