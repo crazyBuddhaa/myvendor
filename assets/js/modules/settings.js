@@ -14,6 +14,24 @@ window.loadSettings = async function () {
         slugInput.value = state.currentUser.slug || '';
         slugInput.dispatchEvent(new Event('input'));
     }
+
+    // Vacation mode
+    const vacationToggle = document.getElementById('setVacationMode');
+    if (vacationToggle) vacationToggle.checked = !!state.currentUser.vacation_mode;
+
+    // Order template — premium only
+    const templateEl   = document.getElementById('setOrderTemplate');
+    const templateNote = document.getElementById('templateNote');
+    const isPremium    = state.currentUser.tier === 'premium';
+    if (templateEl) {
+        templateEl.value    = state.currentUser.order_template || '';
+        templateEl.disabled = !isPremium;
+        if (templateNote) {
+            templateNote.innerHTML = isPremium
+                ? '<i class="bi bi-check-circle-fill text-success me-1"></i> Custom template active for your store.'
+                : 'Free plan uses a standard template. <a href="#" onclick="showPremiumModal(\'Custom order message templates are a premium feature.\');return false;" style="color:var(--green-primary);font-weight:700;">Upgrade to Premium</a> to customise.';
+        }
+    }
 };
 
 window.updateSettings = async function (e) {
@@ -43,11 +61,17 @@ window.updateSettings = async function (e) {
         }
     }
 
+    const isPremium   = state.currentUser.tier === 'premium';
+    const templateEl  = document.getElementById('setOrderTemplate');
+    const vacationEl  = document.getElementById('setVacationMode');
+
     const updatedData = {
-        business_name: document.getElementById('setBizName').value.trim(),
-        slug:          newSlug,
-        wa_number:     document.getElementById('setWaNumber').value.trim(),
-        bio:           document.getElementById('setBio').value.trim(),
+        business_name:  document.getElementById('setBizName').value.trim(),
+        slug:           newSlug,
+        wa_number:      document.getElementById('setWaNumber').value.trim(),
+        bio:            document.getElementById('setBio').value.trim(),
+        vacation_mode:  vacationEl  ? vacationEl.checked  : false,
+        order_template: (isPremium && templateEl) ? templateEl.value.trim() || null : state.currentUser.order_template || null,
     };
 
     const { error } = await supabase.from('vendor_profiles').update(updatedData).eq('id', state.currentUser.id);
