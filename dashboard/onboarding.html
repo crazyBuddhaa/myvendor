@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Set Up Your Store — myvendor</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=Raleway:wght@600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/assets/css/dashboard.css" />
+
+  <style>
+    .auth-nav { background: rgba(255,255,255,0.96); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(34,197,94,0.2); padding: 0.75rem 0; position: sticky; top: 0; z-index: 1000; }
+    .nav-container { max-width: 640px; margin: 0 auto; padding: 0 1rem; display: flex; justify-content: space-between; align-items: center; }
+    .mv-logo-modern { font-family: 'Raleway', sans-serif; font-weight: 800; font-size: 1.5rem; background: linear-gradient(135deg, var(--green-dark), var(--green-primary)); -webkit-background-clip: text; color: transparent; text-decoration: none; }
+    .mv-logo-modern span { background: linear-gradient(135deg, var(--green-bright), #2b9348); -webkit-background-clip: text; color: transparent; }
+
+    .auth-container { flex: 1; display: flex; align-items: center; justify-content: center; padding: 2rem 1rem; }
+    .auth-card { max-width: 460px; width: 100%; background: var(--card-white); border-radius: var(--radius-lg); padding: 2rem 1.8rem; box-shadow: var(--shadow-md); border: 1px solid var(--border-light); animation: fadeUp 0.45s ease-out; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+
+    .ob-icon { font-size: 2.8rem; margin-bottom: 0.6rem; line-height: 1; }
+    .auth-header { margin-bottom: 1.5rem; text-align: center; }
+    .auth-header h1 { font-size: 1.5rem; font-weight: 800; background: linear-gradient(125deg, #14532d, #2b6e3c); -webkit-background-clip: text; color: transparent; margin-bottom: 0.25rem; }
+    .auth-header p { font-size: 0.84rem; color: var(--text-muted); }
+
+    .form-group { margin-bottom: 1.2rem; }
+    .form-label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 0.4rem; display: flex; align-items: center; gap: 0.4rem; }
+    .input-icon-wrapper { position: relative; }
+    .input-icon { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.9rem; pointer-events: none; }
+    .form-control-modern { width: 100%; padding: 0.8rem 1rem 0.8rem 2.5rem; border: 1.5px solid var(--border-light); border-radius: var(--radius-sm); font-size: 0.9rem; background: var(--gray-bg); transition: all 0.2s; }
+    .form-control-modern:focus { border-color: var(--green-bright); background: white; outline: none; box-shadow: 0 0 0 3px rgba(34,197,94,0.1); }
+
+    .slug-preview { background: var(--gray-bg); border-radius: var(--radius-sm); padding: 0.5rem 0.8rem; font-size: 0.7rem; color: var(--text-muted); margin-top: 0.4rem; display: flex; align-items: center; gap: 0.4rem; }
+    .slug-preview span { font-weight: 700; color: var(--green-dark); }
+
+    .auth-message { padding: 0.75rem 1rem; border-radius: var(--radius-sm); font-size: 0.8rem; margin-bottom: 1rem; display: none; }
+    .auth-message.error { background: var(--error-bg); border: 1px solid #fecaca; color: var(--error); }
+    .auth-message.show { display: flex; align-items: center; gap: 0.5rem; }
+
+    .btn-submit { width: 100%; background: linear-gradient(105deg, var(--green-primary), var(--green-dark)); border: none; padding: 0.85rem; border-radius: var(--radius-sm); font-weight: 700; font-size: 0.9rem; color: white; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: all 0.2s; box-shadow: var(--shadow-sm); }
+    .btn-submit:hover { transform: translateY(-2px); filter: brightness(1.03); }
+    .btn-submit:disabled { opacity: 0.6; transform: none; cursor: not-allowed; }
+    .spinner { width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.6s linear infinite; display: inline-block; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .terms-check { display: flex; gap: 0.6rem; align-items: flex-start; margin: 1rem 0; }
+    .terms-check input { width: 16px; height: 16px; margin-top: 2px; accent-color: var(--green-primary); }
+    .terms-check label { font-size: 0.75rem; color: var(--text-muted); line-height: 1.4; cursor: pointer; }
+    .terms-check a { color: var(--green-primary); text-decoration: none; font-weight: 600; }
+
+    .auth-footer { text-align: center; padding: 1rem; font-size: 0.7rem; color: var(--text-muted); border-top: 1px solid rgba(34,197,94,0.2); }
+    .auth-footer a { color: var(--green-primary); text-decoration: none; font-weight: 600; }
+  </style>
+</head>
+<body>
+
+<nav class="auth-nav">
+  <div class="nav-container">
+    <a href="/" class="mv-logo-modern">my<span>vendor</span></a>
+  </div>
+</nav>
+
+<main class="auth-container">
+  <div class="auth-card">
+    <div class="auth-header">
+      <div class="ob-icon">🏪</div>
+      <h1>Almost there!</h1>
+      <p>Just a couple more details to set up your free store.</p>
+    </div>
+
+    <div id="obMsg" class="auth-message error"></div>
+
+    <div class="form-group">
+      <label class="form-label"><i class="bi bi-shop"></i> Store Name</label>
+      <div class="input-icon-wrapper">
+        <i class="bi bi-shop input-icon"></i>
+        <input type="text" id="obBusiness" class="form-control-modern" placeholder="e.g. GlamStore NG" oninput="updateSlug(this.value)">
+      </div>
+      <div class="slug-preview">
+        <i class="bi bi-link-45deg"></i> myvendor.qzz.io/<span id="slugValue">yourstore</span>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label"><i class="bi bi-whatsapp"></i> WhatsApp Number</label>
+      <div class="input-icon-wrapper">
+        <i class="bi bi-whatsapp input-icon"></i>
+        <input type="tel" id="obWa" class="form-control-modern" placeholder="2348012345678" autocomplete="tel">
+      </div>
+    </div>
+
+    <div class="terms-check">
+      <input type="checkbox" id="termsCheckbox">
+      <label for="termsCheckbox">
+        I agree to myvendor's <a href="/terms.html" target="_blank">Terms & Conditions</a> and <a href="/privacy.html" target="_blank">Privacy Policy</a>.
+      </label>
+    </div>
+
+    <button id="obBtn" class="btn-submit" onclick="handleOnboard()">
+      <span id="obSpinner" class="spinner" style="display:none;"></span>
+      <i id="obIcon" class="bi bi-shop-window"></i>
+      <span id="obLabel">Launch My Store</span>
+    </button>
+  </div>
+</main>
+
+<footer class="auth-footer">
+  <a href="/">← myvendor.qzz.io</a> &nbsp;·&nbsp; © 2026 theosnnetwork
+</footer>
+
+<script type="module">
+  import { supabase } from '/assets/js/supabase.js';
+
+  // Guard: must be logged in
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) { window.location.href = '/dashboard/index.html'; }
+
+  // Guard: if they already have a profile, send them to the dashboard
+  const { data: profile } = await supabase
+    .from('vendor_profiles')
+    .select('id, slug')
+    .eq('id', session.user.id)
+    .maybeSingle();
+
+  if (profile && profile.slug) {
+    window.location.href = '/dashboard/home.html';
+  }
+
+  window.updateSlug = function(value) {
+    const slug = value.toLowerCase()
+      .replace(/[^a-z0-9-]/g, '')
+      .replace(/-+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .substring(0, 30);
+    document.getElementById('slugValue').textContent = slug || 'yourstore';
+  };
+
+  window.handleOnboard = async function() {
+    const business = document.getElementById('obBusiness').value.trim();
+    const wa = document.getElementById('obWa').value.trim().replace(/\s+/g, '');
+    const slug = document.getElementById('slugValue').textContent.trim();
+    const terms = document.getElementById('termsCheckbox').checked;
+    const msgEl = document.getElementById('obMsg');
+
+    const showError = (msg) => {
+      msgEl.textContent = msg;
+      msgEl.className = 'auth-message error show';
+    };
+
+    if (!business || !wa || !terms) {
+      showError('Please fill all fields and accept the terms.');
+      return;
+    }
+    if (!slug || slug === 'yourstore') {
+      showError('Please enter a valid store name using letters or numbers.');
+      return;
+    }
+    if (!/^\d{10,15}$/.test(wa)) {
+      showError('Enter a valid WhatsApp number with country code, digits only (e.g. 2348012345678).');
+      return;
+    }
+
+    // Set loading state
+    document.getElementById('obBtn').disabled = true;
+    document.getElementById('obSpinner').style.display = 'inline-block';
+    document.getElementById('obIcon').style.display = 'none';
+    document.getElementById('obLabel').textContent = 'Setting up your store…';
+
+    const { data: { session: currentSession } } = await supabase.auth.getSession();
+
+    const res = await fetch('/api/auth/google-onboard', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${currentSession.access_token}`,
+      },
+      body: JSON.stringify({ slug, business, wa }),
+    });
+
+    const json = await res.json();
+
+    if (!res.ok) {
+      document.getElementById('obBtn').disabled = false;
+      document.getElementById('obSpinner').style.display = 'none';
+      document.getElementById('obIcon').style.display = 'inline';
+      document.getElementById('obLabel').textContent = 'Launch My Store';
+
+      if (json.error === 'store_name_taken') {
+        showError('That store link is already taken. Please choose a different store name.');
+      } else {
+        showError('Something went wrong. Please try again.');
+      }
+      return;
+    }
+
+    window.location.href = '/dashboard/home.html';
+  };
+</script>
+</body>
+</html>
