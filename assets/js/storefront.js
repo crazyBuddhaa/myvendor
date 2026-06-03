@@ -114,11 +114,18 @@ function _renderItems() {
 
 function _updateFab() {
     const count = getCart().reduce((s, i) => s + i.qty, 0);
+
     const fab   = document.getElementById('mvFab');
     const badge = document.getElementById('mvBadge');
-    if (!fab) return;
-    fab.style.display = count > 0 ? 'flex' : 'none';
+    if (fab)   fab.style.display = count > 0 ? 'flex' : 'none';
     if (badge) badge.textContent = count;
+
+    const navBtn   = document.getElementById('navCartBtn');
+    const navCount = document.getElementById('navCartCount');
+    if (navBtn) {
+        navBtn.style.display = count > 0 ? 'flex' : 'none';
+        if (navCount) navCount.textContent = count;
+    }
 }
 
 function _animateFab() {
