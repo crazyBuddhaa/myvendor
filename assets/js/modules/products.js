@@ -79,8 +79,8 @@ window.loadProducts = async function () {
             : `<i class="bi bi-box placeholder-icon"></i>`;
 
         return `
-        <div class="product-card">
-            <div class="product-image">${imgHtml}</div>
+        <div class="product-card" data-pid="${p.id}">
+            <div class="product-image" style="position:relative;">${imgHtml}</div>
             <div class="product-info">
                 <div class="product-title">${safeTitle}</div>
                 <div class="product-price">₦${parseFloat(p.price).toLocaleString()}</div>
@@ -310,4 +310,77 @@ window.copyProductLink = function (id) {
     } else {
         alert('Product link copied!');
     }
+};
+
+// ── Bulk select ───────────────────────────────────────────────────────────────
+
+let _selectedIds        = new Set();
+let _inSelectMode       = false;
+let _selectClickCapture = null;
+
+window.toggleSelectMode = function () {
+    _inSelectMode = !_inSelectMode;
+    _selectedIds.clear();
+    const grid    = document.getElementById('productGrid');
+    const toolbar = document.getElementById('bulkToolbar');
+    const btn     = document.getElementById('btnSelectMode');
+
+    if (_inSelectMode) {
+        grid.classList.add('select-mode');
+        if (toolbar) toolbar.classList.add('visible');
+        if (btn) {
+            btn.innerHTML   = '<i class="bi bi-x-lg"></i> Cancel';
+            btn.style.color = 'var(--danger)';
+        }
+
+        _selectClickCapture = e => {
+            const card = e.target.closest('.product-card');
+            if (!card) return;
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            const id = card.dataset.pid;
+            if (!id) return;
+            if (_selectedIds.has(id)) {
+                _selectedIds.delete(id);
+                card.classList.remove('bulk-selected');
+            } else {
+                _selectedIds.add(id);
+                card.classList.add('bulk-selected');
+            }
+            const n       = _selectedIds.size;
+            const countEl = document.getElementById('bulkCount');
+            if (countEl) countEl.textContent = `${n} item${n !== 1 ? 's' : ''} selected`;
+        };
+        grid.addEventListener('click', _selectClickCapture, true);
+    } else {
+        grid.classList.remove('select-mode');
+        if (toolbar) toolbar.classList.remove('visible');
+        if (btn) { btn.innerHTML = '<i class="bi bi-check2-square"></i> Select'; btn.style.color = ''; }
+        grid.querySelectorAll('.bulk-selected').forEach(c => c.classList.remove('bulk-selected'));
+        if (_selectClickCapture) {
+            grid.removeEventListener('click', _selectClickCapture, true);
+            _selectClickCapture = null;
+        }
+    }
+};
+
+window.bulkDelete = async function () {
+    const ids = [..._selectedIds];
+    if (!ids.length) return;
+    if (!confirm(`Permanently delete ${ids.length} product${ids.length !== 1 ? 's' : ''}?`)) return;
+    await supabase.from('products').delete().in('id', ids).eq('vendor_id', state.currentUser.id);
+    window.toggleSelectMode();
+    window.loadProducts();
+};
+
+window.bulkSetStock = async function (inStock) {
+    const ids = [..._selectedIds];
+    if (!ids.length) return;
+    await supabase
+        .from('products')
+        .update({ in_stock: inStock, status: inStock ? 'active' : 'out_of_stock' })
+        .in('id', ids)
+        .eq('vendor_id', state.currentUser.id);
+    window.toggleSelectMode();
+    window.loadProducts();
 };
