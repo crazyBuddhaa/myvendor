@@ -21,10 +21,13 @@ window.loadOrders = async function () {
     if (!orders || orders.length === 0) {
         if (emptyState) emptyState.classList.remove('hidden');
         list.innerHTML = '';
+        updateReceiptBanner();
         return;
     }
 
     if (emptyState) emptyState.classList.add('hidden');
+
+    updateReceiptBanner();
 
     list.innerHTML = orders.map(o => {
         const dateStr = new Date(o.created_at).toLocaleDateString('en-NG', {
@@ -91,6 +94,55 @@ window.loadOrders = async function () {
         </div>`;
     }).join('');
 };
+
+// ── Receipt banner (monthly usage indicator) ──────────────────────────────────
+
+async function updateReceiptBanner() {
+    const banner = document.getElementById('receiptBanner');
+    if (!banner) return;
+
+    const isPremium = state.currentUser.tier === 'premium';
+
+    if (isPremium) {
+        banner.style.display = 'block';
+        banner.innerHTML = `<div style="display:flex;align-items:center;gap:0.5rem;font-size:0.75rem;color:var(--text-muted);font-weight:600;background:var(--card-white);border:1px solid var(--border-light);border-radius:var(--radius-sm);padding:0.55rem 1rem;"><i class="bi bi-star-fill" style="color:#f59e0b;font-size:0.7rem;"></i> Premium — unlimited branded receipts</div>`;
+        return;
+    }
+
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    startOfMonth.setHours(0, 0, 0, 0);
+
+    const { count } = await supabase
+        .from('analytics_events')
+        .select('*', { count: 'exact', head: true })
+        .eq('vendor_id', state.currentUser.id)
+        .eq('event_type', 'receipt_generated')
+        .gte('created_at', startOfMonth.toISOString());
+
+    const used  = count || 0;
+    const limit = FREE_RECEIPT_LIMIT;
+    const pct   = Math.min((used / limit) * 100, 100);
+    const color = pct >= 100 ? '#ef4444' : pct >= 70 ? '#f59e0b' : '#22c55e';
+    const warn  = pct >= 100
+        ? `<p style="font-size:0.7rem;color:#ef4444;margin:0.4rem 0 0;font-weight:600;">⚠️ Monthly limit reached. Upgrade for unlimited receipts.</p>`
+        : pct >= 70
+        ? `<p style="font-size:0.7rem;color:#b45309;margin:0.4rem 0 0;font-weight:600;">💡 ${limit - used} receipt${limit - used === 1 ? '' : 's'} remaining this month.</p>`
+        : '';
+
+    banner.style.display = 'block';
+    banner.innerHTML = `
+    <div style="background:var(--card-white);border:1px solid var(--border-light);border-radius:var(--radius-sm);padding:0.7rem 1rem;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.4rem;">
+            <span style="font-size:0.72rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;"><i class="bi bi-receipt me-1"></i> Receipts This Month</span>
+            <span style="font-size:0.78rem;font-weight:800;color:${color};">${used} / ${limit}</span>
+        </div>
+        <div style="background:#e9eee5;border-radius:100px;height:5px;overflow:hidden;">
+            <div style="width:${pct}%;background:${color};height:100%;border-radius:100px;transition:width 0.4s ease;"></div>
+        </div>
+        ${warn}
+    </div>`;
+}
 
 // ── Receipt ───────────────────────────────────────────────────────────────────
 
