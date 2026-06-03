@@ -264,23 +264,21 @@ async function initStore() {
             const delay   = i * 0.05;
             const isOut   = !p.in_stock;
             const badge   = isOut ? `<div class="sold-out-tag">SOLD OUT</div>` : '';
+            const atcBtn  = !isOut
+                ? `<button class="atc-btn" onclick="event.stopPropagation();event.preventDefault();mvAddToCart('${p.id}')" title="Add to cart" aria-label="Add to cart"><i class="bi bi-bag-plus-fill"></i></button>`
+                : '';
             const imgHtml = p.image_url
                 ? `<img src="${p.image_url}" alt="${escapeHTML(p.title)}" style="${isOut ? 'filter:grayscale(1);opacity:.8;' : ''}">`
                 : '<i class="bi bi-box" style="font-size:2rem;color:var(--text-muted);"></i>';
             const catData = p.category || 'Other';
             return `
-            <div class="product-item" data-category="${escapeHTML(catData)}" style="animation-delay:${delay}s;">
-                <div class="product-card" style="position:relative;">
-                    <a href="/product/${p.id}" class="text-decoration-none" style="display:block;">
-                        <div class="prod-img">${badge}${imgHtml}</div>
-                        <div class="prod-info">
-                            <div class="prod-title">${escapeHTML(p.title)}</div>
-                            <div class="prod-price">₦${parseFloat(p.price).toLocaleString()}</div>
-                        </div>
-                    </a>
-                    ${!isOut ? `<button class="atc-btn" onclick="mvAddToCart('${p.id}')" title="Add to cart" aria-label="Add to cart"><i class="bi bi-bag-plus-fill"></i></button>` : ''}
+            <a href="/product/${p.id}" class="product-item product-card text-decoration-none" data-category="${escapeHTML(catData)}" style="animation-delay:${delay}s;">
+                <div class="prod-img">${badge}${imgHtml}${atcBtn}</div>
+                <div class="prod-info">
+                    <div class="prod-title">${escapeHTML(p.title)}</div>
+                    <div class="prod-price">₦${parseFloat(p.price).toLocaleString()}</div>
                 </div>
-            </div>`;
+            </a>`;
         }).join('');
     }
 }
