@@ -579,11 +579,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
-
-    const SUPABASE_URL = 'https://sotdghhayztnpwnrzjzu.supabase.co';
-    const SUPABASE_ANON_KEY = 'sb_publishable_OcOKwSDnoCGm_rt725Bi-g_rV6tjGlK';
-    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    import { supabase } from '/assets/js/supabase.js';
 
     let currentVendor = null;
     let currentProduct = null;
@@ -692,7 +688,7 @@
         if (product.dimensions && product.dimensions.trim() !== '') {
             attrRow.innerHTML += `<div class="attr-chip"><i class="bi bi-aspect-ratio"></i> ${product.dimensions}</div>`;
         }
-        if (product.quantity !== null && product.quantity !== undefined) {
+        if (product.quantity !== null && product.quantity !== undefined && product.quantity > 0) {
             attrRow.innerHTML += `<div class="attr-chip"><i class="bi bi-box-seam"></i> ${product.quantity} left</div>`;
         }
 
