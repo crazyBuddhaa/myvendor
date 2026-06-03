@@ -65,8 +65,7 @@ export default async function handler(req, res) {
       id: user.id,
       slug,
       business_name: business,
-      whatsapp_number: wa,
-      full_name: user.user_metadata?.full_name || user.email.split('@')[0],
+      wa_number: wa,
     });
 
   if (insertError) {
