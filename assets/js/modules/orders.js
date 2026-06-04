@@ -88,11 +88,23 @@ window.loadOrders = async function () {
             <div class="customer-info-modern">
                 <div class="customer-name-modern"><i class="bi bi-person-circle text-success" style="opacity: 0.8;"></i> ${escapeHTML(o.customer_name)}</div>
                 <div class="item-summary-modern">${escapeHTML(o.items)}</div>
+                ${(o.customer_phone || o.customer_address) ? `<div style="display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.45rem;">
+                    ${o.customer_phone ? `<a href="tel:${escapeHTML(o.customer_phone)}" style="display:inline-flex;align-items:center;gap:.3rem;font-size:.71rem;font-weight:700;color:var(--green-primary);text-decoration:none;background:var(--green-soft);padding:.22rem .6rem;border-radius:30px;border:1px solid var(--border-light);"><i class="bi bi-telephone-fill" style="font-size:.62rem;"></i>${escapeHTML(o.customer_phone)}</a>` : ''}
+                    ${o.customer_address ? `<span style="display:inline-flex;align-items:center;gap:.3rem;font-size:.71rem;color:var(--text-muted);background:var(--gray-bg);padding:.22rem .6rem;border-radius:30px;border:1px solid var(--border-light);"><i class="bi bi-geo-alt-fill" style="font-size:.62rem;color:var(--green-primary);"></i>${escapeHTML(o.customer_address)}</span>` : ''}
+                </div>` : ''}
             </div>
             ${riderHtml}
             ${actionsHtml}
         </div>`;
     }).join('');
+};
+
+// ── Order search ──────────────────────────────────────────────────────────────
+window.searchOrders = function (term) {
+    const q = (term || '').toLowerCase().trim();
+    document.querySelectorAll('.order-card-modern').forEach(card => {
+        card.style.display = !q || card.textContent.toLowerCase().includes(q) ? 'block' : 'none';
+    });
 };
 
 // ── Receipt banner (monthly usage indicator) ──────────────────────────────────
@@ -230,11 +242,13 @@ window.handleCreateOrder = async function (e) {
 
         const { error } = await supabase.from('orders').insert([{
             id,
-            vendor_id:     state.currentUser.id,
-            customer_name: document.getElementById('newCustomerName').value,
-            items:         itemsValue,
-            total_amount:  document.getElementById('newOrderTotal').value,
-            status:        'new',
+            vendor_id:        state.currentUser.id,
+            customer_name:    document.getElementById('newCustomerName').value,
+            customer_phone:   document.getElementById('newCustomerPhone')?.value?.trim() || null,
+            customer_address: document.getElementById('newCustomerAddress')?.value?.trim() || null,
+            items:            itemsValue,
+            total_amount:     document.getElementById('newOrderTotal').value,
+            status:           'new',
         }]);
 
         if (error) throw error;
