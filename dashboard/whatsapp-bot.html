@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>WhatsApp Bot | myvendor</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=Raleway:wght@600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/assets/css/dashboard.css" />
+
+  <style>
+    .hero-bot h1 { font-size:1.8rem; font-weight:800; background:linear-gradient(125deg,#14532d,#2b6e3c); -webkit-background-clip:text; color:transparent; margin-bottom:.2rem; }
+    .hero-sub { color:var(--text-muted); font-size:.85rem; font-weight:500; border-left:3px solid var(--green-bright); padding-left:.75rem; margin-top:.2rem; }
+
+    .setup-card { background:var(--card-white); border-radius:var(--radius-xl); padding:1.5rem; margin-bottom:1.2rem; border:1px solid var(--border-light); box-shadow:var(--shadow-sm); }
+    .card-title { font-weight:800; font-size:.95rem; color:var(--green-dark); margin-bottom:1rem; display:flex; align-items:center; gap:.5rem; }
+
+    .step-row { display:flex; align-items:flex-start; gap:.75rem; margin-bottom:1rem; }
+    .step-num { width:26px; height:26px; background:var(--green-primary); color:white; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-size:.72rem; font-weight:800; flex-shrink:0; margin-top:.05rem; }
+    .step-body { flex:1; font-size:.83rem; color:var(--text-muted); line-height:1.55; }
+    .step-body strong { color:var(--text-dark); }
+
+    .code-pill { font-family:monospace; font-size:.73rem; background:#f0fdf4; color:#0f6e3f; padding:.2rem .55rem; border-radius:7px; border:1px solid #bbf7d0; word-break:break-all; display:inline-block; }
+
+    .cmd-row { display:flex; align-items:center; gap:.6rem; margin-bottom:.55rem; }
+    .cmd-badge { font-family:monospace; font-size:.76rem; background:#1e2f1c; color:#4ade80; padding:.22rem .65rem; border-radius:7px; font-weight:700; white-space:nowrap; }
+
+    .webhook-box { background:var(--green-soft); border:1.5px solid var(--green-bright); border-radius:var(--radius-md); padding:1rem; text-align:center; }
+    .webhook-url { font-family:monospace; font-size:.82rem; color:var(--green-dark); font-weight:700; word-break:break-all; display:block; margin:.4rem 0 .6rem; }
+
+    .env-row { margin-bottom:.45rem; }
+
+    footer { text-align:center; padding:1rem; font-size:.7rem; color:var(--text-muted); border-top:1px solid rgba(34,197,94,.2); margin-top:auto; }
+  </style>
+</head>
+<body>
+
+<nav class="settings-nav">
+  <div class="settings-container d-flex justify-content-between align-items-center" style="padding-top:0;padding-bottom:0;">
+    <a href="/dashboard/home.html" class="btn-back-modern"><i class="bi bi-arrow-left-short"></i> Dashboard</a>
+    <div class="nav-badge"><i class="bi bi-robot me-1"></i> WhatsApp Bot</div>
+  </div>
+</nav>
+
+<main class="settings-container">
+  <div class="hero-bot mb-3">
+    <h1>WhatsApp Bot <i class="bi bi-robot text-success" style="font-size:1.4rem;"></i></h1>
+    <div class="hero-sub">Your AI-powered store assistant — message it to get instant store insights</div>
+  </div>
+
+  <!-- What it does -->
+  <div class="setup-card">
+    <div class="card-title"><i class="bi bi-lightning-charge-fill text-warning"></i> What the bot does</div>
+    <p style="font-size:.82rem;color:var(--text-muted);margin-bottom:1rem;">WhatsApp your bot number and it replies instantly with live data from your myvendor store. Works 24/7, no dashboard needed.</p>
+    <div class="cmd-row"><span class="cmd-badge">orders</span><span style="font-size:.8rem;color:var(--text-muted);">→ Today's count and pending order list</span></div>
+    <div class="cmd-row"><span class="cmd-badge">revenue</span><span style="font-size:.8rem;color:var(--text-muted);">→ This month's earnings</span></div>
+    <div class="cmd-row"><span class="cmd-badge">products</span><span style="font-size:.8rem;color:var(--text-muted);">→ Inventory count and out-of-stock alert</span></div>
+    <div class="cmd-row"><span class="cmd-badge">stats</span><span style="font-size:.8rem;color:var(--text-muted);">→ Full store overview in one message</span></div>
+    <div class="cmd-row"><span class="cmd-badge">Any sentence</span><span style="font-size:.8rem;color:var(--text-muted);">→ AI answers in plain English (requires Anthropic key)</span></div>
+  </div>
+
+  <!-- Webhook URL -->
+  <div class="webhook-box mb-4">
+    <div style="font-size:.7rem;font-weight:700;color:var(--green-dark);text-transform:uppercase;letter-spacing:.5px;"><i class="bi bi-link-45deg"></i> Your webhook URL (copy this)</div>
+    <span class="webhook-url">https://myvendor.qzz.io/api/whatsapp</span>
+    <button onclick="navigator.clipboard.writeText('https://myvendor.qzz.io/api/whatsapp');this.textContent='✓ Copied!';setTimeout(()=>this.textContent='Copy URL',1800);" style="background:var(--green-primary);color:white;border:none;padding:.4rem 1rem;border-radius:30px;font-size:.75rem;font-weight:700;cursor:pointer;">Copy URL</button>
+  </div>
+
+  <!-- Setup steps -->
+  <div class="setup-card">
+    <div class="card-title"><i class="bi bi-gear-fill"></i> One-time setup (~10 min)</div>
+
+    <div class="step-row">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <strong>Create a Meta Developer App</strong><br>
+        Go to <a href="https://developers.facebook.com/apps" target="_blank" style="color:var(--green-primary);">developers.facebook.com/apps</a> → New App → <em>Business</em> → add the <em>WhatsApp</em> product.
+      </div>
+    </div>
+
+    <div class="step-row">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <strong>Get your credentials</strong><br>
+        From WhatsApp → API Setup: copy the <em>Phone Number ID</em> and generate a <em>Permanent Access Token</em> (or use a System User token for production).
+      </div>
+    </div>
+
+    <div class="step-row">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <strong>Add environment variables to Vercel</strong><br>
+        Vercel dashboard → your project → Settings → Environment Variables:
+        <div style="margin-top:.6rem;">
+          <div class="env-row"><span class="code-pill">WA_VERIFY_TOKEN</span> <span style="font-size:.7rem;color:var(--text-muted);">= any secret string you choose (e.g. "mv-bot-2026")</span></div>
+          <div class="env-row"><span class="code-pill">WA_ACCESS_TOKEN</span> <span style="font-size:.7rem;color:var(--text-muted);">= permanent token from Meta</span></div>
+          <div class="env-row"><span class="code-pill">WA_PHONE_NUMBER_ID</span> <span style="font-size:.7rem;color:var(--text-muted);">= from Meta Developer Console</span></div>
+          <div class="env-row"><span class="code-pill">ANTHROPIC_API_KEY</span> <span style="font-size:.7rem;color:var(--text-muted);">= from <a href="https://console.anthropic.com" target="_blank" style="color:var(--green-primary);">console.anthropic.com</a> (optional — enables AI replies)</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-row">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <strong>Configure the webhook in Meta</strong><br>
+        WhatsApp → Configuration → Webhooks:<br>
+        • <strong>Callback URL:</strong> <span class="code-pill">https://myvendor.qzz.io/api/whatsapp</span><br>
+        • <strong>Verify token:</strong> the value you set in <span class="code-pill">WA_VERIFY_TOKEN</span><br>
+        • <strong>Subscribe to:</strong> <em>messages</em>
+      </div>
+    </div>
+
+    <div class="step-row">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <strong>Match your WhatsApp number in Settings</strong><br>
+        The bot identifies you by your phone number. Go to <a href="/dashboard/settings.html" style="color:var(--green-primary);">Settings</a> and confirm the WhatsApp number you'll message from is saved there (include country code, no +).
+      </div>
+    </div>
+
+    <div class="step-row">
+      <div class="step-num">6</div>
+      <div class="step-body">
+        <strong>Test it!</strong><br>
+        Message your WhatsApp Business number with <strong>"hi"</strong> — you should instantly receive a reply with the command menu. If not, check that Vercel has redeployed after adding env vars.
+      </div>
+    </div>
+  </div>
+
+  <!-- Note -->
+  <div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:var(--radius-md);padding:.85rem 1rem;font-size:.78rem;color:#92400e;margin-bottom:1.5rem;">
+    <i class="bi bi-info-circle-fill me-1"></i> <strong>Note:</strong> The bot only responds to WhatsApp numbers that match a vendor account. Other numbers receive a sign-up prompt. Make sure <span style="font-family:monospace;font-size:.72rem;">SUPABASE_URL</span> and <span style="font-family:monospace;font-size:.72rem;">SUPABASE_SERVICE_ROLE_KEY</span> are already set in your Vercel environment (they should be from your initial setup).
+  </div>
+</main>
+
+<footer>
+  <i class="bi bi-robot"></i> myvendor Bot — Meta WhatsApp Cloud API + Anthropic claude-haiku-4-5
+</footer>
+
+<script type="module" src="/assets/js/dashboard.js"></script>
+</body>
+</html>
