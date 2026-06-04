@@ -8,6 +8,15 @@ window.loadSettings = async function () {
     if (document.getElementById('setBizName'))  document.getElementById('setBizName').value  = state.currentUser.business_name || '';
     if (document.getElementById('setWaNumber')) document.getElementById('setWaNumber').value = state.currentUser.wa_number     || '';
     if (document.getElementById('setBio'))      document.getElementById('setBio').value      = state.currentUser.bio           || '';
+    if (document.getElementById('setLogoUrl')) {
+        document.getElementById('setLogoUrl').value = state.currentUser.logo_url || '';
+        if (state.currentUser.logo_url) {
+            const wrap = document.getElementById('logoPreviewWrap');
+            const img  = document.getElementById('logoPreview');
+            if (wrap) wrap.style.display = 'block';
+            if (img)  img.src = state.currentUser.logo_url;
+        }
+    }
 
     if (document.getElementById('setSlug')) {
         const slugInput = document.getElementById('setSlug');
@@ -72,6 +81,7 @@ window.updateSettings = async function (e) {
         bio:            document.getElementById('setBio').value.trim(),
         vacation_mode:  vacationEl  ? vacationEl.checked  : false,
         order_template: (isPremium && templateEl) ? templateEl.value.trim() || null : state.currentUser.order_template || null,
+        logo_url:       document.getElementById('setLogoUrl') ? document.getElementById('setLogoUrl').value.trim() || null : state.currentUser.logo_url || null,
     };
 
     const { error } = await supabase.from('vendor_profiles').update(updatedData).eq('id', state.currentUser.id);
