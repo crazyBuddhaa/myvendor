@@ -6,7 +6,7 @@ window.loadSettings = async function () {
     if (!state.currentUser) return;
 
     if (document.getElementById('setBizName'))  document.getElementById('setBizName').value  = state.currentUser.business_name || '';
-    if (document.getElementById('setWaNumber')) document.getElementById('setWaNumber').value = state.currentUser.wa_number     || '';
+    if (document.getElementById('setWaNumber')) document.getElementById('setWaNumber').value = state.currentUser.whatsapp_number || '';
     if (document.getElementById('setBio'))      document.getElementById('setBio').value      = state.currentUser.bio           || '';
     if (document.getElementById('setLogoUrl')) {
         document.getElementById('setLogoUrl').value = state.currentUser.logo_url || '';
@@ -75,9 +75,9 @@ window.updateSettings = async function (e) {
     const vacationEl  = document.getElementById('setVacationMode');
 
     const updatedData = {
-        business_name:  document.getElementById('setBizName').value.trim(),
-        slug:           newSlug,
-        wa_number:      document.getElementById('setWaNumber').value.trim(),
+        business_name:    document.getElementById('setBizName').value.trim(),
+        slug:             newSlug,
+        whatsapp_number:  document.getElementById('setWaNumber').value.trim(),
         bio:            document.getElementById('setBio').value.trim(),
         vacation_mode:  vacationEl  ? vacationEl.checked  : false,
         order_template: (isPremium && templateEl) ? templateEl.value.trim() || null : state.currentUser.order_template || null,

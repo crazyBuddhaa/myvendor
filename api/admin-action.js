@@ -16,9 +16,9 @@ export default async function handler(req, res) {
 
         if (action === 'edit_store') {
             const { error } = await supabase.from('vendor_profiles').update({
-                business_name: payload.name,
-                slug: payload.slug,
-                wa_number: payload.phone
+                business_name:   payload.name,
+                slug:            payload.slug,
+                whatsapp_number: payload.phone,
             }).eq('id', vendorId);
             if (error) throw error;
             return res.status(200).json({ success: true, message: 'Store updated' });

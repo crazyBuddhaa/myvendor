@@ -21,8 +21,9 @@ const WA_PHONE_NUMBER_ID = process.env.WA_PHONE_NUMBER_ID;
 const ANTHROPIC_API_KEY  = process.env.ANTHROPIC_API_KEY;
 const WA_APP_SECRET      = process.env.WA_APP_SECRET;
 
-// ── Fix #5: In-memory dedup store, capped at 1 000 entries ───────────────────
-const processedMsgIds = new Set();
+// ── Persistent dedup via Supabase (survives serverless cold-starts) ───────────
+// Falls back to a capped in-memory Set when the DB insert fails.
+const _memDedup = new Set();
 
 // ── Fix #1: Verify Meta's X-Hub-Signature-256 ────────────────────────────────
 function verifySignature(req, rawBody) {
@@ -89,7 +90,7 @@ async function getStats(vendorId) {
     const [allOrders, monthOrders, todayOrders, products] = await Promise.all([
         db(`orders?vendor_id=eq.${vendorId}&select=id,customer_name,status,total_amount,created_at&order=created_at.desc`),
         db(`orders?vendor_id=eq.${vendorId}&created_at=gte.${encodeURIComponent(monthStr)}&select=id,status,total_amount`),
-        db(`orders?vendor_id=eq.${vendorId}&created_at=gte.${encodeURIComponent(todayStr)}&select=id,status`),
+        db(`orders?vendor_id=eq.${vendorId}&created_at=gte.${encodeURIComponent(todayStr)}&select=id,status,total_amount`),
         db(`products?vendor_id=eq.${vendorId}&select=id,in_stock,status`),
     ]);
 
@@ -97,11 +98,15 @@ async function getStats(vendorId) {
     const monthRevenue = monthOrders
         .filter(o => o.status === 'delivered')
         .reduce((s, o) => s + parseFloat(o.total_amount || 0), 0);
+    const todayRevenue = todayOrders
+        .filter(o => o.status === 'delivered')
+        .reduce((s, o) => s + parseFloat(o.total_amount || 0), 0);
     const outOfStock   = products.filter(p => p.in_stock === false || p.status === 'out_of_stock');
 
     return {
         totalOrders:     allOrders.length,
         todayOrders:     todayOrders.length,
+        todayRevenue,
         pendingCount:    pending.length,
         monthRevenue,
         monthOrders:     monthOrders.length,
@@ -167,7 +172,8 @@ function keywordReply(stats, msg) {
     if (/\b(revenue|money|earn|income|profit|naira|cash)\b/.test(m) && /\btoday\b/.test(m)) {
         return (
             `💰 *Today's Revenue*\n\n` +
-            `from *${stats.todayOrders}* orders today\n\n` +
+            `*₦${stats.todayRevenue.toLocaleString()}*` +
+            ` from *${stats.todayOrders}* orders\n\n` +
             `This month: *₦${stats.monthRevenue.toLocaleString()}*`
         );
     }
@@ -310,12 +316,38 @@ export default async function handler(req, res) {
             const text  = String(msg.text?.body || '').trim();
             if (!text) return;
 
-            // Fix #5: deduplicate — Meta sometimes delivers the same message twice
-            if (processedMsgIds.has(msgId)) return;
-            processedMsgIds.add(msgId);
-            if (processedMsgIds.size > 1000) {
-                const oldest = processedMsgIds.values().next().value;
-                if (oldest) processedMsgIds.delete(oldest);
+            // Deduplicate — Meta sometimes delivers the same message twice.
+            // Primary: DB insert (unique PK prevents duplicates across cold starts).
+            // Fallback: in-memory Set when the DB is unreachable.
+            if (_memDedup.has(msgId)) return;
+            try {
+                const dedup = await fetch(
+                    `${SUPABASE_URL}/rest/v1/processed_messages`,
+                    {
+                        method:  'POST',
+                        headers: {
+                            apikey:          SUPABASE_KEY,
+                            Authorization:   `Bearer ${SUPABASE_KEY}`,
+                            'Content-Type':  'application/json',
+                            Prefer:          'return=minimal',
+                        },
+                        body: JSON.stringify({ message_id: msgId }),
+                    }
+                );
+                // 409 Conflict = duplicate PK = message already processed
+                if (dedup.status === 409) return;
+                if (!dedup.ok && dedup.status !== 201) {
+                    // DB unavailable — fall back to in-memory
+                    _memDedup.add(msgId);
+                    if (_memDedup.size > 1000) {
+                        _memDedup.delete(_memDedup.values().next().value);
+                    }
+                }
+            } catch {
+                _memDedup.add(msgId);
+                if (_memDedup.size > 1000) {
+                    _memDedup.delete(_memDedup.values().next().value);
+                }
             }
 
             const vendor = await getVendorByPhone(from);

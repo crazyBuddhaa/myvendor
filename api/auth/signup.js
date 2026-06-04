@@ -11,6 +11,12 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'missing_fields' });
   }
 
+  // Slug must contain only lowercase letters, numbers, and hyphens (no spaces
+  // or special characters), and must be between 3 and 40 characters long.
+  if (!/^[a-z0-9][a-z0-9-]{1,38}[a-z0-9]$/.test(slug)) {
+    return res.status(400).json({ error: 'invalid_slug' });
+  }
+
   const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
 
   // Check slug uniqueness
