@@ -427,6 +427,110 @@
     }
     .btn-welcome-secondary:hover { color: #14532d; }
 
+    /* ── Plan status card ─────────────────────────────────── */
+    .plan-status-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      border-radius: var(--radius-lg);
+      padding: 1.1rem 1.3rem;
+      border: 1px solid var(--border-light);
+      background: var(--card-white);
+      box-shadow: var(--shadow-sm);
+    }
+    .plan-status-premium {
+      background: linear-gradient(120deg, #fffbeb 0%, #fefce8 100%);
+      border-color: #fde68a;
+    }
+    .plan-status-left {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex: 1;
+      min-width: 0;
+    }
+    .plan-status-badge {
+      flex-shrink: 0;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      font-size: 0.65rem;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      padding: 0.3rem 0.7rem;
+      border-radius: 30px;
+    }
+    .plan-badge-premium {
+      background: #fef3c7;
+      color: #92400e;
+      border: 1px solid #fcd34d;
+    }
+    .plan-badge-free {
+      background: #f3f4f6;
+      color: #6b7280;
+      border: 1px solid #e5e7eb;
+    }
+    .plan-status-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+      min-width: 0;
+    }
+    .plan-meta-row {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .plan-meta-row i {
+      font-size: 0.7rem;
+      flex-shrink: 0;
+      color: var(--green-primary);
+      opacity: 0.75;
+    }
+    .plan-meta-row strong { color: var(--text-dark); }
+    .plan-status-action {
+      flex-shrink: 0;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 0.55rem 1rem;
+      border-radius: 30px;
+      text-decoration: none;
+      transition: all 0.18s;
+      white-space: nowrap;
+    }
+    .plan-action-upgrade {
+      background: var(--green-primary);
+      color: white;
+      box-shadow: 0 3px 10px rgba(15,110,63,0.25);
+    }
+    .plan-action-upgrade:hover {
+      background: var(--green-dark);
+      color: white;
+      transform: translateY(-1px);
+    }
+    .plan-action-manage {
+      background: #fef3c7;
+      color: #92400e;
+      border: 1px solid #fde68a;
+    }
+    .plan-action-manage:hover {
+      background: #fde68a;
+      color: #78350f;
+    }
+    @media (max-width: 480px) {
+      .plan-status-card { flex-direction: column; align-items: flex-start; gap: 0.8rem; }
+      .plan-status-action { width: 100%; justify-content: center; }
+    }
+
     footer {
       margin-top: 2rem;
       text-align: center;
@@ -506,6 +610,9 @@
       </div>
     </div>
   </div>
+
+  <!-- plan status card -->
+  <div id="planCard" style="margin-bottom:1.5rem;"></div>
 
   <!-- quick actions refined -->
   <div class="action-modern-grid">
