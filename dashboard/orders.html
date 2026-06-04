@@ -112,6 +112,10 @@
 
   <div id="receiptBanner" style="display:none; margin-bottom:1rem;"></div>
 
+  <div style="margin-bottom:.8rem;">
+    <input type="text" id="orderSearch" class="form-control-modern" placeholder="Search by customer name or order ID…" oninput="window.searchOrders(this.value)" style="margin-bottom:0;">
+  </div>
+
   <div class="filter-scroll-modern" id="orderFilters">
     <div class="filter-pill-modern active" onclick="window.filterOrders('all', this)">All</div>
     <div class="filter-pill-modern" onclick="window.filterOrders('new', this)">New</div>
@@ -163,6 +167,14 @@
           <div class="mb-3">
             <label class="form-label text-muted" style="font-size: 0.7rem; font-weight: 700;">Total Amount (₦)</label>
             <input type="number" class="form-control-modern" id="newOrderTotal" placeholder="e.g. 15000" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label text-muted" style="font-size: 0.7rem; font-weight: 700;">Customer Phone <span style="font-weight:400;opacity:.7;">(optional)</span></label>
+            <input type="tel" class="form-control-modern" id="newCustomerPhone" placeholder="e.g. 08012345678">
+          </div>
+          <div class="mb-3">
+            <label class="form-label text-muted" style="font-size: 0.7rem; font-weight: 700;">Delivery Address <span style="font-weight:400;opacity:.7;">(optional)</span></label>
+            <textarea class="form-control-modern" id="newCustomerAddress" placeholder="e.g. 12 Lagos St, Ikeja" rows="2" style="resize:none;"></textarea>
           </div>
           <button type="submit" class="btn-save-modern">
             <i class="bi bi-link-45deg"></i> Generate Tracking Link
