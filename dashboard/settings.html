@@ -233,6 +233,17 @@
     </div>
 
     <div>
+      <div class="form-label-modern"><i class="bi bi-image-fill"></i> Store Logo URL</div>
+      <input type="url" id="setLogoUrl" class="form-control-modern" placeholder="https://… paste a direct image URL">
+      <div id="logoPreviewWrap" style="display:none;margin-top:-.7rem;margin-bottom:1rem;">
+        <div style="display:flex;align-items:center;gap:.75rem;">
+          <img id="logoPreview" src="" alt="Logo preview" style="width:64px;height:64px;border-radius:50%;object-fit:cover;border:2px solid var(--border-light);">
+          <span style="font-size:.7rem;color:var(--text-muted);">Logo preview — shown on your storefront header</span>
+        </div>
+      </div>
+    </div>
+
+    <div>
       <div class="form-label-modern"><i class="bi bi-chat-text"></i> Store Bio</div>
       <textarea id="setBio" class="form-control-modern" rows="3" placeholder="Tell customers what makes your store special..."></textarea>
     </div>
@@ -271,6 +282,18 @@
 <script type="module" src="/assets/js/dashboard.js"></script>
 
 <script>
+  // Logo URL live preview
+  const logoInput = document.getElementById('setLogoUrl');
+  const logoWrap  = document.getElementById('logoPreviewWrap');
+  const logoImg   = document.getElementById('logoPreview');
+  if (logoInput) {
+    logoInput.addEventListener('input', () => {
+      const url = logoInput.value.trim();
+      if (url) { logoImg.src = url; logoWrap.style.display = 'block'; }
+      else      { logoWrap.style.display = 'none'; }
+    });
+  }
+
   const slugInput = document.getElementById('setSlug');
   const slugPreview = document.getElementById('slugPreview');
   if (slugInput && slugPreview) {
