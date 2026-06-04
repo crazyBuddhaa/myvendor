@@ -708,7 +708,7 @@
     if (!pass) return;
 
     try {
-      const res = await fetch('/api/get-admin-stats', {
+      const res = await fetch('/api/admin/stats', {
         headers: { 'Authorization': `Bearer ${pass}` }
       });
       const data = await res.json();
