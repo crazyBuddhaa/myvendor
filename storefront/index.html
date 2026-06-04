@@ -787,7 +787,7 @@
 </button>
 
 <!-- Cart overlay -->
-<div id="mvOverlay" onclick="mvCloseCart()"></div>
+<div id="mvOverlay" onclick="mvOverlayClick()"></div>
 
 <!-- Cart panel -->
 <div id="mvPanel" role="dialog" aria-label="Shopping cart">
@@ -844,6 +844,45 @@
             </form>
         </div>
     </div>
+</div>
+
+<!-- Variant picker bottom sheet -->
+<style>
+    #variantPicker {
+        position: fixed;
+        bottom: 0; left: 0; right: 0;
+        background: white;
+        border-radius: 22px 22px 0 0;
+        padding: 1.5rem 1.25rem 2rem;
+        z-index: 350;
+        transform: translateY(110%);
+        transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+        box-shadow: 0 -8px 32px rgba(0,0,0,0.12);
+        max-height: 70vh;
+        overflow-y: auto;
+    }
+    #variantPicker.open { transform: translateY(0); }
+    .vp-handle { width: 36px; height: 4px; background: #e2e8e0; border-radius: 4px; margin: 0 auto 1.2rem; }
+    .vp-title  { font-family: 'Playfair Display', serif; font-weight: 700; font-size: 1rem; color: var(--text-dark); margin-bottom: .15rem; }
+    .vp-price  { font-weight: 700; font-size: .88rem; color: var(--green-primary); margin-bottom: 1rem; }
+    .vp-section { margin-bottom: 1rem; }
+    .vp-label  { font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--text-muted); margin-bottom: .5rem; }
+    .vp-chips  { display: flex; flex-wrap: wrap; gap: .45rem; }
+    .vp-chip   { padding: .35rem .85rem; border-radius: 30px; border: 1.5px solid var(--border-light); background: var(--cream-bg); font-size: .8rem; font-weight: 600; color: var(--text-dark); cursor: pointer; transition: all .15s; }
+    .vp-chip.selected { background: var(--green-primary); color: white; border-color: var(--green-primary); }
+    .vp-confirm { width: 100%; background: linear-gradient(105deg, #1f6e43, #0b3b2a); border: none; color: white; padding: .85rem; border-radius: 40px; font-weight: 800; font-size: .9rem; margin-top: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: .5rem; }
+    .vp-close  { position: absolute; top: 1rem; right: 1rem; background: none; border: none; font-size: 1.3rem; color: var(--text-muted); cursor: pointer; line-height: 1; }
+</style>
+
+<div id="variantPicker">
+    <div class="vp-handle"></div>
+    <button class="vp-close" onclick="mvCloseVariant()" aria-label="Close">&times;</button>
+    <div class="vp-title"></div>
+    <div class="vp-price"></div>
+    <div class="vp-options"></div>
+    <button class="vp-confirm" onclick="mvConfirmVariant()">
+        <i class="bi bi-bag-plus-fill"></i> Add to Cart
+    </button>
 </div>
 
 <!-- External storefront logic (handles data, search, filters, product rendering) -->
