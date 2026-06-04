@@ -119,4 +119,51 @@ window.loadAnalytics = async function () {
             </div>
         `).join('');
     }
+
+    // ── Weekly revenue chart (last 8 weeks) ───────────────────────────────────
+    const weeklyEl = document.getElementById('weeklyChart');
+    const labelsEl = document.getElementById('weeklyLabels');
+    if (weeklyEl) {
+        // Build per-week revenue buckets
+        const buckets = {};
+        orders.filter(o => o.status === 'delivered').forEach(o => {
+            const d      = new Date(o.created_at);
+            const monday = new Date(d);
+            monday.setDate(d.getDate() - ((d.getDay() + 6) % 7));
+            monday.setHours(0, 0, 0, 0);
+            const key = monday.toISOString().slice(0, 10);
+            buckets[key] = (buckets[key] || 0) + parseFloat(o.total_amount || 0);
+        });
+
+        // Generate last 8 Monday-anchored weeks
+        const weeks = [];
+        for (let i = 7; i >= 0; i--) {
+            const now    = new Date();
+            const monday = new Date(now);
+            monday.setDate(now.getDate() - ((now.getDay() + 6) % 7) - i * 7);
+            monday.setHours(0, 0, 0, 0);
+            const key = monday.toISOString().slice(0, 10);
+            weeks.push({
+                key,
+                rev:   buckets[key] || 0,
+                label: monday.toLocaleDateString('en-NG', { month: 'short', day: 'numeric' }),
+            });
+        }
+
+        const max = Math.max(...weeks.map(w => w.rev), 1);
+
+        weeklyEl.innerHTML = weeks.map(w => {
+            const pct   = Math.max((w.rev / max) * 100, w.rev > 0 ? 4 : 2);
+            const color = w.rev > 0 ? 'linear-gradient(180deg,#22c55e,#0f6e3f)' : '#e2e8e0';
+            return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;" title="${w.rev > 0 ? '₦' + w.rev.toLocaleString() : 'No revenue'}">
+                <div style="width:100%;background:${color};border-radius:3px 3px 0 0;height:${pct}%;min-height:${w.rev > 0 ? 4 : 2}px;"></div>
+            </div>`;
+        }).join('');
+
+        if (labelsEl) {
+            labelsEl.innerHTML = weeks.map(w =>
+                `<div style="flex:1;text-align:center;font-size:.5rem;color:var(--text-muted);overflow:hidden;white-space:nowrap;">${w.label}</div>`
+            ).join('');
+        }
+    }
 };
