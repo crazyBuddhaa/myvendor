@@ -12,21 +12,105 @@ let _products        = [];
 const cartKey  = () => `mv_cart_${_vendorId}`;
 const getCart  = () => { try { return JSON.parse(localStorage.getItem(cartKey())) || []; } catch { return []; } };
 const saveCart = items => { localStorage.setItem(cartKey(), JSON.stringify(items)); _updateFab(); };
+const _ikey    = item => item._key || item.id;   // unique key per cart line
+
+// ── Variant picker ────────────────────────────────────────────────────────────
+
+function _showVariantPicker(p) {
+    const picker = document.getElementById('variantPicker');
+    if (!picker) { _doAddToCart(p.id, null, null); return; }
+
+    const sizesArr  = p.sizes  ? p.sizes.split(',').map(s => s.trim()).filter(Boolean)  : [];
+    const colorsArr = p.colors ? p.colors.split(',').map(c => c.trim()).filter(Boolean) : [];
+
+    picker.querySelector('.vp-title').textContent = p.title;
+    picker.querySelector('.vp-price').textContent = '\u20a6' + parseFloat(p.price).toLocaleString();
+    picker._productId = p.id;
+
+    let html = '';
+    if (sizesArr.length) {
+        html += `<div class="vp-section">
+            <div class="vp-label">Size</div>
+            <div class="vp-chips" id="vpSizeChips">
+                ${sizesArr.map(s => `<button class="vp-chip" onclick="mvPickChip(this)">${escapeHTML(s)}</button>`).join('')}
+            </div>
+        </div>`;
+    }
+    if (colorsArr.length) {
+        html += `<div class="vp-section">
+            <div class="vp-label">Colour</div>
+            <div class="vp-chips" id="vpColorChips">
+                ${colorsArr.map(c => `<button class="vp-chip" onclick="mvPickChip(this)">${escapeHTML(c)}</button>`).join('')}
+            </div>
+        </div>`;
+    }
+    picker.querySelector('.vp-options').innerHTML = html;
+    picker.classList.add('open');
+    document.getElementById('mvOverlay').classList.add('open');
+}
+
+window.mvPickChip = btn => {
+    btn.closest('.vp-chips').querySelectorAll('.vp-chip').forEach(c => c.classList.remove('selected'));
+    btn.classList.add('selected');
+};
+
+window.mvConfirmVariant = () => {
+    const picker = document.getElementById('variantPicker');
+    if (!picker) return;
+    const sizeEl  = picker.querySelector('#vpSizeChips .vp-chip.selected');
+    const colorEl = picker.querySelector('#vpColorChips .vp-chip.selected');
+    picker.classList.remove('open');
+    document.getElementById('mvOverlay').classList.remove('open');
+    _doAddToCart(picker._productId, sizeEl?.textContent || null, colorEl?.textContent || null);
+};
+
+window.mvCloseVariant = () => {
+    const picker = document.getElementById('variantPicker');
+    if (picker) picker.classList.remove('open');
+    document.getElementById('mvOverlay').classList.remove('open');
+};
+
+function _doAddToCart(productId, selectedSize, selectedColor) {
+    const p = _products.find(x => x.id === productId);
+    if (!p) return;
+    const cart = getCart();
+    const hit  = cart.find(i => i.id === productId && i._size === (selectedSize || null) && i._color === (selectedColor || null));
+    if (hit) {
+        hit.qty++;
+    } else {
+        const variantLabel = [selectedSize, selectedColor].filter(Boolean).join(' \u00b7 ');
+        cart.push({
+            _key:      Math.random().toString(36).slice(2),
+            id:        p.id,
+            _size:     selectedSize  || null,
+            _color:    selectedColor || null,
+            title:     p.title + (variantLabel ? ` (${variantLabel})` : ''),
+            price:     p.price,
+            image_url: p.image_url,
+            qty:       1,
+        });
+    }
+    saveCart(cart);
+    _animateFab();
+}
+
+// ── Public cart actions ───────────────────────────────────────────────────────
 
 window.mvAddToCart = productId => {
     const p = _products.find(x => x.id === productId);
     if (!p) return;
-    const cart = getCart();
-    const hit  = cart.find(i => i.id === productId);
-    if (hit) hit.qty++; else cart.push({ id: p.id, title: p.title, price: p.price, image_url: p.image_url, qty: 1 });
-    saveCart(cart);
-    _animateFab();
+    const hasVariants = (p.sizes && p.sizes.trim()) || (p.colors && p.colors.trim());
+    if (hasVariants) {
+        _showVariantPicker(p);
+    } else {
+        _doAddToCart(productId, null, null);
+    }
 };
 
-window.mvRemoveItem = productId => { saveCart(getCart().filter(i => i.id !== productId)); _renderItems(); };
+window.mvRemoveItem = key => { saveCart(getCart().filter(i => _ikey(i) !== key)); _renderItems(); };
 
-window.mvChangeQty = (productId, delta) => {
-    saveCart(getCart().map(i => i.id === productId ? { ...i, qty: Math.max(1, i.qty + delta) } : i));
+window.mvChangeQty = (key, delta) => {
+    saveCart(getCart().map(i => _ikey(i) === key ? { ...i, qty: Math.max(1, i.qty + delta) } : i));
     _renderItems();
 };
 
@@ -40,6 +124,16 @@ window.mvCloseCart = () => {
     document.getElementById('mvPanel').classList.remove('open');
     document.getElementById('mvOverlay').classList.remove('open');
     _showStep('items');
+};
+
+// Smart overlay tap — closes whichever panel is open
+window.mvOverlayClick = () => {
+    const picker = document.getElementById('variantPicker');
+    if (picker && picker.classList.contains('open')) {
+        mvCloseVariant();
+    } else {
+        mvCloseCart();
+    }
 };
 
 const _showStep = step => {
@@ -56,13 +150,13 @@ function _buildOrderMsg(vars) {
         return tpl
             .replace(/\{vendor\}/g,  vars.vendor)
             .replace(/\{items\}/g,   vars.items)
-            .replace(/\{total\}/g,   `₦${vars.total}`)
+            .replace(/\{total\}/g,   `\u20a6${vars.total}`)
             .replace(/\{name\}/g,    vars.name)
             .replace(/\{phone\}/g,   vars.phone)
             .replace(/\{address\}/g, vars.address)
             .replace(/\{notes\}/g,   vars.notes || '');
     }
-    return `Hello *${vars.vendor}*, I'd like to place an order!\n\n🛒 *ORDER SUMMARY:*\n${vars.items}\n\n💰 *Total: ₦${vars.total}*\n\n*── DETAILS ──*\n👤 *Name:* ${vars.name}\n📞 *Phone:* ${vars.phone}\n📍 *Address:* ${vars.address}${vars.notes ? `\n📝 *Notes:* ${vars.notes}` : ''}`;
+    return `Hello *${vars.vendor}*, I\u2019d like to place an order!\n\n\uD83D\uDED2 *ORDER SUMMARY:*\n${vars.items}\n\n\uD83D\uDCB0 *Total: \u20a6${vars.total}*\n\n*\u2500\u2500 DETAILS \u2500\u2500*\n\uD83D\uDC64 *Name:* ${vars.name}\n\uD83D\uDCDE *Phone:* ${vars.phone}\n\uD83D\uDCCD *Address:* ${vars.address}${vars.notes ? `\n\uD83D\uDCDD *Notes:* ${vars.notes}` : ''}`;
 }
 
 window.mvPlaceOrder = e => {
@@ -73,7 +167,7 @@ window.mvPlaceOrder = e => {
     const phone   = document.getElementById('mvPhone').value;
     const address = document.getElementById('mvAddress').value;
     const notes   = document.getElementById('mvNotes').value;
-    const items   = cart.map((i, n) => `${n + 1}. ${i.title} × ${i.qty} — ₦${(i.price * i.qty).toLocaleString()}`).join('\n');
+    const items   = cart.map((i, n) => `${n + 1}. ${i.title} \u00d7 ${i.qty} \u2014 \u20a6${(i.price * i.qty).toLocaleString()}`).join('\n');
     const total   = cart.reduce((s, i) => s + i.price * i.qty, 0).toLocaleString();
     const msg     = _buildOrderMsg({ vendor: _vendorName, items, total, name, phone, address, notes });
     window.open(`https://wa.me/${_vendorWa}?text=${encodeURIComponent(msg)}`, '_blank');
@@ -96,13 +190,15 @@ function _renderItems() {
                 <div style="font-weight:600;font-size:.85rem;">Your cart is empty</div>
                 <div style="font-size:.78rem;margin-top:.3rem;">Tap the bag icon on any product</div>
             </div>`;
-        if (tot) tot.textContent = '₦0';
+        if (tot) tot.textContent = '\u20a60';
         if (btn) { btn.disabled = true; btn.style.opacity = '0.45'; }
         return;
     }
 
     const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
-    body.innerHTML = cart.map(item => `
+    body.innerHTML = cart.map(item => {
+        const key = _ikey(item);
+        return `
         <div style="display:flex;gap:.75rem;padding:.85rem 0;border-bottom:1px solid var(--border-light);">
             <div style="width:52px;height:52px;border-radius:10px;overflow:hidden;background:#f8f2ea;flex-shrink:0;display:flex;align-items:center;justify-content:center;border:1px solid var(--border-light);">
                 ${item.image_url
@@ -111,32 +207,31 @@ function _renderItems() {
             </div>
             <div style="flex:1;min-width:0;">
                 <div style="font-weight:600;font-size:.8rem;color:var(--text-dark);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHTML(item.title)}</div>
-                <div style="font-weight:700;font-size:.82rem;color:var(--green-primary);margin:.2rem 0 .45rem;">₦${parseFloat(item.price).toLocaleString()}</div>
+                <div style="font-weight:700;font-size:.82rem;color:var(--green-primary);margin:.2rem 0 .45rem;">\u20a6${parseFloat(item.price).toLocaleString()}</div>
                 <div style="display:flex;align-items:center;gap:.4rem;">
-                    <button onclick="mvChangeQty('${item.id}',-1)" style="width:26px;height:26px;border-radius:50%;border:1.5px solid var(--border-light);background:white;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.75rem;"><i class="bi bi-dash"></i></button>
+                    <button onclick="mvChangeQty('${key}',-1)" style="width:26px;height:26px;border-radius:50%;border:1.5px solid var(--border-light);background:white;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.75rem;"><i class="bi bi-dash"></i></button>
                     <span style="font-weight:700;font-size:.85rem;min-width:1.4rem;text-align:center;">${item.qty}</span>
-                    <button onclick="mvChangeQty('${item.id}',1)" style="width:26px;height:26px;border-radius:50%;border:1.5px solid var(--border-light);background:white;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.75rem;"><i class="bi bi-plus"></i></button>
+                    <button onclick="mvChangeQty('${key}',1)" style="width:26px;height:26px;border-radius:50%;border:1.5px solid var(--border-light);background:white;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.75rem;"><i class="bi bi-plus"></i></button>
                 </div>
             </div>
             <div style="display:flex;flex-direction:column;align-items:flex-end;gap:.4rem;flex-shrink:0;">
-                <button onclick="mvRemoveItem('${item.id}')" style="border:none;background:none;color:var(--text-muted);cursor:pointer;font-size:.85rem;padding:.1rem;opacity:.7;"><i class="bi bi-x-lg"></i></button>
-                <div style="font-weight:800;font-size:.85rem;color:var(--text-dark);">₦${(item.price * item.qty).toLocaleString()}</div>
+                <button onclick="mvRemoveItem('${key}')" style="border:none;background:none;color:var(--text-muted);cursor:pointer;font-size:.85rem;padding:.1rem;opacity:.7;"><i class="bi bi-x-lg"></i></button>
+                <div style="font-weight:800;font-size:.85rem;color:var(--text-dark);">\u20a6${(item.price * item.qty).toLocaleString()}</div>
             </div>
-        </div>`).join('');
+        </div>`;
+    }).join('');
 
-    if (tot) tot.textContent = `₦${total.toLocaleString()}`;
+    if (tot) tot.textContent = `\u20a6${total.toLocaleString()}`;
     if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
     _updateFab();
 }
 
 function _updateFab() {
     const count = getCart().reduce((s, i) => s + i.qty, 0);
-
     const fab   = document.getElementById('mvFab');
     const badge = document.getElementById('mvBadge');
     if (fab)   fab.style.display = count > 0 ? 'flex' : 'none';
     if (badge) badge.textContent = count;
-
     const navBtn   = document.getElementById('navCartBtn');
     const navCount = document.getElementById('navCartCount');
     if (navBtn) {
@@ -197,13 +292,13 @@ function _renderRecentlyViewed(vendorId) {
                 ${item.image_url ? `<img src="${escapeHTML(item.image_url)}" alt="">` : '<i class="bi bi-box" style="font-size:1.2rem;color:var(--text-muted);"></i>'}
             </div>
             <div class="rv-title">${escapeHTML(item.title)}</div>
-            <div class="rv-price">₦${parseFloat(item.price).toLocaleString()}</div>
+            <div class="rv-price">\u20a6${parseFloat(item.price).toLocaleString()}</div>
         </a>`).join('');
 }
 // ── END RECENTLY VIEWED ───────────────────────────────────────────────────────
 
 
-// SEARCH & FILTER
+// ── SEARCH & FILTER ───────────────────────────────────────────────────────────
 window.searchStore = function () {
     const term  = document.getElementById('searchInput').value.toLowerCase();
     const items = document.querySelectorAll('.product-item');
@@ -237,8 +332,9 @@ window.filterStorefront = function (category, buttonElement) {
 };
 
 
+// ── INIT STORE ────────────────────────────────────────────────────────────────
 async function initStore() {
-    // 1. EXTRACT SLUG
+    // 1. Extract slug
     let slug = null;
     const params = new URLSearchParams(window.location.search);
     if (params.has('vendor')) slug = params.get('vendor');
@@ -253,36 +349,51 @@ async function initStore() {
 
     if (!slug) {
         document.body.innerHTML = `
-            <div class="text-center py-5" style="background:var(--cream-bg);min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;">
-                <i class="bi bi-shop text-muted" style="font-size:3rem;color:var(--text-muted)!important;"></i>
-                <h3 class="mt-3 fw-bold" style="color:var(--green-deep);font-family:'Playfair Display',serif;">Store not found</h3>
-                <p style="color:var(--text-muted);">We couldn't detect a store name in the link.</p>
+            <div style="text-align:center;padding:5rem 1rem;min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;background:var(--cream-bg);">
+                <i class="bi bi-shop" style="font-size:3rem;color:var(--text-muted);opacity:.5;"></i>
+                <h3 style="margin-top:1rem;font-weight:800;color:var(--green-deep);">Store not found</h3>
+                <p style="color:var(--text-muted);">We couldn\u2019t detect a store name in the link.</p>
             </div>`;
         return;
     }
 
-    // 2. FETCH VENDOR
+    // 2. Fetch vendor
     const { data: vendor, error: vError } = await supabase.from('vendor_profiles').select('*').eq('slug', slug).single();
 
     if (vError || !vendor) {
         document.body.innerHTML = `
-            <div class="text-center py-5" style="background:var(--cream-bg);min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;">
-                <i class="bi bi-exclamation-circle text-danger" style="font-size:3rem;"></i>
-                <h3 class="mt-3 fw-bold" style="color:var(--green-deep);font-family:'Playfair Display',serif;">Store Does Not Exist</h3>
-                <p style="color:var(--text-muted);">There is no store registered with the name "${escapeHTML(slug)}".</p>
+            <div style="text-align:center;padding:5rem 1rem;min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;background:var(--cream-bg);">
+                <i class="bi bi-exclamation-circle" style="font-size:3rem;color:#ef4444;"></i>
+                <h3 style="margin-top:1rem;font-weight:800;color:var(--green-deep);">Store does not exist</h3>
+                <p style="color:var(--text-muted);">No store found for \u201c${escapeHTML(slug)}\u201d.</p>
             </div>`;
         return;
     }
 
-    // 3. UPDATE UI
+    // 3. Update UI
     const storeNameEl = document.getElementById('displayStoreName');
     if (storeNameEl) storeNameEl.innerHTML = escapeHTML(vendor.business_name);
     const navLinkEl = document.getElementById('navStoreLink');
     if (navLinkEl) navLinkEl.href = `/${vendor.slug}`;
 
-    // 4. SEO — title, description, Open Graph, JSON-LD
+    // Clean URL: replace /storefront/index.html?vendor=slug with /slug
+    if (window.location.pathname.includes('/storefront/')) {
+        try { history.replaceState({}, document.title, '/' + slug); } catch (_) {}
+    }
+
+    // Show store logo if set
+    if (vendor.logo_url) {
+        const brandIcon = document.querySelector('.brand-icon');
+        if (brandIcon) {
+            brandIcon.innerHTML = `<img src="${escapeHTML(vendor.logo_url)}" alt="${escapeHTML(vendor.business_name)}" style="width:100%;height:100%;border-radius:14px;object-fit:cover;">`;
+            brandIcon.style.background = 'transparent';
+            brandIcon.style.boxShadow  = 'none';
+        }
+    }
+
+    // 4. SEO
     document.title = `${vendor.business_name} | myvendor`;
-    const desc = vendor.bio || `Shop ${vendor.business_name} on myvendor — browse products and order via WhatsApp.`;
+    const desc = vendor.bio || `Shop ${vendor.business_name} on myvendor \u2014 browse products and order via WhatsApp.`;
     _setMeta('description',    desc);
     _setMeta('og:title',       `${vendor.business_name} | myvendor`);
     _setMeta('og:description', desc);
@@ -291,7 +402,7 @@ async function initStore() {
     _setMeta('twitter:card',   'summary');
     _injectLocalBusinessLD(vendor);
 
-    // 5. SET CART CONTEXT
+    // 5. Cart context
     _vendorId        = vendor.id;
     _vendorName      = vendor.business_name;
     _vendorWa        = (vendor.whatsapp_number || vendor.phone || '').replace(/\D/g, '');
@@ -301,13 +412,13 @@ async function initStore() {
 
     supabase.from('analytics_events').insert([{ vendor_id: vendor.id, event_type: 'store_view', product_id: null }]).then();
 
-    // 6. VACATION MODE
+    // 6. Vacation mode
     if (vendor.vacation_mode) {
         const grid = document.getElementById('productGrid');
         if (grid) grid.innerHTML = `
             <div style="text-align:center;padding:4rem 1.5rem;color:var(--text-muted);">
                 <i class="bi bi-moon-stars-fill" style="font-size:2.8rem;display:block;margin-bottom:1rem;color:var(--green-primary);opacity:.65;"></i>
-                <div style="font-weight:800;font-size:1.05rem;margin-bottom:.6rem;color:var(--text-dark);">We're on a short break 🌿</div>
+                <div style="font-weight:800;font-size:1.05rem;margin-bottom:.6rem;color:var(--text-dark);">We\u2019re on a short break \uD83C\uDF3F</div>
                 <div style="font-size:.85rem;max-width:260px;margin:0 auto 1.25rem;line-height:1.5;">Check back soon, or reach us directly on WhatsApp.</div>
                 ${_vendorWa ? `<a href="https://wa.me/${_vendorWa}" target="_blank" style="display:inline-flex;align-items:center;gap:.45rem;background:#25D366;color:white;padding:.65rem 1.3rem;border-radius:40px;font-weight:700;font-size:.85rem;text-decoration:none;"><i class="bi bi-whatsapp"></i> Message us</a>` : ''}
             </div>`;
@@ -322,7 +433,7 @@ async function initStore() {
         return;
     }
 
-    // 7. FETCH PRODUCTS
+    // 7. Fetch & render products
     const { data: products, error: pError } = await supabase
         .from('products')
         .select('*')
@@ -345,7 +456,7 @@ async function initStore() {
     if (empty)   empty.classList.add('hidden');
     if (countEl) countEl.innerText = `${products.length} items`;
 
-    // CATEGORY PILLS
+    // Category filter pills
     if (filterContainer) {
         const categories = ['All', ...new Set(products.map(p => p.category).filter(c => c && c.trim() !== 'Other' && c.trim() !== ''))];
         if (categories.length > 1) {
@@ -357,7 +468,7 @@ async function initStore() {
         }
     }
 
-    // RENDER PRODUCT GRID
+    // Render product grid
     if (grid) {
         grid.innerHTML = products.map((p, i) => {
             const delay   = i * 0.05;
@@ -369,19 +480,18 @@ async function initStore() {
             const imgHtml = p.image_url
                 ? `<img src="${p.image_url}" alt="${escapeHTML(p.title)}" style="${isOut ? 'filter:grayscale(1);opacity:.8;' : ''}">`
                 : '<i class="bi bi-box" style="font-size:2rem;color:var(--text-muted);"></i>';
-            const catData = p.category || 'Other';
             return `
-            <a href="/product/${p.id}" class="product-item product-card text-decoration-none" data-category="${escapeHTML(catData)}" style="animation-delay:${delay}s;">
+            <a href="/product/${p.id}" class="product-item product-card text-decoration-none" data-category="${escapeHTML(p.category || 'Other')}" style="animation-delay:${delay}s;">
                 <div class="prod-img">${badge}${imgHtml}${atcBtn}</div>
                 <div class="prod-info">
                     <div class="prod-title">${escapeHTML(p.title)}</div>
-                    <div class="prod-price">₦${parseFloat(p.price).toLocaleString()}</div>
+                    <div class="prod-price">\u20a6${parseFloat(p.price).toLocaleString()}</div>
                 </div>
             </a>`;
         }).join('');
     }
 
-    // 8. RECENTLY VIEWED
+    // 8. Recently viewed
     _renderRecentlyViewed(vendor.id);
 }
 
