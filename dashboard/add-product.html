@@ -21,12 +21,27 @@
     .remove-image-btn { position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); border: none; border-radius: 30px; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; color: white; cursor: pointer; transition: 0.2s; z-index: 10; }
     .remove-image-btn:hover { background: var(--danger); }
 
-    .extra-images-grid { display: flex; gap: 0.8rem; margin-top: 0.5rem; flex-wrap: wrap; }
+    .extra-images-grid { display: flex; gap: 0.8rem; margin-top: 0.5rem; flex-wrap: wrap; align-items: flex-start; }
     .extra-image-box { width: 75px; height: 75px; border-radius: var(--radius-sm); border: 2px dashed #d97706; display: flex; align-items: center; justify-content: center; background: #fefaf5; cursor: pointer; position: relative; transition: 0.2s; flex-shrink: 0; }
     .extra-image-box:hover { background: #fef3c7; }
     .extra-image-box i.main-icon { font-size: 1.5rem; color: #b45309; }
     .extra-image-box i.lock-icon { position: absolute; bottom: 6px; right: 6px; font-size: 0.65rem; color: #b45309; }
     .premium-badge { background: #fef3c7; color: #b45309; font-size: 0.6rem; padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
+
+    /* Gallery thumbnail card */
+    .gallery-thumb-wrap { position: relative; width: 75px; height: 75px; flex-shrink: 0; cursor: grab; touch-action: none; user-select: none; }
+    .gallery-thumb-wrap:active { cursor: grabbing; }
+    .gallery-thumb-img { width: 75px; height: 75px; border-radius: 12px; overflow: hidden; border: 2px solid #e9eee5; transition: border-color 0.15s, box-shadow 0.15s; }
+    .gallery-thumb-img img { width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; }
+    .gallery-remove-btn { position: absolute; top: -6px; right: -6px; width: 22px; height: 22px; background: #ef4444; border: 2px solid white; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.6rem; color: white; z-index: 10; transition: 0.15s; line-height: 1; padding: 0; }
+    .gallery-remove-btn:hover { background: #dc2626; transform: scale(1.15); }
+
+    /* Drag states */
+    .gallery-thumb-wrap.dragging { opacity: 0.35; cursor: grabbing; }
+    .gallery-thumb-wrap.drag-over .gallery-thumb-img { border-color: var(--green-bright, #2b9b5a); box-shadow: 0 0 0 3px rgba(43,155,90,0.3); }
+
+    .drag-hint { font-size: 0.62rem; color: #9ca3af; margin-top: 0.4rem; display: flex; align-items: center; gap: 0.3rem; }
+    .gallery-count { font-size: 0.65rem; color: #b45309; font-weight: 700; margin-left: 0.5rem; }
 
     select.form-control-modern { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%234a6741' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 1rem center; }
     .form-section { background: var(--green-soft); border-radius: var(--radius-md); padding: 1rem; margin-bottom: 1rem; }
@@ -50,7 +65,7 @@
   </div>
 
   <form id="addProductForm" class="form-card-modern" onsubmit="window.saveProduct(event)">
-    
+
     <input type="hidden" id="imageUrl" value="">
     <input type="hidden" id="extraImagesData" value="[]">
 
@@ -59,7 +74,6 @@
       <div class="image-upload-area" id="uploadPrimaryBtn">
         <i class="bi bi-cloud-upload fs-2 text-muted"></i>
         <div class="text-muted mt-2" style="font-size: 0.75rem;">Click to upload main image</div>
-        
         <div class="image-preview-wrapper" id="imagePreviewWrapper" style="display: none;">
           <img id="imagePreview" class="image-preview" src="">
           <button type="button" id="removeImgBtn" class="remove-image-btn" onclick="window.clearImage(event)"><i class="bi bi-trash3"></i></button>
@@ -68,14 +82,20 @@
     </div>
 
     <div class="mb-4 pt-2" style="border-top: 1px dashed var(--border-light);">
-      <div class="form-label-modern mb-1"><i class="bi bi-images"></i> Additional Gallery <span class="premium-badge ms-2">Premium</span></div>
+      <div class="form-label-modern mb-1">
+        <i class="bi bi-images"></i> Additional Gallery
+        <span class="premium-badge ms-2">Premium</span>
+        <span class="gallery-count" id="galleryCount"></span>
+      </div>
       <div class="text-muted mb-2" style="font-size: 0.65rem;">Add up to 4 more angles of your product.</div>
-      
       <div class="extra-images-grid" id="extraImagesContainer">
-        <div class="extra-image-box" onclick="window.openGalleryWidget()">
+        <div class="extra-image-box" id="galleryAddBtn" onclick="window.openGalleryWidget()">
           <i class="bi bi-plus-lg main-icon"></i>
           <i class="bi bi-lock-fill lock-icon"></i>
         </div>
+      </div>
+      <div class="drag-hint" id="dragHint" style="display:none;">
+        <i class="bi bi-grip-vertical"></i> Drag thumbnails to reorder &mdash; first image shows first in the storefront
       </div>
     </div>
 
@@ -84,26 +104,26 @@
 
     <div class="row g-2 mb-3">
       <div class="col-6">
-        <label class="form-label-modern">Price (₦)</label>
+        <label class="form-label-modern">Price (&#8358;)</label>
         <input type="number" id="prodPrice" class="form-control-modern" placeholder="0.00" required>
       </div>
       <div class="col-6">
         <label class="form-label-modern">Category</label>
         <select id="prodCategory" class="form-control-modern">
-          <option value="Fashion">Fashion & Apparel</option>
+          <option value="Fashion">Fashion &amp; Apparel</option>
           <option value="Shoes">Shoes</option>
-          <option value="Bags & Accessories">Bags & Accessories</option>
-          <option value="Beauty">Beauty & Cosmetics</option>
+          <option value="Bags &amp; Accessories">Bags &amp; Accessories</option>
+          <option value="Beauty">Beauty &amp; Cosmetics</option>
           <option value="Electronics">Electronics</option>
-          <option value="Home & Living">Home & Living</option>
-          <option value="Food & Drinks">Food & Drinks</option>
+          <option value="Home &amp; Living">Home &amp; Living</option>
+          <option value="Food &amp; Drinks">Food &amp; Drinks</option>
           <option value="Other" selected>Other</option>
         </select>
       </div>
     </div>
 
     <div class="form-section">
-      <div class="section-title"><i class="bi bi-box-seam"></i> Inventory & Status</div>
+      <div class="section-title"><i class="bi bi-box-seam"></i> Inventory &amp; Status</div>
       <div class="row g-2">
         <div class="col-6">
           <label class="form-label-modern">Status</label>
@@ -142,84 +162,180 @@
 <footer>© 2026 myvendor &nbsp;·&nbsp; <a href="#" style="color: var(--green-primary); text-decoration: none;">Help Center</a></footer>
 
 <script>
-  // 1. Initialize variables
-  let uploadedGalleryImages = [];
   var primaryWidget;
   var galleryWidget;
+  var _dragSrc = null;
 
-  // 2. Wait for the page to load before setting up Cloudinary
+  // ── Sync DOM order → data ────────────────────────────────────────────────────
+  function syncGalleryOrder() {
+    var container = document.getElementById('extraImagesContainer');
+    if (!container) return;
+    var wraps = Array.from(container.querySelectorAll('.gallery-thumb-wrap'));
+    var urls  = wraps.map(function(w) { return w.dataset.url; }).filter(Boolean);
+    window.uploadedGalleryImages = urls;
+    document.getElementById('extraImagesData').value = JSON.stringify(urls);
+  }
+
+  function updateGalleryUI() {
+    var count   = (window.uploadedGalleryImages || []).length;
+    var countEl = document.getElementById('galleryCount');
+    var addBtn  = document.getElementById('galleryAddBtn');
+    var hint    = document.getElementById('dragHint');
+    if (countEl) countEl.textContent = count > 0 ? count + '/4' : '';
+    if (addBtn)  addBtn.style.display = count >= 4 ? 'none' : 'flex';
+    if (hint)    hint.style.display   = count > 1  ? 'flex' : 'none';
+  }
+
+  // ── Drag-and-drop ────────────────────────────────────────────────────────────
+  function addDragListeners(wrap) {
+    wrap.setAttribute('draggable', 'true');
+
+    wrap.addEventListener('dragstart', function(e) {
+      _dragSrc = wrap;
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', '');
+      setTimeout(function() { wrap.classList.add('dragging'); }, 0);
+    });
+
+    wrap.addEventListener('dragend', function() {
+      wrap.classList.remove('dragging');
+      document.querySelectorAll('.gallery-thumb-wrap').forEach(function(el) {
+        el.classList.remove('drag-over');
+      });
+      _dragSrc = null;
+      syncGalleryOrder();
+      updateGalleryUI();
+    });
+
+    wrap.addEventListener('dragover', function(e) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      if (_dragSrc && _dragSrc !== wrap) {
+        document.querySelectorAll('.gallery-thumb-wrap').forEach(function(el) {
+          el.classList.remove('drag-over');
+        });
+        wrap.classList.add('drag-over');
+      }
+    });
+
+    wrap.addEventListener('dragleave', function(e) {
+      if (!wrap.contains(e.relatedTarget)) {
+        wrap.classList.remove('drag-over');
+      }
+    });
+
+    wrap.addEventListener('drop', function(e) {
+      e.preventDefault();
+      if (!_dragSrc || _dragSrc === wrap) return;
+      var container = document.getElementById('extraImagesContainer');
+      var wraps     = Array.from(container.querySelectorAll('.gallery-thumb-wrap'));
+      var srcIdx    = wraps.indexOf(_dragSrc);
+      var tgtIdx    = wraps.indexOf(wrap);
+      if (srcIdx < tgtIdx) {
+        container.insertBefore(_dragSrc, wrap.nextSibling);
+      } else {
+        container.insertBefore(_dragSrc, wrap);
+      }
+      wrap.classList.remove('drag-over');
+    });
+  }
+
+  // ── Gallery helpers ──────────────────────────────────────────────────────────
+  window.removeGalleryImage = function(url, thumbEl) {
+    if (thumbEl) thumbEl.remove();
+    syncGalleryOrder();
+    updateGalleryUI();
+  };
+
+  window.renderGalleryThumb = function(url, container) {
+    var wrap = document.createElement('div');
+    wrap.className   = 'gallery-thumb-wrap';
+    wrap.dataset.url = url;
+
+    var box = document.createElement('div');
+    box.className = 'gallery-thumb-img';
+    var img = document.createElement('img');
+    img.src = url;
+    img.alt = 'Gallery image';
+    box.appendChild(img);
+
+    var removeBtn = document.createElement('button');
+    removeBtn.type      = 'button';
+    removeBtn.className = 'gallery-remove-btn';
+    removeBtn.innerHTML = '<i class="bi bi-x"></i>';
+    removeBtn.title     = 'Remove image';
+    removeBtn.onclick   = function() { window.removeGalleryImage(url, wrap); };
+
+    wrap.appendChild(box);
+    wrap.appendChild(removeBtn);
+    addDragListeners(wrap);
+    container.insertBefore(wrap, container.lastElementChild);
+    syncGalleryOrder();
+    updateGalleryUI();
+    return wrap;
+  };
+
+  // ── Cloudinary widgets ───────────────────────────────────────────────────────
   document.addEventListener('DOMContentLoaded', function() {
-      
-      // Setup Primary Image Widget
-      primaryWidget = cloudinary.createUploadWidget({
-        cloudName: 'dzxkxc7zu', 
-        uploadPreset: 'myvendor_uploads', 
-        multiple: false,
-        sources: ['local', 'camera', 'instagram'],
-      }, (error, result) => {
-        if (!error && result && result.event === "success") {
-          document.getElementById('imageUrl').value = result.info.secure_url;
-          document.getElementById('imagePreview').src = result.info.secure_url;
-          document.getElementById('imagePreview').style.display = 'block';
-          document.getElementById('imagePreviewWrapper').style.display = 'block';
-          document.getElementById('removeImgBtn').classList.remove('hidden');
-        } else if (error) {
-          console.error("Cloudinary Error: ", error);
-        }
-      });
+    primaryWidget = cloudinary.createUploadWidget({
+      cloudName:    'dzxkxc7zu',
+      uploadPreset: 'myvendor_uploads',
+      multiple:     false,
+      sources:      ['local', 'camera', 'instagram'],
+    }, function(error, result) {
+      if (!error && result && result.event === 'success') {
+        document.getElementById('imageUrl').value             = result.info.secure_url;
+        document.getElementById('imagePreview').src           = result.info.secure_url;
+        document.getElementById('imagePreview').style.display = 'block';
+        document.getElementById('imagePreviewWrapper').style.display = 'block';
+        document.getElementById('removeImgBtn').classList.remove('hidden');
+      }
+    });
 
-      // Bind to the upload box click
-      document.getElementById('uploadPrimaryBtn').addEventListener('click', function(e) {
-          // Prevent opening if they click the trash can
-          if (e.target.closest('#removeImgBtn')) return;
-          primaryWidget.open();
-      }, false);
+    document.getElementById('uploadPrimaryBtn').addEventListener('click', function(e) {
+      if (e.target.closest('#removeImgBtn')) return;
+      primaryWidget.open();
+    }, false);
 
-      // Setup Premium Gallery Widget
-      galleryWidget = cloudinary.createUploadWidget({
-        cloudName: 'dzxkxc7zu',
-        uploadPreset: 'myvendor_uploads',
-        multiple: true,
-        maxFiles: 4,
-        sources: ['local', 'camera', 'instagram'],
-      }, (error, result) => {
-        if (!error && result && result.event === "success") {
-          uploadedGalleryImages.push(result.info.secure_url);
-          document.getElementById('extraImagesData').value = JSON.stringify(uploadedGalleryImages);
-          
-          const container = document.getElementById('extraImagesContainer');
-          const imgBox = document.createElement('div');
-          imgBox.style.cssText = "width:75px; height:75px; border-radius:12px; overflow:hidden; border:1px solid #e9eee5;";
-          const img = document.createElement('img');
-          img.src = result.info.secure_url;
-          img.style.cssText = "width:100%; height:100%; object-fit:cover;";
-          
-          imgBox.appendChild(img);
-          container.insertBefore(imgBox, container.lastElementChild);
-        }
-      });
+    galleryWidget = cloudinary.createUploadWidget({
+      cloudName:    'dzxkxc7zu',
+      uploadPreset: 'myvendor_uploads',
+      multiple:     true,
+      maxFiles:     4,
+      sources:      ['local', 'camera', 'instagram'],
+    }, function(error, result) {
+      if (!error && result && result.event === 'success') {
+        window.uploadedGalleryImages = window.uploadedGalleryImages || [];
+        if (window.uploadedGalleryImages.length >= 4) return;
+        var container = document.getElementById('extraImagesContainer');
+        window.renderGalleryThumb(result.info.secure_url, container);
+      }
+    });
   });
 
-  // 3. Expose gallery trigger & clear function
-  window.openGalleryWidget = async () => {
-    // Wait up to 5 s for initDashboard() to finish setting window.currentUser
-    let tries = 0;
+  // ── Click triggers ───────────────────────────────────────────────────────────
+  window.openGalleryWidget = async function() {
+    var tries = 0;
     while (!window.currentUser && tries < 50) {
-      await new Promise(r => setTimeout(r, 100));
+      await new Promise(function(r) { setTimeout(r, 100); });
       tries++;
     }
     if (!window.currentUser || window.currentUser.tier !== 'premium') {
-      if (window.showPremiumModal) window.showPremiumModal("Uploading multiple gallery images is a Premium feature.");
-      else alert("Uploading multiple images is a Premium feature.");
+      if (window.showPremiumModal) window.showPremiumModal('Uploading multiple gallery images is a Premium feature.');
+      else alert('Uploading multiple images is a Premium feature.');
+      return;
+    }
+    if ((window.uploadedGalleryImages || []).length >= 4) {
+      alert('You already have 4 gallery images. Remove one before adding more.');
       return;
     }
     if (galleryWidget) galleryWidget.open();
   };
 
-  window.clearImage = (e) => {
+  window.clearImage = function(e) {
     e.stopPropagation();
-    document.getElementById('imageUrl').value = '';
-    document.getElementById('imagePreview').style.display = 'none';
+    document.getElementById('imageUrl').value                    = '';
+    document.getElementById('imagePreview').style.display        = 'none';
     document.getElementById('imagePreviewWrapper').style.display = 'none';
     document.getElementById('removeImgBtn').classList.add('hidden');
   };
