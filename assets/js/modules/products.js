@@ -212,10 +212,14 @@ window.loadEditProduct = async function (id) {
         const container = document.getElementById('extraImagesContainer');
         if (container) {
             p.extra_images.forEach(url => {
-                const imgBox = document.createElement('div');
-                imgBox.style.cssText = 'width:75px; height:75px; border-radius:12px; overflow:hidden; border:1px solid #e9eee5;';
-                imgBox.innerHTML = `<img src="${url}" style="width:100%; height:100%; object-fit:cover;">`;
-                container.insertBefore(imgBox, container.lastElementChild);
+                if (typeof window.renderGalleryThumb === 'function') {
+                    window.renderGalleryThumb(url, container);
+                } else {
+                    const imgBox = document.createElement('div');
+                    imgBox.style.cssText = 'width:75px; height:75px; border-radius:12px; overflow:hidden; border:1px solid #e9eee5;';
+                    imgBox.innerHTML = `<img src="${url}" style="width:100%; height:100%; object-fit:cover;">`;
+                    container.insertBefore(imgBox, container.lastElementChild);
+                }
             });
         }
     }
