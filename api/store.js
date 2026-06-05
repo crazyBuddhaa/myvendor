@@ -1,4 +1,5 @@
 import { escapeHtml, sanitizeSlug } from './_utils.js';
+import { cacheGet, cacheSet, cacheIsActive, setCacheHeaders } from './_cache.js';
 
 export default async function handler(req, res) {
     const { vendor } = req.query;
@@ -11,6 +12,21 @@ export default async function handler(req, res) {
         return res.redirect(302, '/');
     }
 
+    const CACHE_KEY = `store:${safeSlug}`;
+    const active    = await cacheIsActive(SUPABASE_URL, SUPABASE_KEY);
+
+    // ── Cache HIT ──────────────────────────────────────────────────────────────
+    if (active) {
+        const cached = cacheGet(CACHE_KEY);
+        if (cached) {
+            res.setHeader('Content-Type', 'text/html');
+            res.setHeader('X-Cache', 'HIT');
+            setCacheHeaders(res);
+            return res.status(200).send(cached);
+        }
+    }
+
+    // ── Cache MISS / inactive: fetch from Supabase ────────────────────────────
     try {
         const response = await fetch(
             `${SUPABASE_URL}/rest/v1/vendor_profiles?slug=eq.${encodeURIComponent(safeSlug)}&select=*`,
@@ -58,7 +74,13 @@ export default async function handler(req, res) {
 <body>Redirecting to store...</body>
 </html>`;
 
+        if (active) {
+            cacheSet(CACHE_KEY, html);
+            setCacheHeaders(res);
+        }
+
         res.setHeader('Content-Type', 'text/html');
+        res.setHeader('X-Cache', 'MISS');
         res.status(200).send(html);
     } catch (error) {
         console.error('store API error:', error);
