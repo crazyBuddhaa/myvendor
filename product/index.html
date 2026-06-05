@@ -764,26 +764,58 @@
             placeholderIcon.classList.remove('hidden');
         }
 
-        // ── Gallery thumbnails (extra_images) ──────────────────────────────────
+        // ── Gallery thumbnails — swipe + hash ─────────────────────────────────────
         const galleryImages = product.extra_images && product.extra_images.length > 0
             ? [product.image_url, ...product.extra_images].filter(Boolean)
             : [];
         if (galleryImages.length > 1) {
+            let activeIdx = 0;
+
+            // Restore from URL hash so shared links land on the right image
+            const hashMatch = (location.hash || '').match(/^#img-(\d+)$/);
+            if (hashMatch) {
+                const hi = parseInt(hashMatch[1], 10);
+                if (hi > 0 && hi < galleryImages.length) { activeIdx = hi; imgEl.src = galleryImages[hi]; }
+            }
+
             const strip = document.createElement('div');
             strip.className = 'gallery-strip';
-            galleryImages.forEach((url, idx) => {
-                const thumb = document.createElement('div');
-                thumb.className = 'gallery-thumb' + (idx === 0 ? ' active' : '');
-                thumb.innerHTML = `<img src="${url}" alt="Product image ${idx + 1}" loading="lazy">`;
-                thumb.addEventListener('click', () => {
-                    imgEl.src = url;
-                    strip.querySelectorAll('.gallery-thumb').forEach(t => t.classList.remove('active'));
-                    thumb.classList.add('active');
+
+            function goToImage(idx) {
+                activeIdx = idx;
+                imgEl.src = galleryImages[idx];
+                strip.querySelectorAll('.gallery-thumb').forEach(function(t, i) {
+                    t.classList.toggle('active', i === idx);
                 });
+                const activeThumb = strip.querySelectorAll('.gallery-thumb')[idx];
+                if (activeThumb) activeThumb.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                history.replaceState(null, '', idx === 0 ? (location.pathname + location.search) : '#img-' + idx);
+            }
+
+            galleryImages.forEach(function(url, idx) {
+                const thumb = document.createElement('div');
+                thumb.className = 'gallery-thumb' + (idx === activeIdx ? ' active' : '');
+                thumb.innerHTML = '<img src="' + url + '" alt="Product image ' + (idx + 1) + '" loading="lazy">';
+                thumb.addEventListener('click', function() { goToImage(idx); });
                 strip.appendChild(thumb);
             });
+
             const mediaEl = document.querySelector('.product-media') || imgEl.closest('div');
             mediaEl.insertAdjacentElement('afterend', strip);
+
+            // ── Touch swipe on main image ─────────────────────────────────────
+            let swipeStartX = null;
+            imgEl.addEventListener('touchstart', function(e) {
+                swipeStartX = e.touches[0].clientX;
+            }, { passive: true });
+            imgEl.addEventListener('touchend', function(e) {
+                if (swipeStartX === null) return;
+                const dx = e.changedTouches[0].clientX - swipeStartX;
+                swipeStartX = null;
+                if (Math.abs(dx) < 40) return;
+                if (dx < 0 && activeIdx < galleryImages.length - 1) goToImage(activeIdx + 1);
+                else if (dx > 0 && activeIdx > 0) goToImage(activeIdx - 1);
+            }, { passive: true });
         }
 
         // Modal product details
