@@ -249,6 +249,44 @@
       }
       wrap.classList.remove('drag-over');
     });
+
+    // ── Touch drag (mobile) ────────────────────────────────────────────────────
+    var _touchTarget = null;
+
+    wrap.addEventListener('touchstart', function(e) {
+      if (e.target.closest('.gallery-remove-btn')) return;
+      _dragSrc = wrap;
+      wrap.classList.add('dragging');
+    }, { passive: true });
+
+    wrap.addEventListener('touchmove', function(e) {
+      if (!_dragSrc || _dragSrc !== wrap) return;
+      e.preventDefault();
+      var touch = e.touches[0];
+      wrap.style.pointerEvents = 'none';
+      var el = document.elementFromPoint(touch.clientX, touch.clientY);
+      wrap.style.pointerEvents = '';
+      var over = el ? el.closest('.gallery-thumb-wrap') : null;
+      document.querySelectorAll('.gallery-thumb-wrap').forEach(function(w) { w.classList.remove('drag-over'); });
+      if (over && over !== _dragSrc) { _touchTarget = over; over.classList.add('drag-over'); }
+      else { _touchTarget = null; }
+    }, { passive: false });
+
+    wrap.addEventListener('touchend', function() {
+      if (!_dragSrc) return;
+      _dragSrc.classList.remove('dragging');
+      document.querySelectorAll('.gallery-thumb-wrap').forEach(function(w) { w.classList.remove('drag-over'); });
+      if (_touchTarget && _touchTarget !== _dragSrc) {
+        var container = document.getElementById('extraImagesContainer');
+        var allWraps = Array.from(container.querySelectorAll('.gallery-thumb-wrap'));
+        var si = allWraps.indexOf(_dragSrc), ti = allWraps.indexOf(_touchTarget);
+        container.insertBefore(_dragSrc, si < ti ? _touchTarget.nextSibling : _touchTarget);
+      }
+      _touchTarget = null;
+      _dragSrc = null;
+      syncGalleryOrder();
+      updateGalleryUI();
+    }, { passive: true });
   }
 
   // ── Gallery helpers ──────────────────────────────────────────────────────────
