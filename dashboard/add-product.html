@@ -201,7 +201,13 @@
   });
 
   // 3. Expose gallery trigger & clear function
-  window.openGalleryWidget = () => {
+  window.openGalleryWidget = async () => {
+    // Wait up to 5 s for initDashboard() to finish setting window.currentUser
+    let tries = 0;
+    while (!window.currentUser && tries < 50) {
+      await new Promise(r => setTimeout(r, 100));
+      tries++;
+    }
     if (!window.currentUser || window.currentUser.tier !== 'premium') {
       if (window.showPremiumModal) window.showPremiumModal("Uploading multiple gallery images is a Premium feature.");
       else alert("Uploading multiple images is a Premium feature.");
