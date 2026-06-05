@@ -145,39 +145,6 @@
   </div>
 </nav>
 
-<!-- Email verified success banner -->
-<div id="verifiedBanner" class="verified-banner" style="display:none;">
-  <div class="verified-banner-inner">
-    <i class="bi bi-check-circle-fill"></i>
-    <div class="verified-banner-body">
-      <p class="verified-banner-title">Email verified!</p>
-      <p class="verified-banner-sub">Your account is active — log in to access your store.</p>
-    </div>
-    <button class="verified-banner-close" onclick="document.getElementById('verifiedBanner').style.display='none'"><i class="bi bi-x-lg"></i></button>
-  </div>
-</div>
-
-<!-- Proactive resend banner — shown when arriving from an expired link or after a previous unverified login -->
-<div id="expiredBanner" class="expired-banner" style="display:none;">
-  <div class="expired-banner-inner">
-    <div class="expired-banner-icon">✉️</div>
-    <div class="expired-banner-body">
-      <p class="expired-banner-title" id="expiredBannerTitle">Your verification link has expired</p>
-      <p class="expired-banner-sub">Enter your email to get a fresh one instantly.</p>
-      <div class="expired-banner-form">
-        <input type="email" id="expiredEmail" class="form-control-modern" placeholder="you@example.com" autocomplete="email">
-        <button type="button" id="expiredResendBtn" class="btn-expired-send" onclick="window.handleBannerResend()">
-          <i class="bi bi-send-fill"></i> Send
-        </button>
-      </div>
-      <p id="expiredBannerStatus" class="expired-banner-status"></p>
-    </div>
-    <button type="button" class="expired-banner-close" onclick="window.dismissExpiredBanner()" title="Dismiss">
-      <i class="bi bi-x-lg"></i>
-    </button>
-  </div>
-</div>
-
 <main class="auth-container">
   <div class="auth-card">
     <div class="auth-header">
@@ -185,123 +152,16 @@
       <p>Your WhatsApp shop, beautifully organized</p>
     </div>
 
-    <div class="auth-tabs">
-      <button class="auth-tab active" id="tab-login" onclick="window.switchTab('login')">Login</button>
-      <button class="auth-tab" id="tab-signup" onclick="window.switchTab('signup')">Create Store</button>
-    </div>
+    <div id="googleMsg" class="auth-message"></div>
 
-    <div class="auth-panel active" id="panel-login">
-      <div id="loginMsg" class="auth-message"></div>
+    <button class="btn-google" onclick="window.handleGoogleSignIn()" style="margin-top:0.25rem;">
+      <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg"><path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/><path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"/><path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/><path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/></svg>
+      Continue with Google
+    </button>
 
-      <div class="form-group">
-        <label class="form-label"><i class="bi bi-envelope"></i> Email Address</label>
-        <div class="input-icon-wrapper">
-          <i class="bi bi-envelope input-icon"></i>
-          <input type="email" id="loginEmail" class="form-control-modern" placeholder="you@example.com" autocomplete="email">
-        </div>
-      </div>
-
-      <div class="form-group">
-        <div class="d-flex justify-content-between align-items-center mb-1">
-          <label class="form-label mb-0"><i class="bi bi-lock"></i> Password</label>
-          <a href="#" class="forgot-link" onclick="window.handleForgotPassword(event)">Forgot?</a>
-        </div>
-        <div class="input-icon-wrapper">
-          <i class="bi bi-lock input-icon"></i>
-          <input type="password" id="loginPassword" class="form-control-modern" placeholder="••••••••" autocomplete="current-password">
-          <button type="button" class="toggle-password" onclick="window.togglePassword('loginPassword', this)"><i class="bi bi-eye"></i></button>
-        </div>
-      </div>
-
-      <button id="loginBtn" class="btn-submit" onclick="window.handleLogin()">
-        <span id="loginSpinner" class="spinner" style="display: none;"></span>
-        <i id="loginIcon" class="bi bi-box-arrow-in-right"></i>
-        <span id="loginLabel">Login to Dashboard</span>
-      </button>
-
-      <div class="or-divider"><span>or</span></div>
-
-      <button class="btn-google" onclick="window.handleGoogleSignIn()">
-        <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg"><path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/><path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"/><path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/><path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/></svg>
-        Continue with Google
-      </button>
-
-      <p class="text-center mt-3 mb-0" style="font-size:0.75rem; color:var(--text-muted);">
-        No store? <a href="#" onclick="window.switchTab('signup')" style="color:var(--green-primary); font-weight:600; text-decoration:none;">Create one free →</a>
-      </p>
-    </div>
-
-    <div class="auth-panel" id="panel-signup">
-      <div id="signupMsg" class="auth-message"></div>
-
-      <div class="form-group">
-        <label class="form-label"><i class="bi bi-person"></i> Full Name</label>
-        <div class="input-icon-wrapper">
-          <i class="bi bi-person input-icon"></i>
-          <input type="text" id="signupName" class="form-control-modern" placeholder="Your full name" autocomplete="name">
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label"><i class="bi bi-shop"></i> Store Name</label>
-        <div class="input-icon-wrapper">
-          <i class="bi bi-shop input-icon"></i>
-          <input type="text" id="signupBusiness" class="form-control-modern" placeholder="e.g. GlamStore NG" oninput="window.updateSlug(this.value)">
-        </div>
-        <div class="slug-preview">
-          <i class="bi bi-link-45deg"></i> myvendor.qzz.io/<span id="slugValue">yourstore</span>
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label"><i class="bi bi-whatsapp"></i> WhatsApp Number</label>
-        <div class="input-icon-wrapper">
-          <i class="bi bi-whatsapp input-icon"></i>
-          <input type="tel" id="signupWa" class="form-control-modern" placeholder="2348012345678" autocomplete="tel">
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label"><i class="bi bi-envelope"></i> Email Address</label>
-        <div class="input-icon-wrapper">
-          <i class="bi bi-envelope input-icon"></i>
-          <input type="email" id="signupEmail" class="form-control-modern" placeholder="you@example.com" autocomplete="email">
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label"><i class="bi bi-lock"></i> Password</label>
-        <div class="input-icon-wrapper">
-          <i class="bi bi-lock input-icon"></i>
-          <input type="password" id="signupPassword" class="form-control-modern" placeholder="Min. 8 characters" autocomplete="new-password">
-          <button type="button" class="toggle-password" onclick="window.togglePassword('signupPassword', this)"><i class="bi bi-eye"></i></button>
-        </div>
-      </div>
-
-      <div class="terms-check">
-        <input type="checkbox" id="termsCheckbox">
-        <label for="termsCheckbox">
-          I agree to myvendor's <a href="/terms.html">Terms & Conditions</a> and <a href="/privacy.html">Privacy Policy</a>.
-        </label>
-      </div>
-
-      <button id="signupBtn" class="btn-submit" onclick="window.handleSignup()">
-        <span id="signupSpinner" class="spinner" style="display: none;"></span>
-        <i id="signupIcon" class="bi bi-shop-window"></i>
-        <span id="signupLabel">Create My Free Store</span>
-      </button>
-
-      <div class="or-divider"><span>or</span></div>
-
-      <button class="btn-google" onclick="window.handleGoogleSignIn()">
-        <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg"><path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/><path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"/><path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/><path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/></svg>
-        Sign up with Google
-      </button>
-
-      <p class="text-center mt-3 mb-0" style="font-size:0.75rem; color:var(--text-muted);">
-        Already have a store? <a href="#" onclick="window.switchTab('login')" style="color:var(--green-primary); font-weight:600; text-decoration:none;">Login →</a>
-      </p>
-    </div>
+    <p class="text-center mt-3 mb-0" style="font-size:0.75rem; color:var(--text-muted);">
+      By continuing you agree to myvendor's <a href="/terms.html" style="color:var(--green-primary);font-weight:600;text-decoration:none;">Terms</a> &amp; <a href="/privacy.html" style="color:var(--green-primary);font-weight:600;text-decoration:none;">Privacy Policy</a>.
+    </p>
   </div>
 </main>
 
@@ -309,421 +169,37 @@
   <a href="/">← myvendor.qzz.io</a> &nbsp;·&nbsp; © 2026 theosnnetwork
 </footer>
 
-<div class="modal fade" id="resultModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
-  <div class="modal-dialog modal-dialog-centered modal-sm">
-    <div class="modal-content modal-content-modern">
-      <div id="modalIcon" class="modal-icon"></div>
-      <h4 id="modalTitle" style="font-weight: 800; color: var(--text-dark); margin-bottom: 0.5rem;"></h4>
-      <p id="modalDesc" style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;"></p>
-      <button type="button" id="modalBtn" class="btn-submit" style="margin-top: 0;"></button>
-      <div id="modalResendSlot" style="margin-top: 0.9rem; display: none; text-align: center;">
-        <button type="button" id="modalResendBtn" style="background: none; border: none; color: var(--green-primary); font-size: 0.8rem; font-weight: 600; cursor: pointer; padding: 0; text-decoration: underline;">
-          Didn't get it? Resend verification email
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 <script type="module">
   import { supabase } from '/assets/js/supabase.js';
-  window._supabase = supabase;
 
-  let resultModalInstance = null;
-
-  // Initialize modal + Enter-key handlers after DOM loads
-  document.addEventListener('DOMContentLoaded', () => {
-    resultModalInstance = new bootstrap.Modal(document.getElementById('resultModal'));
-
-    // Submit login on Enter key from either login field
-    ['loginEmail', 'loginPassword'].forEach(id => {
-      document.getElementById(id).addEventListener('keydown', e => {
-        if (e.key === 'Enter') { e.preventDefault(); window.handleLogin(); }
-      });
-    });
-
-    // Submit signup on Enter from password field (last field before terms)
-    document.getElementById('signupPassword').addEventListener('keydown', e => {
-      if (e.key === 'Enter') { e.preventDefault(); window.handleSignup(); }
-    });
-
-    // ── Proactive resend banner detection ──────────────────────
-    // Two signals trigger the banner:
-    //   1. ?expired=1  — user clicked an expired confirmation link (redirected here from home.html)
-    //   2. sessionStorage.pendingVerifyEmail — user previously hit "Email not confirmed" on login
-    const params = new URLSearchParams(window.location.search);
-    const pendingEmail = sessionStorage.getItem('pendingVerifyEmail');
-
-    if (params.get('verified') === '1') {
-      history.replaceState(null, '', window.location.pathname);
-      document.getElementById('verifiedBanner').style.display = 'block';
-      window.switchTab('login');
-    } else if (params.get('verified') === 'invalid') {
-      history.replaceState(null, '', window.location.pathname);
-      window.showExpiredBanner('That verification link is invalid or already used', pendingEmail);
-    } else if (params.get('expired') === '1') {
-      history.replaceState(null, '', window.location.pathname);
-      window.showExpiredBanner('Your verification link has expired', pendingEmail);
-    } else if (pendingEmail) {
-      window.showExpiredBanner('Your email isn\'t verified yet', pendingEmail);
-    }
-  });
-
-  window.showExpiredBanner = function(title, prefillEmail) {
-    document.getElementById('expiredBannerTitle').textContent = title;
-    if (prefillEmail) document.getElementById('expiredEmail').value = prefillEmail;
-    document.getElementById('expiredBanner').style.display = 'block';
-  };
-
-  window.dismissExpiredBanner = function() {
-    document.getElementById('expiredBanner').style.display = 'none';
-    sessionStorage.removeItem('pendingVerifyEmail');
-  };
-
-  window.handleBannerResend = async function() {
-    const email = document.getElementById('expiredEmail').value.trim();
-    const btn = document.getElementById('expiredResendBtn');
-    const status = document.getElementById('expiredBannerStatus');
-
-    if (!email) {
-      status.style.color = '#dc2626';
-      status.textContent = 'Please enter your email address.';
-      document.getElementById('expiredEmail').focus();
-      return;
-    }
-
-    btn.disabled = true;
-    status.style.color = '#78350f';
-    status.textContent = 'Sending…';
-
-    const resendRes = await fetch('/api/auth/resend', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email }),
-    });
-
-    if (!resendRes.ok) {
-      status.style.color = '#dc2626';
-      status.textContent = 'Failed — please try again.';
-      btn.disabled = false;
-      return;
-    }
-
-    // Clear the pending flag — they've been resent
-    sessionStorage.removeItem('pendingVerifyEmail');
-
-    // 60-second cooldown
-    const COOLDOWN = 60;
-    let remaining = COOLDOWN;
-    status.style.color = '#166534';
-
-    const tick = () => {
-      if (remaining <= 0) {
-        status.textContent = '';
-        btn.disabled = false;
-        btn.innerHTML = '<i class="bi bi-send-fill"></i> Send';
-        return;
-      }
-      status.textContent = `✓ Sent! You can resend again in ${remaining}s`;
-      btn.innerHTML = `${remaining}s`;
-      remaining--;
-      setTimeout(tick, 1000);
-    };
-    tick();
-  };
-
-  // Check if already logged in
-  const { data: { session } } = await supabase.auth.getSession()
-  if (session) window.location.href = '/dashboard/home.html'
-
-  // Helper Functions
-  window.setLoading = function(form, isLoading) {
-    const btn = document.getElementById(`${form}Btn`)
-    const spinner = document.getElementById(`${form}Spinner`)
-    const icon = document.getElementById(`${form}Icon`)
-    const label = document.getElementById(`${form}Label`)
-    btn.disabled = isLoading
-    if (spinner) spinner.style.display = isLoading ? 'inline-block' : 'none'
-    if (icon) icon.style.display = isLoading ? 'none' : 'inline'
-    if (label) label.textContent = isLoading ? (form === 'login' ? 'Logging in...' : 'Creating store...') : (form === 'login' ? 'Login to Dashboard' : 'Create My Free Store')
-  }
-
-  window.showMessage = function(containerId, text, type) {
-    const msgDiv = document.getElementById(containerId)
-    msgDiv.textContent = text
-    msgDiv.className = `auth-message ${type} show`
-    setTimeout(() => msgDiv.classList.remove('show'), 5000)
-  }
-
-  window.showResultModal = function(type, title, message, action = 'dashboard', resendEmail = null) {
-    const icon = document.getElementById('modalIcon');
-    const titleEl = document.getElementById('modalTitle');
-    const descEl = document.getElementById('modalDesc');
-    const btn = document.getElementById('modalBtn');
-    const resendSlot = document.getElementById('modalResendSlot');
-    const resendBtn = document.getElementById('modalResendBtn');
-
-    titleEl.textContent = title;
-    descEl.textContent = message;
-
-    // Reset resend slot
-    resendSlot.style.display = 'none';
-    resendBtn.textContent = 'Didn\'t get it? Resend verification email';
-    resendBtn.disabled = false;
-    resendBtn.style.textDecoration = 'underline';
-    resendBtn.style.color = 'var(--green-primary)';
-
-    if (type === 'success') {
-      icon.innerHTML = '<i class="bi bi-check-circle-fill"></i>';
-      icon.className = 'modal-icon success';
-
-      if (action === 'verify') {
-        btn.innerHTML = 'Got It';
-        btn.onclick = () => {
-          resultModalInstance.hide();
-          window.switchTab('login');
-        };
-      } else {
-        btn.innerHTML = 'Go to Dashboard <i class="bi bi-arrow-right"></i>';
-        btn.onclick = () => window.location.href = '/dashboard/home.html';
-      }
-    } else {
-      icon.innerHTML = '<i class="bi bi-x-circle-fill"></i>';
-      icon.className = 'modal-icon error';
-      btn.innerHTML = 'Try Again';
-      btn.onclick = () => resultModalInstance.hide();
-    }
-
-    // Show resend link whenever we're in verify mode and have an email
-    if (action === 'verify' && resendEmail) {
-      resendSlot.style.display = 'block';
-      resendBtn.onclick = () => window.handleResendVerification(resendEmail, resendBtn);
-    }
-
-    resultModalInstance.show();
-  }
-
-  window.handleResendVerification = async function(email, btn) {
-    btn.disabled = true;
-    btn.style.textDecoration = 'none';
-    btn.textContent = 'Sending…';
-
-    const resendRes2 = await fetch('/api/auth/resend', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email }),
-    });
-
-    if (!resendRes2.ok) {
-      btn.textContent = 'Failed — tap to try again';
-      btn.disabled = false;
-      btn.style.textDecoration = 'underline';
-      btn.style.color = 'var(--green-primary)';
-      return;
-    }
-
-    // Success — run 60-second cooldown so they can't spam
-    const COOLDOWN = 60;
-    let remaining = COOLDOWN;
-
-    btn.style.color = '#6b7280';
-    btn.style.textDecoration = 'none';
-
-    const tick = () => {
-      btn.textContent = `✓ Sent! Resend again in ${remaining}s`;
-      if (remaining <= 0) {
-        btn.textContent = 'Resend verification email';
-        btn.disabled = false;
-        btn.style.textDecoration = 'underline';
-        btn.style.color = 'var(--green-primary)';
-        return;
-      }
-      remaining--;
-      setTimeout(tick, 1000);
-    };
-    tick();
-  }
-
-  window.switchTab = function(tab) {
-    document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'))
-    document.querySelectorAll('.auth-panel').forEach(p => p.classList.remove('active'))
-    document.getElementById(`tab-${tab}`).classList.add('active')
-    document.getElementById(`panel-${tab}`).classList.add('active')
-  }
-
-  window.updateSlug = function(value) {
-    const slug = value.toLowerCase()
-      .replace(/[^a-z0-9-]/g, '')
-      .replace(/-+/g, '-')
-      .replace(/^-+|-+$/g, '')
-      .substring(0, 30)
-    document.getElementById('slugValue').textContent = slug || 'yourstore'
-  }
-
-  window.togglePassword = function(inputId, btn) {
-    const input = document.getElementById(inputId)
-    const icon = btn.querySelector('i')
-    if (input.type === 'password') {
-      input.type = 'text'
-      icon.className = 'bi bi-eye-slash'
-    } else {
-      input.type = 'password'
-      icon.className = 'bi bi-eye'
-    }
-  }
-
-  // Maps raw Supabase error strings to friendly messages
-  function friendlyError(msg) {
-    if (!msg) return 'Something went wrong. Please try again.';
-    if (msg.includes('Invalid login credentials'))  return 'Wrong email or password. Please try again.';
-    if (msg.includes('Email not confirmed'))        return 'Please verify your email first. Check your inbox for the link we sent.';
-    if (msg.includes('User already registered'))    return 'An account with this email already exists. Try logging in instead.';
-    if (msg.includes('Password should be'))         return 'Password must be at least 8 characters.';
-    if (msg.includes('Unable to validate'))         return 'Session expired. Please log in again.';
-    if (msg.includes('rate limit'))                 return 'Too many attempts. Please wait a moment and try again.';
-    return msg;
-  }
-
-  // Auth Functions
-  window.handleLogin = async () => {
-    const email = document.getElementById('loginEmail').value.trim()
-    const password = document.getElementById('loginPassword').value
-    if (!email || !password) {
-      window.showMessage('loginMsg', 'Please fill in both email and password.', 'error')
-      return
-    }
-    window.setLoading('login', true)
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
-    window.setLoading('login', false)
-
-    if (error) {
-      if (error.message.includes('Email not confirmed')) {
-        // Save so the banner pre-fills their email if they navigate away and come back
-        sessionStorage.setItem('pendingVerifyEmail', email);
-        window.showResultModal('error', 'Email Not Verified', friendlyError(error.message), 'verify', email)
-      } else {
-        window.showResultModal('error', 'Login Failed', friendlyError(error.message))
-      }
-    } else {
-      window.location.href = '/dashboard/home.html'
-    }
-  }
-
-  window.handleSignup = async () => {
-    const name = document.getElementById('signupName').value.trim()
-    const business = document.getElementById('signupBusiness').value.trim()
-    const wa = document.getElementById('signupWa').value.trim()
-    const email = document.getElementById('signupEmail').value.trim()
-    const password = document.getElementById('signupPassword').value
-    const terms = document.getElementById('termsCheckbox').checked
-    const slug = document.getElementById('slugValue').textContent.trim()
-
-    if (!name || !business || !wa || !email || !password || !terms) {
-      window.showMessage('signupMsg', 'Please fill all fields and accept the terms.', 'error')
-      return
-    }
-
-    // Slug must be a real value, not the placeholder fallback
-    if (!slug || slug === 'yourstore') {
-      window.showMessage('signupMsg', 'Please enter a valid store name using letters or numbers.', 'error')
-      return
-    }
-
-    // Password length check before hitting the network
-    if (password.length < 8) {
-      window.showMessage('signupMsg', 'Password must be at least 8 characters.', 'error')
-      return
-    }
-
-    // WhatsApp number: digits only, 10–15 characters
-    const waClean = wa.replace(/\s+/g, '')
-    if (!/^\d{10,15}$/.test(waClean)) {
-      window.showMessage('signupMsg', 'Enter a valid WhatsApp number with country code, digits only (e.g. 2348012345678).', 'error')
-      return
-    }
-
-    window.setLoading('signup', true)
-
-    // Capture referrer from URL — stored in metadata so the DB trigger can
-    // award the bonus slots only after the new user confirms their email.
-    const referrerId = new URLSearchParams(window.location.search).get('ref') || null;
-
-    let signupRes, signupJson;
-    try {
-      signupRes = await fetch('/api/auth/signup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, name, business, wa: waClean, slug, referrerId }),
-      });
-      signupJson = await signupRes.json();
-    } catch {
-      window.setLoading('signup', false);
-      window.showResultModal('error', 'Signup Failed', 'Network error. Please check your connection and try again.');
-      return;
-    }
-
-    window.setLoading('signup', false)
-
-    if (!signupRes.ok) {
-      const errMap = {
-        store_name_taken: 'That store link is already being used. Please choose a different name.',
-        email_taken:      'An account with this email already exists. Try logging in instead.',
-        missing_fields:   'Please fill in all required fields.',
-        email_send_failed:'Account created but we could not send your verification email. Use the resend option on the login page.',
-      };
-      const msg   = errMap[signupJson?.error] || signupJson?.error || 'Something went wrong. Please try again.';
-      const title = signupJson?.error === 'store_name_taken' ? 'Store Name Taken' : 'Signup Failed';
-      window.showResultModal('error', title, msg);
-      return;
-    }
-
-    window.showResultModal('success', 'Check Your Email 📧', 'Your store is almost ready! We just sent a verification link to your email. Please click it to activate your account.', 'verify', email)
-  }
+  // Redirect if already logged in
+  const { data: { session } } = await supabase.auth.getSession();
+  if (session) window.location.href = '/dashboard/home.html';
 
   window.handleGoogleSignIn = async function() {
+    const btn = document.querySelector('.btn-google');
+    if (btn) { btn.disabled = true; btn.style.opacity = '0.7'; }
+
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
         redirectTo: 'https://myvendor.qzz.io/dashboard/oauth-callback.html',
       },
     });
+
     if (error) {
-      window.showResultModal('error', 'Google Sign-In Failed', error.message);
+      if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
+      const msgDiv = document.getElementById('googleMsg');
+      if (msgDiv) {
+        msgDiv.textContent = error.message;
+        msgDiv.className = 'auth-message error show';
+        setTimeout(() => msgDiv.classList.remove('show'), 5000);
+      }
     }
   };
-
-  window.handleForgotPassword = async (e) => {
-    e.preventDefault()
-    const email = document.getElementById('loginEmail').value.trim()
-
-    if (!email) {
-      window.showMessage('loginMsg', 'Enter your email address first.', 'error')
-      return
-    }
-
-    const forgotLink = e.target;
-    const originalText = forgotLink.innerText;
-
-    forgotLink.innerText = 'Sending...';
-    forgotLink.style.pointerEvents = 'none'; 
-    forgotLink.style.opacity = '0.6';
-
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: 'https://myvendor.qzz.io/reset-password.html'
-    })
-
-    forgotLink.innerText = originalText;
-    forgotLink.style.pointerEvents = 'auto';
-    forgotLink.style.opacity = '1';
-
-    if (error) {
-      window.showResultModal('error', 'Reset Failed', error.message)
-    } else {
-      window.showResultModal('success', 'Check Your Email', 'We have sent a password reset link to your inbox.', 'verify')
-    }
-  }
 </script>
 </body>
 </html>
