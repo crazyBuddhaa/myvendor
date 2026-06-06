@@ -101,7 +101,7 @@ window.updateSettings = async function (e) {
         try {
             const { data: { session } } = await supabase.auth.getSession();
             if (session) {
-                fetch('/api/cache-bust', {
+                fetch('/api/auth?action=cache-bust', {
                     method:  'POST',
                     headers: {
                         'Content-Type':  'application/json',
