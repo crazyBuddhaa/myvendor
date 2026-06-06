@@ -30,35 +30,37 @@ export default async function handler(req, res) {
             }).eq('id', vendorId);
             if (error) throw error;
 
-            // Bust cache for old slug and new slug
-            if (before?.slug)               cacheDel(`store:${before.slug}`);
+            // Bust store cache for old and new slug
+            if (before?.slug)                              cacheDel(`store:${before.slug}`);
             if (payload.slug && payload.slug !== before?.slug) cacheDel(`store:${payload.slug}`);
 
             return res.status(200).json({ success: true, message: 'Store updated' });
         }
 
         if (action === 'delete_store') {
-            // Fetch slug before deleting so we can evict the cache entry
-            const { data: before } = await supabase
-                .from('vendor_profiles')
-                .select('slug')
-                .eq('id', vendorId)
-                .maybeSingle();
+            // Fetch slug + all product IDs before deletion to evict their cache entries
+            const [{ data: profile }, { data: products }] = await Promise.all([
+                supabase.from('vendor_profiles').select('slug').eq('id', vendorId).maybeSingle(),
+                supabase.from('products').select('id').eq('vendor_id', vendorId),
+            ]);
 
             // Because we use the master key, deleting them from auth.users 
             // completely wipes their login credentials from the platform.
             const { error } = await supabase.auth.admin.deleteUser(vendorId);
             if (error) throw error;
-            
+
             // Note: If you set up cascading deletes in Supabase, their profile 
             // and products will auto-delete. If not, we explicitly delete the profile here.
             await supabase.from('vendor_profiles').delete().eq('id', vendorId);
 
-            if (before?.slug) cacheDel(`store:${before.slug}`);
-            
+            // Bust store cache
+            if (profile?.slug) cacheDel(`store:${profile.slug}`);
+            // Bust all product cache entries for this vendor
+            for (const p of (products || [])) cacheDel(`product:${p.id}`);
+
             return res.status(200).json({ success: true, message: 'Store permanently deleted' });
         }
-        
+
         return res.status(400).json({ error: 'Invalid action' });
     } catch (error) {
         return res.status(500).json({ error: error.message });
