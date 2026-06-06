@@ -708,7 +708,7 @@
     if (!pass) return;
 
     try {
-      const res = await fetch('/api/admin/stats', {
+      const res = await fetch('/api/admin', {
         headers: { 'Authorization': `Bearer ${pass}` }
       });
       const data = await res.json();
@@ -786,7 +786,7 @@
     }
 
     try {
-      const res = await fetch('/api/admin-action', {
+      const res = await fetch('/api/admin', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${adminPassword}` },
         body: JSON.stringify({ action, vendorId: id, payload })
