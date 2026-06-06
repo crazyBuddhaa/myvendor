@@ -93,9 +93,9 @@ export default async function handler(req, res) {
     const { error } = await supabase.from('vendor_profiles').update(patch).eq('id', id);
     if (error) return res.status(500).json({ error: error.message });
 
-    // Bust cache
-    if (before?.slug)                          cacheDel(`store:${before.slug}`);
-    if (slug && slug !== before?.slug)         cacheDel(`store:${slug}`);
+    // Bust store cache
+    if (before?.slug)                  cacheDel(`store:${before.slug}`);
+    if (slug && slug !== before?.slug) cacheDel(`store:${slug}`);
 
     const { data: rows } = await supabase
       .from('vendor_profiles').select('*').eq('id', id).limit(1);
@@ -110,9 +110,11 @@ export default async function handler(req, res) {
     const id = req.query.id;
     if (!id) return res.status(400).json({ error: 'Missing vendor id' });
 
-    // Fetch slug before deletion so we can evict the cache entry
-    const { data: before } = await supabase
-      .from('vendor_profiles').select('slug').eq('id', id).maybeSingle();
+    // Fetch slug + all product IDs before deletion so we can evict their cache entries
+    const [{ data: profile }, { data: products }] = await Promise.all([
+      supabase.from('vendor_profiles').select('slug').eq('id', id).maybeSingle(),
+      supabase.from('products').select('id').eq('vendor_id', id),
+    ]);
 
     const { error: authErr } = await supabase.auth.admin.deleteUser(id);
     if (authErr) {
@@ -121,7 +123,10 @@ export default async function handler(req, res) {
       if (error) return res.status(500).json({ error: error.message });
     }
 
-    if (before?.slug) cacheDel(`store:${before.slug}`);
+    // Bust store cache
+    if (profile?.slug) cacheDel(`store:${profile.slug}`);
+    // Bust all product cache entries for this vendor
+    for (const p of (products || [])) cacheDel(`product:${p.id}`);
 
     return res.status(200).json({ success: true, message: 'Vendor permanently deleted' });
   }
