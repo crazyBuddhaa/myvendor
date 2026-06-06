@@ -12,6 +12,22 @@
 //   ANTHROPIC_API_KEY          — optional; enables natural-language AI replies
 
 import crypto from 'crypto';
+import { cacheGet, cacheSet } from './_cache.js';
+
+// ── Rate limiting ─────────────────────────────────────────────────────────────
+// Max messages per phone number per rolling 60-second window.
+// Uses the same in-memory Map as the response cache — no extra infrastructure.
+const RL_MAX_MESSAGES = 10;
+const RL_WINDOW_MS    = 60 * 1000; // 60 seconds
+
+function isRateLimited(phone) {
+    const windowKey = Math.floor(Date.now() / RL_WINDOW_MS);
+    const key       = `rl:wa:${phone}:${windowKey}`;
+    const count     = cacheGet(key) || 0;
+    if (count >= RL_MAX_MESSAGES) return true;
+    cacheSet(key, count + 1, RL_WINDOW_MS + 5000); // TTL slightly longer than window
+    return false;
+}
 
 const SUPABASE_URL       = process.env.SUPABASE_URL;
 const SUPABASE_KEY       = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY;
@@ -348,6 +364,13 @@ export default async function handler(req, res) {
                 if (_memDedup.size > 1000) {
                     _memDedup.delete(_memDedup.values().next().value);
                 }
+            }
+
+            // Drop the message silently if this phone is flooding the bot.
+            // Replying to abusers would itself cost WhatsApp API calls.
+            if (isRateLimited(from)) {
+                console.warn(`[whatsapp bot] rate limited: ${from}`);
+                return;
             }
 
             const vendor = await getVendorByPhone(from);
