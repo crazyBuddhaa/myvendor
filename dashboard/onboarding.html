@@ -170,7 +170,7 @@
 
     const { data: { session: currentSession } } = await supabase.auth.getSession();
 
-    const res = await fetch('/api/auth/google-onboard', {
+    const res = await fetch('/api/auth?action=google-onboard', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
