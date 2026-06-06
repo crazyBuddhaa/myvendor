@@ -1,11 +1,10 @@
 // POST /api/cache-bust
-// Body: { slug: string, oldSlug?: string }
+// Body: { slug?: string, oldSlug?: string, productIds?: string[] }
 //
-// Called from the browser (settings save) to immediately evict store HTML from
-// the in-memory cache after a vendor updates their profile.
+// Called from the browser to immediately evict entries from the in-memory cache
+// after a vendor updates their profile or edits/deletes a product.
 //
-// Auth: valid Supabase JWT in Authorization header — we verify the token to
-// prevent anonymous cache poisoning / denial-of-cache attacks.
+// Auth: valid Supabase JWT in Authorization header.
 
 import { createClient } from '@supabase/supabase-js';
 import { cacheDel }     from './_cache.js';
@@ -30,10 +29,18 @@ export default async function handler(req, res) {
     const { data: { user } } = await supabase.auth.getUser(token);
     if (!user) return res.status(401).json({ error: 'Unauthorized' });
 
-    const { slug, oldSlug } = req.body || {};
+    const { slug, oldSlug, productIds } = req.body || {};
 
+    // Bust store cache entries
     if (slug)                        cacheDel(`store:${slug}`);
     if (oldSlug && oldSlug !== slug) cacheDel(`store:${oldSlug}`);
+
+    // Bust product cache entries
+    if (Array.isArray(productIds)) {
+        for (const id of productIds) {
+            if (id) cacheDel(`product:${id}`);
+        }
+    }
 
     return res.status(200).json({ success: true });
 }
