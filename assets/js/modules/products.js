@@ -3,6 +3,25 @@ import { supabase } from '../supabase.js';
 import { state } from '../state.js';
 import { escapeHTML, optimizeCloudinaryUrl } from '../utils.js';
 
+// ── Cache-bust helper ─────────────────────────────────────────────────────────
+// Fires-and-forgets a request to evict product entries from the server cache.
+// Silently ignored if the cache is inactive (< 100 vendors) or the call fails.
+async function bustProducts(productIds = []) {
+    if (!productIds.length) return;
+    try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) return;
+        fetch('/api/cache-bust', {
+            method:  'POST',
+            headers: {
+                'Content-Type':  'application/json',
+                'Authorization': `Bearer ${session.access_token}`,
+            },
+            body: JSON.stringify({ productIds }),
+        }).catch(() => {});
+    } catch {}
+}
+
 // ── List ──────────────────────────────────────────────────────────────────────
 
 window.loadProducts = async function () {
@@ -155,6 +174,7 @@ window.saveProduct = async function (e) {
         alert('Error saving product: ' + error.message);
         if (btn) btn.innerHTML = 'Save Product';
     } else {
+        // New inserts have no existing cache entry to bust — nothing to do.
         window.location.href = '/dashboard/products.html';
     }
 };
@@ -289,6 +309,7 @@ window.updateProduct = async function (e) {
         btn.innerHTML = originalText;
         btn.disabled = false;
     } else {
+        bustProducts([productId]);
         window.location.href = '/dashboard/products.html';
     }
 };
@@ -298,6 +319,7 @@ window.updateProduct = async function (e) {
 window.deleteProduct = async function (id) {
     if (confirm('Delete this product permanently?')) {
         await supabase.from('products').delete().eq('id', id);
+        bustProducts([id]);
         window.loadProducts();
     }
 };
@@ -373,6 +395,7 @@ window.bulkDelete = async function () {
     if (!ids.length) return;
     if (!confirm(`Permanently delete ${ids.length} product${ids.length !== 1 ? 's' : ''}?`)) return;
     await supabase.from('products').delete().in('id', ids).eq('vendor_id', state.currentUser.id);
+    bustProducts(ids);
     window.toggleSelectMode();
     window.loadProducts();
 };
@@ -385,6 +408,7 @@ window.bulkSetStock = async function (inStock) {
         .update({ in_stock: inStock, status: inStock ? 'active' : 'out_of_stock' })
         .in('id', ids)
         .eq('vendor_id', state.currentUser.id);
+    bustProducts(ids);
     window.toggleSelectMode();
     window.loadProducts();
 };
