@@ -5,6 +5,7 @@
 // Auth: Authorization: Bearer <ADMIN_PASSWORD>
 
 import { createClient } from '@supabase/supabase-js';
+import { cacheDel }     from '../_cache.js';
 
 function auth(req) {
   return req.headers.authorization === `Bearer ${process.env.ADMIN_PASSWORD}`;
@@ -85,8 +86,16 @@ export default async function handler(req, res) {
     if (whatsapp_number != null) patch.whatsapp_number  = whatsapp_number;
     if (tier            != null) patch.tier             = tier;
 
+    // Fetch old slug before update so we can bust both old and new cache entries
+    const { data: before } = await supabase
+      .from('vendor_profiles').select('slug').eq('id', id).maybeSingle();
+
     const { error } = await supabase.from('vendor_profiles').update(patch).eq('id', id);
     if (error) return res.status(500).json({ error: error.message });
+
+    // Bust cache
+    if (before?.slug)                          cacheDel(`store:${before.slug}`);
+    if (slug && slug !== before?.slug)         cacheDel(`store:${slug}`);
 
     const { data: rows } = await supabase
       .from('vendor_profiles').select('*').eq('id', id).limit(1);
@@ -101,12 +110,19 @@ export default async function handler(req, res) {
     const id = req.query.id;
     if (!id) return res.status(400).json({ error: 'Missing vendor id' });
 
+    // Fetch slug before deletion so we can evict the cache entry
+    const { data: before } = await supabase
+      .from('vendor_profiles').select('slug').eq('id', id).maybeSingle();
+
     const { error: authErr } = await supabase.auth.admin.deleteUser(id);
     if (authErr) {
       // Fallback: delete profile row directly if auth delete fails
       const { error } = await supabase.from('vendor_profiles').delete().eq('id', id);
       if (error) return res.status(500).json({ error: error.message });
     }
+
+    if (before?.slug) cacheDel(`store:${before.slug}`);
+
     return res.status(200).json({ success: true, message: 'Vendor permanently deleted' });
   }
 
