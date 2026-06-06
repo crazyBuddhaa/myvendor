@@ -11,7 +11,7 @@ async function bustProducts(productIds = []) {
     try {
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) return;
-        fetch('/api/cache-bust', {
+        fetch('/api/auth?action=cache-bust', {
             method:  'POST',
             headers: {
                 'Content-Type':  'application/json',
