@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { cacheDel }     from './_cache.js';
 
 export default async function handler(req, res) {
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
@@ -15,16 +16,35 @@ export default async function handler(req, res) {
         }
 
         if (action === 'edit_store') {
+            // Fetch old slug so we can bust both old and new entries if the slug changed
+            const { data: before } = await supabase
+                .from('vendor_profiles')
+                .select('slug')
+                .eq('id', vendorId)
+                .maybeSingle();
+
             const { error } = await supabase.from('vendor_profiles').update({
                 business_name:   payload.name,
                 slug:            payload.slug,
                 whatsapp_number: payload.phone,
             }).eq('id', vendorId);
             if (error) throw error;
+
+            // Bust cache for old slug and new slug
+            if (before?.slug)               cacheDel(`store:${before.slug}`);
+            if (payload.slug && payload.slug !== before?.slug) cacheDel(`store:${payload.slug}`);
+
             return res.status(200).json({ success: true, message: 'Store updated' });
         }
 
         if (action === 'delete_store') {
+            // Fetch slug before deleting so we can evict the cache entry
+            const { data: before } = await supabase
+                .from('vendor_profiles')
+                .select('slug')
+                .eq('id', vendorId)
+                .maybeSingle();
+
             // Because we use the master key, deleting them from auth.users 
             // completely wipes their login credentials from the platform.
             const { error } = await supabase.auth.admin.deleteUser(vendorId);
@@ -33,6 +53,8 @@ export default async function handler(req, res) {
             // Note: If you set up cascading deletes in Supabase, their profile 
             // and products will auto-delete. If not, we explicitly delete the profile here.
             await supabase.from('vendor_profiles').delete().eq('id', vendorId);
+
+            if (before?.slug) cacheDel(`store:${before.slug}`);
             
             return res.status(200).json({ success: true, message: 'Store permanently deleted' });
         }
