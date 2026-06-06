@@ -18,11 +18,11 @@
     },
     {
       "source": "/verify",
-      "destination": "/api/auth/verify"
+      "destination": "/api/auth?action=verify"
     },
     {
       "source": "/product/:id([^/.]+)",
-      "destination": "/api/product?id=:id"
+      "destination": "/api/og?id=:id"
     },
     {
       "source": "/product/:match*",
@@ -34,7 +34,7 @@
     },
     {
       "source": "/:vendor([^/.]+)",
-      "destination": "/api/store?vendor=:vendor"
+      "destination": "/api/og?vendor=:vendor"
     }
   ]
 }
