@@ -90,10 +90,27 @@ window.updateSettings = async function (e) {
         alert('Error saving settings: ' + error.message);
         btn.innerHTML = originalText; btn.disabled = false;
     } else {
+        const oldSlug = state.currentUser.slug;
+
         state.currentUser  = { ...state.currentUser, ...updatedData };
         state.vendorSlug   = updatedData.slug;
         window.currentUser = state.currentUser;
         window.vendorSlug  = state.vendorSlug;
+
+        // Bust the server-side cache so the updated store page is served immediately
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+                fetch('/api/cache-bust', {
+                    method:  'POST',
+                    headers: {
+                        'Content-Type':  'application/json',
+                        'Authorization': `Bearer ${session.access_token}`,
+                    },
+                    body: JSON.stringify({ slug: updatedData.slug, oldSlug }),
+                }).catch(() => {});
+            }
+        } catch {}
 
         btn.innerHTML = '<i class="bi bi-check-lg"></i> Saved Successfully!';
         setTimeout(() => { btn.innerHTML = originalText; btn.disabled = false; }, 2000);
