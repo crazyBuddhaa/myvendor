@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Telegram Bot | myvendor</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300..800&family=Raleway:wght@600..900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/assets/css/dashboard.css" />
+
+  <style>
+    .hero-bot h1 { font-size:1.8rem; font-weight:800; background:linear-gradient(125deg,#0a2540,#2CA5E0); -webkit-background-clip:text; color:transparent; margin-bottom:.2rem; }
+    .hero-sub { color:var(--text-muted); font-size:.85rem; font-weight:500; border-left:3px solid #2CA5E0; padding-left:.75rem; margin-top:.2rem; }
+
+    .setup-card { background:var(--card-white); border-radius:var(--radius-xl); padding:1.5rem; margin-bottom:1.2rem; border:1px solid var(--border-light); box-shadow:var(--shadow-sm); }
+    .card-title { font-weight:800; font-size:.95rem; color:var(--green-dark); margin-bottom:1rem; display:flex; align-items:center; gap:.5rem; }
+
+    .step-row { display:flex; align-items:flex-start; gap:.75rem; margin-bottom:1rem; }
+    .step-num { width:26px; height:26px; background:#2CA5E0; color:white; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-size:.72rem; font-weight:800; flex-shrink:0; margin-top:.05rem; }
+    .step-body { flex:1; font-size:.83rem; color:var(--text-muted); line-height:1.55; }
+    .step-body strong { color:var(--text-dark); }
+
+    .code-pill { font-family:monospace; font-size:.73rem; background:#f0f8ff; color:#0a5a8a; padding:.2rem .55rem; border-radius:7px; border:1px solid #bae6fd; word-break:break-all; display:inline-block; }
+
+    .cmd-row { display:flex; align-items:center; gap:.6rem; margin-bottom:.55rem; }
+    .cmd-badge { font-family:monospace; font-size:.76rem; background:#0a2540; color:#54c8f7; padding:.22rem .65rem; border-radius:7px; font-weight:700; white-space:nowrap; }
+
+    .webhook-box { background:#f0f9ff; border:1.5px solid #38bdf8; border-radius:var(--radius-md); padding:1rem; text-align:center; }
+    .webhook-url { font-family:monospace; font-size:.82rem; color:#0369a1; font-weight:700; word-break:break-all; display:block; margin:.4rem 0 .6rem; }
+
+    .env-row { margin-bottom:.45rem; }
+
+    .connect-btn { display:inline-flex; align-items:center; gap:.5rem; background:linear-gradient(105deg,#2CA5E0,#1a7db8); color:white; border:none; padding:.75rem 1.4rem; border-radius:40px; font-weight:700; font-size:.88rem; cursor:pointer; transition:.2s; }
+    .connect-btn:hover { opacity:.9; transform:translateY(-1px); }
+    .connect-btn:disabled { opacity:.6; cursor:not-allowed; transform:none; }
+
+    .result-box { margin-top:1rem; padding:.85rem 1rem; border-radius:var(--radius-md); font-size:.78rem; font-family:monospace; white-space:pre-wrap; word-break:break-all; display:none; }
+    .result-ok   { background:#f0fdf4; border:1px solid #bbf7d0; color:#14532d; }
+    .result-err  { background:#fef2f2; border:1px solid #fecaca; color:#991b1b; }
+
+    footer { text-align:center; padding:1rem; font-size:.7rem; color:var(--text-muted); border-top:1px solid rgba(44,165,224,.2); margin-top:auto; }
+  </style>
+</head>
+<body>
+
+<nav class="settings-nav">
+  <div class="settings-container d-flex justify-content-between align-items-center" style="padding-top:0;padding-bottom:0;">
+    <a href="/dashboard/home.html" class="btn-back-modern"><i class="bi bi-arrow-left-short"></i> Dashboard</a>
+    <div class="nav-badge" style="background:linear-gradient(105deg,#2CA5E0,#1a7db8);"><i class="bi bi-telegram me-1"></i> Telegram Bot</div>
+  </div>
+</nav>
+
+<main class="settings-container">
+  <div class="hero-bot mb-3">
+    <h1>Telegram Bot <i class="bi bi-telegram" style="font-size:1.4rem;color:#2CA5E0;"></i></h1>
+    <div class="hero-sub">Receive order alerts and query your store from Telegram — 24/7, no dashboard needed</div>
+  </div>
+
+  <!-- What it does -->
+  <div class="setup-card">
+    <div class="card-title"><i class="bi bi-lightning-charge-fill text-warning"></i> What the bot does</div>
+    <p style="font-size:.82rem;color:var(--text-muted);margin-bottom:1rem;">Message your bot on Telegram and get instant live data from your store. When a customer checks out, you get a Telegram notification instantly.</p>
+    <div class="cmd-row"><span class="cmd-badge">/start</span><span style="font-size:.8rem;color:var(--text-muted);">→ Link your Telegram to your store</span></div>
+    <div class="cmd-row"><span class="cmd-badge">orders</span><span style="font-size:.8rem;color:var(--text-muted);">→ Today's count and pending order list</span></div>
+    <div class="cmd-row"><span class="cmd-badge">revenue</span><span style="font-size:.8rem;color:var(--text-muted);">→ This month's earnings</span></div>
+    <div class="cmd-row"><span class="cmd-badge">products</span><span style="font-size:.8rem;color:var(--text-muted);">→ Inventory count and out-of-stock alert</span></div>
+    <div class="cmd-row"><span class="cmd-badge">stats</span><span style="font-size:.8rem;color:var(--text-muted);">→ Full store overview in one message</span></div>
+    <div class="cmd-row"><span class="cmd-badge">Any sentence</span><span style="font-size:.8rem;color:var(--text-muted);">→ AI answers in plain English (requires Anthropic key)</span></div>
+  </div>
+
+  <!-- Admin: Register Webhook -->
+  <div class="setup-card" id="adminSection">
+    <div class="card-title"><i class="bi bi-plug-fill" style="color:#2CA5E0;"></i> Step 1 — Admin: Register Webhook</div>
+    <p style="font-size:.82rem;color:var(--text-muted);margin-bottom:1rem;">This registers your Vercel function as the Telegram webhook endpoint. Do this once after setting <span class="code-pill">TELEGRAM_BOT_TOKEN</span> in Vercel.</p>
+
+    <div style="margin-bottom:1rem;">
+      <label style="font-size:.78rem;font-weight:700;color:var(--text-dark);display:block;margin-bottom:.4rem;">Admin Password</label>
+      <input type="password" id="adminPass" class="form-control-modern" placeholder="Enter admin password" style="max-width:320px;">
+    </div>
+
+    <button class="connect-btn" id="btnRegister" onclick="registerWebhook()">
+      <i class="bi bi-plug-fill"></i> Register Telegram Webhook
+    </button>
+
+    <div id="registerResult" class="result-box"></div>
+  </div>
+
+  <!-- Webhook URL info -->
+  <div class="webhook-box mb-4">
+    <div style="font-size:.7rem;font-weight:700;color:#0369a1;text-transform:uppercase;letter-spacing:.5px;"><i class="bi bi-link-45deg"></i> Your webhook URL</div>
+    <span class="webhook-url">https://myvendor.qzz.io/telegram</span>
+    <button onclick="navigator.clipboard.writeText('https://myvendor.qzz.io/telegram');this.textContent='✓ Copied!';setTimeout(()=>this.textContent='Copy URL',1800);" style="background:#2CA5E0;color:white;border:none;padding:.4rem 1rem;border-radius:30px;font-size:.75rem;font-weight:700;cursor:pointer;">Copy URL</button>
+  </div>
+
+  <!-- Full setup steps -->
+  <div class="setup-card">
+    <div class="card-title"><i class="bi bi-gear-fill"></i> Full setup guide (~5 min)</div>
+
+    <div class="step-row">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <strong>Create your bot with BotFather</strong><br>
+        Open Telegram → search <a href="https://t.me/BotFather" target="_blank" style="color:#2CA5E0;">@BotFather</a> → send <span class="code-pill">/newbot</span><br>
+        Choose a name (e.g. <em>MyStore Assistant</em>) and a username ending in <em>bot</em> (e.g. <em>mystorebot</em>).<br>
+        BotFather will give you a <strong>bot token</strong> — copy it.
+      </div>
+    </div>
+
+    <div class="step-row">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <strong>Add environment variables to Vercel</strong><br>
+        Vercel → your project → Settings → Environment Variables:
+        <div style="margin-top:.6rem;">
+          <div class="env-row"><span class="code-pill">TELEGRAM_BOT_TOKEN</span> <span style="font-size:.7rem;color:var(--text-muted);">= token from BotFather (e.g. 7123456789:AAF…)</span></div>
+          <div class="env-row"><span class="code-pill">TELEGRAM_BOT_USERNAME</span> <span style="font-size:.7rem;color:var(--text-muted);">= username you chose (without @, e.g. mystorebot)</span></div>
+          <div class="env-row"><span class="code-pill">ANTHROPIC_API_KEY</span> <span style="font-size:.7rem;color:var(--text-muted);">= from <a href="https://console.anthropic.com" target="_blank" style="color:#2CA5E0;">console.anthropic.com</a> (optional — enables AI replies)</span></div>
+        </div>
+        After adding vars, click <strong>Redeploy</strong> in Vercel so they take effect.
+      </div>
+    </div>
+
+    <div class="step-row">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <strong>Update the bot username in constants.js</strong><br>
+        In your repo, open <span class="code-pill">assets/js/constants.js</span> and change:<br>
+        <span class="code-pill">TELEGRAM_BOT_USERNAME = 'your-actual-bot-username'</span><br>
+        This keeps the Settings page "Link Telegram Bot" button pointing to the right bot.
+      </div>
+    </div>
+
+    <div class="step-row">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <strong>Register the webhook</strong><br>
+        Use the form above (Step 1) to register the webhook automatically, or run this curl command manually:
+        <div style="margin-top:.5rem;background:#1e2f1c;border-radius:8px;padding:.7rem;font-family:monospace;font-size:.7rem;color:#4ade80;word-break:break-all;">
+          curl -X POST "https://api.telegram.org/bot<b>YOUR_TOKEN</b>/setWebhook" \<br>
+          &nbsp;&nbsp;-H "Content-Type: application/json" \<br>
+          &nbsp;&nbsp;-d '{"url":"https://myvendor.qzz.io/telegram"}'
+        </div>
+      </div>
+    </div>
+
+    <div class="step-row">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <strong>Link your Telegram account to your store</strong><br>
+        Go to <a href="/dashboard/settings.html" style="color:#2CA5E0;">Settings</a> → Notification Bot → select <em>Telegram</em> → tap <strong>Link Telegram Bot</strong>.<br>
+        Tap <strong>Start</strong> in the bot chat that opens. You'll get a confirmation message.
+      </div>
+    </div>
+
+    <div class="step-row">
+      <div class="step-num">6</div>
+      <div class="step-body">
+        <strong>Test it!</strong><br>
+        Message your bot with <strong>"stats"</strong> — it should reply with your live store overview.<br>
+        Then go to your storefront, add a product to cart, and check out — you should receive a Telegram order notification within seconds.
+      </div>
+    </div>
+  </div>
+
+  <div style="background:#f0f9ff;border:1px solid #38bdf8;border-radius:var(--radius-md);padding:.85rem 1rem;font-size:.78rem;color:#0369a1;margin-bottom:1.5rem;">
+    <i class="bi bi-info-circle-fill me-1"></i> <strong>Note:</strong> Make sure <span class="code-pill">SUPABASE_URL</span> and <span class="code-pill">SUPABASE_SERVICE_ROLE_KEY</span> are already set in Vercel (from your initial setup). The Telegram bot uses those to look up your store data.
+  </div>
+</main>
+
+<footer>
+  <i class="bi bi-telegram" style="color:#2CA5E0;"></i> myvendor Telegram Bot — Telegram Bot API + Anthropic claude-3-5-haiku
+</footer>
+
+<script>
+async function registerWebhook() {
+  const pass = document.getElementById('adminPass').value.trim();
+  if (!pass) { alert('Enter your admin password first.'); return; }
+
+  const btn = document.getElementById('btnRegister');
+  const box = document.getElementById('registerResult');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Registering…';
+  box.style.display = 'none';
+
+  try {
+    const r = await fetch('/api/telegram?action=setup-webhook', {
+      headers: { Authorization: 'Bearer ' + pass },
+    });
+    const d = await r.json();
+
+    box.className = 'result-box ' + (r.ok ? 'result-ok' : 'result-err');
+    if (r.ok && d.webhook?.ok) {
+      box.textContent =
+        '✅ Webhook registered!\n\n' +
+        'Bot: @' + (d.bot?.username || '?') + ' (' + (d.bot?.first_name || '') + ')\n' +
+        'Webhook: ' + (d.webhook?.description || 'Webhook was set');
+    } else {
+      box.textContent = '❌ ' + (d.error || JSON.stringify(d, null, 2));
+    }
+    box.style.display = 'block';
+  } catch (err) {
+    box.className = 'result-box result-err';
+    box.textContent = '❌ Network error: ' + err.message;
+    box.style.display = 'block';
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="bi bi-plug-fill"></i> Register Telegram Webhook';
+  }
+}
+</script>
+
+<script type="module" src="/assets/js/dashboard.js"></script>
+</body>
+</html>
