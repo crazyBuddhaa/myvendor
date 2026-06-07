@@ -33,6 +33,10 @@
       "destination": "/api/r"
     },
     {
+      "source": "/notify",
+      "destination": "/api/notify"
+    },
+    {
       "source": "/telegram",
       "destination": "/api/telegram"
     },
