@@ -332,6 +332,93 @@ window.filterStorefront = function (category, buttonElement) {
 };
 
 
+// ── VENDOR THEME ──────────────────────────────────────────────────────────────
+function _applyVendorTheme(vendor) {
+    // 1. Brand colour override
+    if (vendor.theme_color) {
+        const c = vendor.theme_color;
+        const style = document.createElement('style');
+        style.id = 'vendor-theme-override';
+        style.textContent = `
+            :root {
+                --green-primary: ${c};
+                --green-bright:  ${c};
+            }
+            .store-header { background: ${c}e9 !important; }
+            .atc-btn { background: ${c} !important; }
+            #mvFab  { background: ${c} !important; }
+            .mvCheckoutBtn, .cp-checkout-btn { background: ${c} !important; }
+            .cp-wa-btn { background: ${c} !important; }
+            .vp-confirm { background: ${c} !important; }
+            .filter-pill.active { background: ${c} !important; border-color: ${c} !important; }
+        `;
+        document.head.appendChild(style);
+        // also update meta theme-color
+        let metaTheme = document.querySelector('meta[name="theme-color"]');
+        if (!metaTheme) { metaTheme = document.createElement('meta'); metaTheme.name = 'theme-color'; document.head.appendChild(metaTheme); }
+        metaTheme.content = c;
+    }
+
+    // 2. Banner image below header
+    if (vendor.banner_url) {
+        const banner = document.createElement('div');
+        banner.id = 'vendorBanner';
+        banner.style.cssText = [
+            `background: url(${JSON.stringify(vendor.banner_url)}) center/cover no-repeat`,
+            'height: 160px',
+            'width: 100%',
+        ].join(';');
+        const header = document.querySelector('.store-header');
+        if (header && header.nextSibling) {
+            header.parentNode.insertBefore(banner, header.nextSibling);
+        }
+    }
+
+    // 3. Layout: switch to list if requested
+    if (vendor.layout === 'list') {
+        const style = document.createElement('style');
+        style.id = 'vendor-layout-list';
+        style.textContent = `
+            #productGrid {
+                display: flex !important;
+                flex-direction: column !important;
+                gap: .75rem !important;
+                padding: 0 1rem !important;
+            }
+            #productGrid .product-item {
+                display: flex !important;
+                flex-direction: row !important;
+                border-radius: var(--radius-md) !important;
+                border: 1px solid var(--border-light) !important;
+                background: var(--cream-card) !important;
+                overflow: hidden !important;
+            }
+            #productGrid .prod-img {
+                width: 110px !important;
+                min-width: 110px !important;
+                border-radius: 0 !important;
+                aspect-ratio: 1 !important;
+                height: auto !important;
+            }
+            #productGrid .prod-info {
+                flex: 1 !important;
+                display: flex !important;
+                flex-direction: column !important;
+                justify-content: center !important;
+                padding: .75rem !important;
+                min-width: 0 !important;
+            }
+            #productGrid .atc-btn {
+                bottom: .6rem !important;
+                right: .6rem !important;
+            }
+        `;
+        document.head.appendChild(style);
+    }
+}
+// ── END VENDOR THEME ──────────────────────────────────────────────────────────
+
+
 // ── INIT STORE ────────────────────────────────────────────────────────────────
 async function initStore() {
     // 1. Extract slug
@@ -409,6 +496,7 @@ async function initStore() {
     _vendorTemplate  = vendor.order_template  || '';
     _vendorIsPremium = vendor.tier === 'premium';
     _updateFab();
+    _applyVendorTheme(vendor);
 
     supabase.from('analytics_events').insert([{ vendor_id: vendor.id, event_type: 'store_view', product_id: null }]).then();
 
