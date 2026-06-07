@@ -7,3 +7,7 @@ export const BASE_PRODUCT_LIMIT = 20;
 
 /** Number of receipts a free-tier vendor can generate per calendar month. */
 export const FREE_RECEIPT_LIMIT = 10;
+
+/** Telegram bot username (without @). Shared between Settings UI and server-side bot.
+ *  Update this whenever the bot is renamed in BotFather. */
+export const TELEGRAM_BOT_USERNAME = 'myvendorsbot';
