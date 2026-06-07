@@ -33,6 +33,10 @@
       "destination": "/api/r"
     },
     {
+      "source": "/telegram",
+      "destination": "/api/telegram"
+    },
+    {
       "source": "/:vendor([^/.]+)",
       "destination": "/api/og?vendor=:vendor"
     }
