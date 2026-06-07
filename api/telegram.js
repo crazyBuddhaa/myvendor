@@ -212,6 +212,26 @@ async function aiReply(vendor, message, stats) {
 // ── Main Vercel handler ───────────────────────────────────────────────────────
 export default async function handler(req, res) {
     if (req.method === 'GET') {
+        // Admin: register webhook with Telegram API
+        // GET /api/telegram?action=setup-webhook  (Authorization: Bearer <ADMIN_PASSWORD>)
+        if (req.query.action === 'setup-webhook') {
+            if (req.headers.authorization !== `Bearer ${process.env.ADMIN_PASSWORD}`) {
+                return res.status(401).json({ error: 'Unauthorized' });
+            }
+            if (!BOT_TOKEN) return res.status(500).json({ error: 'TELEGRAM_BOT_TOKEN not set in Vercel env vars' });
+            const webhookUrl = 'https://myvendor.qzz.io/telegram';
+            const r = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/setWebhook`, {
+                method:  'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body:    JSON.stringify({ url: webhookUrl, allowed_updates: ['message', 'edited_message'] }),
+            });
+            const d = await r.json();
+            // Also fetch bot info to confirm the token is valid
+            const infoR = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/getMe`);
+            const info  = await infoR.json();
+            return res.status(r.ok ? 200 : 400).json({ webhook: d, bot: info?.result || null });
+        }
+        // Health check
         return res.status(200).json({ ok: true, bot: 'myvendor Telegram Bot' });
     }
 
