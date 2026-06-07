@@ -261,6 +261,21 @@ window.handleCreateOrder = async function (e) {
         window.loadOrders();
         navigator.clipboard.writeText(`https://${window.location.host}/track/?id=${id}`);
 
+        // Fire-and-forget Telegram notification if vendor switched channel
+        if (state.currentUser?.id) {
+            fetch('/api/notify', {
+                method:  'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    vendorId:      state.currentUser.id,
+                    customerName:  document.getElementById('newCustomerName').value,
+                    customerPhone: document.getElementById('newCustomerPhone')?.value?.trim() || null,
+                    total:         parseFloat(document.getElementById('newOrderTotal').value) || 0,
+                    items:         document.getElementById('newOrderItems').value.trim(),
+                }),
+            }).catch(() => {});
+        }
+
         const toast = document.getElementById('toastMsg');
         if (toast) {
             toast.innerText = 'Order Created & Tracking Link Copied!';
