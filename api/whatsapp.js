@@ -385,6 +385,18 @@ export default async function handler(req, res) {
                 return;
             }
 
+            // Fix D: if vendor switched to Telegram, redirect them instead of replying.
+            if (vendor.notification_channel === 'telegram') {
+                const tgUsername = process.env.TELEGRAM_BOT_USERNAME || 'myvendorsbot';
+                await waReply(
+                    from,
+                    `📱 You've switched your bot notifications to *Telegram*.\n\n` +
+                    `Message @${tgUsername} to check store stats and receive order alerts.\n\n` +
+                    `To switch back: Dashboard → Settings → Notification Bot.`
+                );
+                return;
+            }
+
             const stats   = await getStats(vendor.id);
             const kwReply = keywordReply(stats, text);
             if (kwReply) {
