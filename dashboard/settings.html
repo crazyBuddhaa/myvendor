@@ -268,6 +268,64 @@
       <small style="font-size:.65rem;color:var(--text-muted);display:block;margin-top:-.8rem;margin-bottom:1rem;" id="templateNote">Free plan uses a standard template. Upgrade to Premium to customise.</small>
     </div>
 
+    <div style="border-top:1.5px solid var(--border-light);padding-top:1.4rem;margin-top:.4rem;">
+      <div class="form-label-modern" style="margin-bottom:1rem;font-size:.9rem;font-weight:800;color:var(--green-dark);display:flex;align-items:center;gap:.45rem;"><i class="bi bi-palette2"></i> Store Appearance</div>
+
+      <div style="margin-bottom:1.1rem;">
+        <div class="form-label-modern"><i class="bi bi-droplet-fill"></i> Brand Colour</div>
+        <div style="display:flex;align-items:center;gap:.75rem;">
+          <input type="color" id="setThemeColor" value="#1f6e43" style="width:48px;height:40px;padding:2px;border:1.5px solid var(--border-light);border-radius:10px;cursor:pointer;background:none;">
+          <span style="font-size:.73rem;color:var(--text-muted);">Applied to buttons, links, and highlights on your storefront</span>
+        </div>
+      </div>
+
+      <div style="margin-bottom:1.1rem;">
+        <div class="form-label-modern"><i class="bi bi-image"></i> Store Banner URL</div>
+        <input type="url" id="setBannerUrl" class="form-control-modern" placeholder="https://… paste a direct image URL">
+        <div id="bannerPreviewWrap" style="display:none;margin-top:-.7rem;margin-bottom:.8rem;">
+          <img id="bannerPreview" src="" alt="Banner preview" style="width:100%;max-height:90px;object-fit:cover;border-radius:10px;border:1.5px solid var(--border-light);">
+        </div>
+      </div>
+
+      <div style="margin-bottom:1.1rem;">
+        <div class="form-label-modern"><i class="bi bi-layout-three-columns"></i> Product Layout</div>
+        <div style="display:flex;gap:.6rem;">
+          <label style="flex:1;display:flex;align-items:center;gap:.5rem;padding:.7rem 1rem;border:1.5px solid var(--border-light);border-radius:10px;cursor:pointer;font-size:.82rem;font-weight:600;">
+            <input type="radio" name="storeLayout" id="layoutGrid" value="grid" style="accent-color:var(--green-primary);"> <i class="bi bi-grid-3x2-gap-fill"></i> Grid
+          </label>
+          <label style="flex:1;display:flex;align-items:center;gap:.5rem;padding:.7rem 1rem;border:1.5px solid var(--border-light);border-radius:10px;cursor:pointer;font-size:.82rem;font-weight:600;">
+            <input type="radio" name="storeLayout" id="layoutList" value="list" style="accent-color:var(--green-primary);"> <i class="bi bi-list-ul"></i> List
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <div style="border-top:1.5px solid var(--border-light);padding-top:1.4rem;margin-top:.2rem;margin-bottom:1.4rem;">
+      <div class="form-label-modern" style="margin-bottom:1rem;font-size:.9rem;font-weight:800;color:var(--green-dark);display:flex;align-items:center;gap:.45rem;"><i class="bi bi-bell-fill"></i> Notification Bot</div>
+      <div style="font-size:.73rem;color:var(--text-muted);margin-bottom:1rem;">Choose where you receive order alerts and bot commands.</div>
+
+      <div style="display:flex;gap:.6rem;margin-bottom:1rem;">
+        <label style="flex:1;display:flex;align-items:center;gap:.5rem;padding:.7rem 1rem;border:1.5px solid var(--border-light);border-radius:10px;cursor:pointer;font-size:.82rem;font-weight:600;">
+          <input type="radio" name="notifChannel" id="channelWhatsapp" value="whatsapp" style="accent-color:var(--green-primary);"> <i class="bi bi-whatsapp" style="color:#25D366;"></i> WhatsApp
+        </label>
+        <label style="flex:1;display:flex;align-items:center;gap:.5rem;padding:.7rem 1rem;border:1.5px solid var(--border-light);border-radius:10px;cursor:pointer;font-size:.82rem;font-weight:600;">
+          <input type="radio" name="notifChannel" id="channelTelegram" value="telegram" style="accent-color:var(--green-primary);"> <i class="bi bi-telegram" style="color:#2CA5E0;"></i> Telegram
+        </label>
+      </div>
+
+      <div id="telegramSection" style="display:none;background:var(--gray-bg);border:1.5px solid var(--border-light);border-radius:var(--radius-md);padding:1rem;">
+        <div id="tgLinkedStatus" style="display:none;margin-bottom:.7rem;">
+          <span style="font-size:.75rem;font-weight:700;color:var(--green-primary);display:flex;align-items:center;gap:.35rem;"><i class="bi bi-check-circle-fill"></i> Telegram linked — notifications active</span>
+        </div>
+        <div id="tgUnlinkedStatus" style="margin-bottom:.7rem;">
+          <span style="font-size:.75rem;color:var(--text-muted);">Link your Telegram to receive bot commands and order alerts.</span>
+        </div>
+        <button type="button" id="btnLinkTelegram" onclick="window.openTelegramLink()" class="btn-save-modern" style="width:auto;padding:.6rem 1.3rem;font-size:.82rem;background:linear-gradient(105deg,#2CA5E0,#1a7db8);">
+          <i class="bi bi-telegram"></i> Link Telegram Bot
+        </button>
+      </div>
+    </div>
+
     <button type="submit" id="btnSaveSettings" class="btn-save-modern">
       <i class="bi bi-check-lg"></i> Save Changes
     </button>
