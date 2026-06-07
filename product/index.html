@@ -479,6 +479,27 @@
             gap: 0.6rem;
         }
 
+        /* ── Selectable variant chips ─────────────────────────────────────────── */
+        .attr-group { margin-bottom: .85rem; }
+        .attr-group-label { font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--text-muted); margin-bottom: .45rem; display: flex; align-items: center; gap: .3rem; }
+        .attr-chips-row { display: flex; flex-wrap: wrap; gap: .4rem; }
+        .attr-chip-select {
+            padding: .32rem .85rem;
+            border-radius: 30px;
+            border: 1.5px solid var(--border-light);
+            background: var(--cream-bg);
+            font-size: .78rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            cursor: pointer;
+            transition: all .15s;
+            font-family: 'Inter', sans-serif;
+        }
+        .attr-chip-select:hover { border-color: var(--green-primary); color: var(--green-primary); }
+        .attr-chip-select.selected { background: var(--green-primary); color: white; border-color: var(--green-primary); }
+        /* modal variant summary */
+        #modalVariantRow { display: none; font-size: .78rem; color: var(--green-primary); font-weight: 600; margin-top: .2rem; }
+
         /* gallery thumbnails */
         .gallery-strip {
             display: flex;
@@ -584,6 +605,7 @@
                     <div>
                         <div style="font-weight: 600; color: var(--text-dark);" id="modalProdName">—</div>
                         <div style="font-weight: 700; color: var(--green-primary);" id="modalProdPrice">₦0</div>
+                        <div id="modalVariantRow"></div>
                     </div>
                 </div>
 
@@ -713,15 +735,44 @@
             badgeRow.innerHTML += `<span class="badge badge-preorder"><i class="bi bi-clock-history"></i> Pre-order</span>`;
         }
 
-        // Attributes chips
+        // ── Variant selectors + attribute chips ───────────────────────────────
+        let selectedSize  = null;
+        let selectedColor = null;
+
         const attrRow = document.getElementById('attributesRow');
         attrRow.innerHTML = '';
 
-        if (product.colors && product.colors.trim() !== '') {
-            attrRow.innerHTML += `<div class="attr-chip"><i class="bi bi-palette"></i> ${product.colors}</div>`;
+        function _pickChip(btn, group) {
+            btn.closest('.attr-chips-row').querySelectorAll('.attr-chip-select').forEach(c => c.classList.remove('selected'));
+            btn.classList.add('selected');
+            if (group === 'size')  selectedSize  = btn.textContent.trim();
+            if (group === 'color') selectedColor = btn.textContent.trim();
+            // Update modal summary
+            const varRow = document.getElementById('modalVariantRow');
+            if (varRow) {
+                const parts = [selectedSize, selectedColor].filter(Boolean);
+                if (parts.length) {
+                    varRow.innerHTML = `<i class="bi bi-check-circle-fill text-success me-1"></i> ${parts.join(' · ')}`;
+                    varRow.style.display = 'block';
+                } else {
+                    varRow.style.display = 'none';
+                }
+            }
         }
+
+        window._pickChip = _pickChip;
+
         if (product.sizes && product.sizes.trim() !== '') {
-            attrRow.innerHTML += `<div class="attr-chip"><i class="bi bi-rulers"></i> ${product.sizes}</div>`;
+            const chips = product.sizes.split(',').map(s => s.trim()).filter(Boolean)
+                .map(s => `<button type="button" class="attr-chip-select" onclick="window._pickChip(this,'size')">${s}</button>`)
+                .join('');
+            attrRow.innerHTML += `<div class="attr-group"><div class="attr-group-label"><i class="bi bi-rulers"></i> Size</div><div class="attr-chips-row">${chips}</div></div>`;
+        }
+        if (product.colors && product.colors.trim() !== '') {
+            const chips = product.colors.split(',').map(c => c.trim()).filter(Boolean)
+                .map(c => `<button type="button" class="attr-chip-select" onclick="window._pickChip(this,'color')">${c}</button>`)
+                .join('');
+            attrRow.innerHTML += `<div class="attr-group"><div class="attr-group-label"><i class="bi bi-palette"></i> Colour</div><div class="attr-chips-row">${chips}</div></div>`;
         }
         if (product.material && product.material.trim() !== '') {
             attrRow.innerHTML += `<div class="attr-chip"><i class="bi bi-layers"></i> ${product.material}</div>`;
@@ -968,16 +1019,19 @@
 
     window.sendOrderWhatsApp = function(e) {
         e.preventDefault();
-        const name = document.getElementById('buyerName').value;
-        const phone = document.getElementById('buyerPhone').value;
-        const qty = parseInt(document.getElementById('buyerQty').value);
+        const name    = document.getElementById('buyerName').value;
+        const phone   = document.getElementById('buyerPhone').value;
+        const qty     = parseInt(document.getElementById('buyerQty').value);
         const address = document.getElementById('buyerAddress').value;
-        const notes = document.getElementById('buyerNotes').value;
-        const total = currentProduct.price * qty;
+        const notes   = document.getElementById('buyerNotes').value;
+        const total   = currentProduct.price * qty;
+
+        const variantParts = [selectedSize, selectedColor].filter(Boolean);
+        const variantLine  = variantParts.length ? `\n🎨 *Variant:* ${variantParts.join(' · ')}` : '';
 
         const message = `Hello *${currentVendor.business_name}*, I'd like to place an order!
 
-🛒 *Item:* ${currentProduct.title}
+🛒 *Item:* ${currentProduct.title}${variantLine}
 🔢 *Quantity:* ${qty}
 💰 *Total:* ₦${total.toLocaleString()}
 
