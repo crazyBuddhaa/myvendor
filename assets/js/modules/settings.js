@@ -100,7 +100,7 @@ function _updateTelegramSection(channel) {
 }
 
 window.openTelegramLink = function () {
-    const botUsername = 'myvendorbot'; // update with your actual bot username
+    const botUsername = 'myvendorsbot'; // update with your actual bot username
     const vendorId    = state.currentUser?.id;
     if (!vendorId) return;
     const url = `https://t.me/${botUsername}?start=link_${vendorId}`;
