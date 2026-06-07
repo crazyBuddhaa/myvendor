@@ -1,5 +1,6 @@
 // ─── SETTINGS ─────────────────────────────────────────────────────────────────
 import { supabase } from '../supabase.js';
+import { TELEGRAM_BOT_USERNAME } from '../constants.js';
 import { state } from '../state.js';
 
 window.loadSettings = async function () {
@@ -100,7 +101,7 @@ function _updateTelegramSection(channel) {
 }
 
 window.openTelegramLink = function () {
-    const botUsername = 'myvendorsbot'; // update with your actual bot username
+    const botUsername = TELEGRAM_BOT_USERNAME;
     const vendorId    = state.currentUser?.id;
     if (!vendorId) return;
     const url = `https://t.me/${botUsername}?start=link_${vendorId}`;
