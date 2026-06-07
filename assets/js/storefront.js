@@ -171,6 +171,24 @@ window.mvPlaceOrder = e => {
     const total   = cart.reduce((s, i) => s + i.price * i.qty, 0).toLocaleString();
     const msg     = _buildOrderMsg({ vendor: _vendorName, items, total, name, phone, address, notes });
     window.open(`https://wa.me/${_vendorWa}?text=${encodeURIComponent(msg)}`, '_blank');
+
+    // Fire-and-forget Telegram notification if vendor switched channel
+    if (_vendorId) {
+        const notifyItems = cart.map((i, n) => `${n + 1}. ${i.title} × ${i.qty} — ₦${(i.price * i.qty).toLocaleString()}`).join('\n');
+        const notifyTotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
+        fetch('/api/notify', {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                vendorId:      _vendorId,
+                customerName:  name,
+                customerPhone: phone,
+                total:         notifyTotal,
+                items:         notifyItems,
+            }),
+        }).catch(() => {});
+    }
+
     saveCart([]);
     _renderItems();
     window.mvCloseCart();
