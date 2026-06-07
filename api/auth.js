@@ -25,7 +25,7 @@ export default async function handler(req, res) {
         const { token } = req.query;
         if (!token) return res.redirect(302, '/dashboard/index.html?verified=invalid');
 
-        const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
+        const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
         const { data: record, error: lookupError } = await supabase
             .from('pending_verifications')
@@ -62,7 +62,7 @@ export default async function handler(req, res) {
         const token = authHeader.replace('Bearer ', '').trim();
         if (!token) return res.status(401).json({ error: 'Missing token' });
 
-        const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
+        const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
         const { data: { user }, error: userError } = await supabase.auth.getUser(token);
         if (userError || !user) return res.status(401).json({ error: 'Invalid token' });
@@ -102,7 +102,7 @@ export default async function handler(req, res) {
         if (!email || !password || !name || !business || !wa || !slug) return res.status(400).json({ error: 'missing_fields' });
         if (!/^[a-z0-9][a-z0-9-]{1,38}[a-z0-9]$/.test(slug)) return res.status(400).json({ error: 'invalid_slug' });
 
-        const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
+        const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
         const { data: existing } = await supabase.from('vendor_profiles').select('slug').eq('slug', slug).maybeSingle();
         if (existing) return res.status(409).json({ error: 'store_name_taken' });
@@ -142,7 +142,7 @@ export default async function handler(req, res) {
         const { email } = req.body;
         if (!email) return res.status(400).json({ error: 'Email required' });
 
-        const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
+        const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
         const { data: existing } = await supabase.from('pending_verifications').select('user_id').eq('email', email).maybeSingle();
         if (!existing) return res.status(200).json({ success: true }); // prevent email enumeration
