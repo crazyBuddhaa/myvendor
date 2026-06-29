@@ -218,5 +218,27 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script type="module" src="/assets/js/dashboard.js"></script>
 
+
+  <!-- Modern Bottom Navigation (mobile) -->
+  <nav class="bottom-nav" aria-label="Main navigation">
+    <a href="/dashboard/home.html" class="bottom-nav-item" data-page="home">
+      <i class="bi bi-house-fill"></i><span>Home</span>
+    </a>
+    <a href="/dashboard/products.html" class="bottom-nav-item" data-page="products">
+      <i class="bi bi-grid-fill"></i><span>Products</span>
+    </a>
+    <a href="/dashboard/orders.html" class="bottom-nav-item active" data-page="orders">
+      <i class="bi bi-bag-fill"></i><span>Orders</span>
+      <span class="bottom-nav-badge" id="orderBadge" style="display:none"></span>
+    </a>
+    <a href="/dashboard/analytics.html" class="bottom-nav-item" data-page="analytics">
+      <i class="bi bi-bar-chart-fill"></i><span>Stats</span>
+    </a>
+    <a href="/dashboard/settings.html" class="bottom-nav-item" data-page="settings">
+      <i class="bi bi-person-fill"></i><span>Me</span>
+    </a>
+  </nav>
+  <script src="/assets/js/modern-enhancements.js"></script>
+
 </body>
 </html>
