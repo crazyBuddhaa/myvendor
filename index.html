@@ -571,46 +571,36 @@
             <div class="float-badge badge-track" aria-hidden="true">
               <i class="bi bi-truck" style="color:var(--green-primary)"></i> Order tracked
             </div>
-            <div class="phone-frame">
+            <div style="position:absolute;top:-10px;left:-10px;right:-10px;bottom:-10px;background:radial-gradient(ellipse at center,rgba(34,197,94,.12),transparent 70%);border-radius:50%;pointer-events:none;z-index:0;"></div>
+            <!-- Generated hero image -->
+            <img
+              src="/assets/img/hero-vendor.png"
+              alt="Nigerian vendor managing her WhatsApp shop"
+              style="width:280px;border-radius:28px;box-shadow:0 24px 60px rgba(0,32,0,.18),0 0 0 4px rgba(34,197,94,.18);display:block;position:relative;z-index:1;animation:floatY 5s ease-in-out infinite;"
+              width="280"
+              loading="eager"
+            />
+            <!-- Overlaid phone mockup -->
+            <div class="phone-frame" style="position:absolute;bottom:-20px;right:-40px;width:130px;z-index:2;box-shadow:0 12px 32px rgba(0,0,0,.25);">
               <div class="phone-notch" aria-hidden="true"></div>
               <div class="phone-screen">
-                <div class="store-header">
-                  <div class="store-avatar" aria-hidden="true"><i class="bi bi-bag-heart-fill"></i></div>
-                  <h6>GlamStore NG</h6>
-                  <small>Lekki, Lagos · ⭐ 4.9</small>
+                <div class="store-header" style="padding:.5rem;">
+                  <div class="store-avatar" style="width:28px;height:28px;font-size:.7rem;" aria-hidden="true"><i class="bi bi-bag-heart-fill"></i></div>
+                  <h6 style="font-size:.6rem;margin:.2rem 0 0;">GlamStore NG</h6>
+                  <small style="font-size:.5rem;">⭐ 4.9</small>
                 </div>
-                <div class="phone-products">
+                <div class="phone-products" style="gap:.3rem;padding:.4rem;">
                   <div class="phone-product-card">
-                    <div class="product-img-placeholder" aria-hidden="true">👗</div>
-                    <div class="card-body-mini">
-                      <div class="item-name">Silk Blouse</div>
-                      <div class="item-price">₦8,500</div>
-                    </div>
+                    <div class="product-img-placeholder" style="height:38px;font-size:.9rem;" aria-hidden="true">👗</div>
+                    <div class="card-body-mini" style="padding:.2rem .3rem .3rem;"><div class="item-name" style="font-size:.5rem;">Silk Blouse</div><div class="item-price" style="font-size:.55rem;">₦8,500</div></div>
                   </div>
                   <div class="phone-product-card">
-                    <div class="product-img-placeholder" aria-hidden="true">👠</div>
-                    <div class="card-body-mini">
-                      <div class="item-name">Block Heels</div>
-                      <div class="item-price">₦12,000</div>
-                    </div>
-                  </div>
-                  <div class="phone-product-card">
-                    <div class="product-img-placeholder" aria-hidden="true">👜</div>
-                    <div class="card-body-mini">
-                      <div class="item-name">Mini Bag</div>
-                      <div class="item-price">₦6,200</div>
-                    </div>
-                  </div>
-                  <div class="phone-product-card">
-                    <div class="product-img-placeholder" aria-hidden="true">💄</div>
-                    <div class="card-body-mini">
-                      <div class="item-name">Lip Kit</div>
-                      <div class="item-price">₦3,800</div>
-                    </div>
+                    <div class="product-img-placeholder" style="height:38px;font-size:.9rem;" aria-hidden="true">👠</div>
+                    <div class="card-body-mini" style="padding:.2rem .3rem .3rem;"><div class="item-name" style="font-size:.5rem;">Block Heels</div><div class="item-price" style="font-size:.55rem;">₦12,000</div></div>
                   </div>
                 </div>
-                <button class="phone-wa-btn" aria-label="Order on WhatsApp" disabled>
-                  <i class="bi bi-whatsapp"></i> Order on WhatsApp
+                <button class="phone-wa-btn" style="font-size:.5rem;padding:.35rem;margin:.2rem .4rem .4rem;" aria-label="Order on WhatsApp" disabled>
+                  <i class="bi bi-whatsapp"></i> Order via WA
                 </button>
               </div>
             </div>
@@ -1022,5 +1012,51 @@
     barObserver.observe(progressFill);
   }
 </script>
+
+  <script>
+    /* Landing page: Scroll reveal */
+    const _io = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.style.opacity = '1';
+          e.target.style.transform = 'translateY(0)';
+          _io.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.step-card,.feature-row,.review-card,.pricing-card').forEach((el, i) => {
+      el.style.cssText += 'opacity:0;transform:translateY(20px);transition:opacity .5s ' + (i * 0.08) + 's ease,transform .5s ' + (i * 0.08) + 's cubic-bezier(.34,1.2,.64,1);';
+      _io.observe(el);
+    });
+
+    /* Button ripple */
+    document.querySelectorAll('.btn-primary-mv,.btn-outline-mv,.btn-nav-cta,.step-card').forEach(btn => {
+      btn.addEventListener('pointerdown', function(e) {
+        const r = document.createElement('span');
+        const rect = this.getBoundingClientRect();
+        const size = Math.max(rect.width, rect.height) * 1.6;
+        r.style.cssText = 'position:absolute;width:' + size + 'px;height:' + size + 'px;left:' + (e.clientX - rect.left - size/2) + 'px;top:' + (e.clientY - rect.top - size/2) + 'px;border-radius:50%;background:rgba(34,197,94,.18);pointer-events:none;transform:scale(0);animation:_rpl .6s cubic-bezier(.4,0,.2,1) forwards;';
+        if (!document.querySelector('#_rplKF')) { const s = document.createElement('style'); s.id='_rplKF'; s.textContent='@keyframes _rpl{to{transform:scale(1);opacity:0}}'; document.head.appendChild(s); }
+        if (window.getComputedStyle(this).position === 'static') this.style.position = 'relative';
+        this.style.overflow = 'hidden';
+        this.appendChild(r);
+        setTimeout(() => r.remove(), 700);
+      });
+    });
+
+    /* Smooth scroll for anchor links */
+    document.querySelectorAll('a[href^="#"]').forEach(a => {
+      a.addEventListener('click', e => {
+        const t = document.querySelector(a.getAttribute('href'));
+        if (t) { e.preventDefault(); t.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+      });
+    });
+
+    /* Navbar shrink on scroll */
+    const nav = document.querySelector('.mv-nav');
+    window.addEventListener('scroll', () => {
+      nav.style.padding = window.scrollY > 40 ? '.45rem 0' : '.75rem 0';
+    }, { passive: true });
+  </script>
 </body>
 </html>
